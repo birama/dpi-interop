@@ -1,0 +1,32 @@
+Institution;Code;Email;Mot de passe;Rôle
+Direction Générale des Impôts et des Domaines;DGID;dsi@dgid.sn;(compte existant);INSTITUTION
+Direction Générale des Douanes;DGD;dsi@dgd.sn;Atelier@2026;INSTITUTION
+Agence Nationale de la Statistique et de la Démographie;ANSD;dsi@ansd.sn;(compte existant);INSTITUTION
+Direction Générale de la Comptabilité Publique et du Trésor;DGCPT;dsi@dgcpt.sn;Atelier@2026;INSTITUTION
+Agence Nationale de l'État Civil;ANEC;dsi@anec.sn;Atelier@2026;INSTITUTION
+Délégation Générale à la Protection Sociale et à la Solidarité Nationale;DGPSN;dsi@dgpsn.sn;Atelier@2026;INSTITUTION
+Institution de Prévoyance Retraite du Sénégal;IPRES;dsi@ipres.sn;Atelier@2026;INSTITUTION
+Caisse de Sécurité Sociale;CSS;dsi@css.sn;Atelier@2026;INSTITUTION
+Couverture Sanitaire Universelle;SEN-CSU;dsi@sencsu.sn;Atelier@2026;INSTITUTION
+Agence de Promotion des Investissements et des Grands Travaux;APIX;dsi@apix.sn;Atelier@2026;INSTITUTION
+Agence de l'Informatique de l'État;ADIE;dsi@adie.sn;Atelier@2026;INSTITUTION
+Commission de Protection des Données Personnelles;CDP;dsi@cdp.sn;Atelier@2026;INSTITUTION
+Autorité de Régulation des Télécommunications et des Postes;ARTP;dsi@artp.sn;Atelier@2026;INSTITUTION
+Greffe du Tribunal de Commerce (RCCM);GREFFE;dsi@greffe.sn;Atelier@2026;INSTITUTION
+Centre National du Casier Judiciaire;CNCJ;dsi@cncj.sn;Atelier@2026;INSTITUTION
+Direction de l'Automatisation des Fichiers;DAF;dsi@daf.sn;Atelier@2026;INSTITUTION
+Société Nationale d'Électricité du Sénégal;SENELEC;dsi@senelec.sn;Atelier@2026;INSTITUTION
+Société des Pétroles du Sénégal;PETROSEN;dsi@petrosen.sn;Atelier@2026;INSTITUTION
+Office National de l'Assainissement du Sénégal;ONAS;dsi@onas.sn;Atelier@2026;INSTITUTION
+Port Autonome de Dakar;PAD;dsi@pad.sn;Atelier@2026;INSTITUTION
+Société Nationale d'Aménagement et d'Exploitation des Terres du Delta;SAED;dsi@saed.sn;Atelier@2026;INSTITUTION
+Institut Sénégalais de Recherches Agricoles;ISRA;dsi@isra.sn;Atelier@2026;INSTITUTION
+Agence Nationale de Conseil Agricole et Rural;ANCAR;dsi@ancar.sn;Atelier@2026;INSTITUTION
+Ministère de la Santé et de l'Action Sociale;MSAS;dsi@msas.sn;Atelier@2026;INSTITUTION
+Pharmacie Nationale d'Approvisionnement;PNA;dsi@pna.sn;Atelier@2026;INSTITUTION
+Fonds Souverain d'Investissements Stratégiques;FONSIS;dsi@fonsis.sn;Atelier@2026;INSTITUTION
+Fonds de Garantie des Investissements Prioritaires;FONGIP;dsi@fongip.sn;Atelier@2026;INSTITUTION
+Délégation à l'Entrepreneuriat Rapide des Femmes et des Jeunes;DER-FJ;dsi@derfj.sn;Atelier@2026;INSTITUTION
+Agence de Développement et d'Encadrement des PME;ADEPME;dsi@adepme.sn;Atelier@2026;INSTITUTION
+Secrétariat d'État au Numérique / SENUM;SENUM;dsi@senum.sn;Atelier@2026;INSTITUTION
+SENUM (Admin);ADMIN;admin@senum.sn;Admin@2026;ADMIN

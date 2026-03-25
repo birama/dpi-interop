@@ -1,0 +1,886 @@
+// Prisma Schema - Questionnaire Interopérabilité SENUM
+// Generated: 2026-03-06
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================================
+// AUTHENTIFICATION
+// ============================================================================
+
+model User {
+  id                 String      @id @default(uuid())
+  email              String      @unique
+  password           String      // bcrypt hashed
+  role               Role        @default(INSTITUTION)
+  mustChangePassword Boolean     @default(true)
+
+  // Relations
+  institutionId String?
+  institution   Institution? @relation(fields: [institutionId], references: [id])
+
+  // Audit
+  lastLoginAt   DateTime?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  @@map("users")
+  @@index([email])
+}
+
+enum Role {
+  ADMIN       // SENUM/MCTN
+  INSTITUTION // Administrations sectorielles
+}
+
+// ============================================================================
+// INSTITUTIONS
+// ============================================================================
+
+model Institution {
+  id                  String   @id @default(uuid())
+  code                String   @unique // Ex: DGID, DGD, ANSD
+  nom                 String
+  ministere           String
+
+  // Contact principal
+  responsableNom      String
+  responsableFonction String
+  responsableEmail    String   @unique
+  responsableTel      String
+
+  // Relations
+  users               User[]
+  submissions         Submission[]
+  conventionsA        Convention[] @relation("conventionPartieA")
+  conventionsB        Convention[] @relation("conventionPartieB")
+  xroadReadiness      XRoadReadiness?
+
+  // Audit
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  @@map("institutions")
+  @@index([code])
+}
+
+// ============================================================================
+// SOUMISSIONS QUESTIONNAIRE
+// ============================================================================
+
+model Submission {
+  id            String           @id @default(uuid())
+
+  // Institution
+  institutionId String
+  institution   Institution      @relation(fields: [institutionId], references: [id], onDelete: Cascade)
+
+  // Workflow
+  status        SubmissionStatus @default(DRAFT)
+  currentStep   Int              @default(0) // 0-5
+
+  // Section A - Gouvernance des données
+  dataOwnerNom         String?
+  dataOwnerFonction    String?
+  dataOwnerEmail       String?
+  dataOwnerTelephone   String?
+  dataStewardNom       String?
+  dataStewardProfil    String?
+  dataStewardFonction  String?
+  dataStewardEmail     String?
+  dataStewardTelephone String?
+
+  // Section B - Systèmes d'information
+  applications       Application[]
+  registres          Registre[]
+  infrastructureItems InfrastructureItem[]
+
+  // Infrastructure (JSON flexible - legacy)
+  infrastructure Json? // { serveurs, sgbd, reseau, securite }
+
+  // Section C - Besoins échanges
+  donneesConsommer DonneeConsommer[]
+  donneesFournir   DonneeFournir[]
+  fluxExistants    FluxExistant[]     // Legacy — conservé pour rétrocompatibilité
+  casUsage         CasUsage[]
+  fluxInstitutions FluxInstitution[]  // Nouveau : liens vers registre CasUsageMVP
+
+  // Framework interopérabilité
+  niveauxInterop       NiveauInterop[]
+  dictionnaireDonnees  DictionnaireDonnee[]
+  conformitePrincipes  ConformitePrincipe[]
+  preparationDecret    PreparationDecret[]
+
+  // Section D - Contraintes et maturité
+  contraintesJuridiques String? @db.Text
+  contraintesTechniques String? @db.Text
+
+  maturiteInfra        Int @default(3) @db.SmallInt // 1-5
+  maturiteDonnees      Int @default(3) @db.SmallInt
+  maturiteCompetences  Int @default(3) @db.SmallInt
+  maturiteGouvernance  Int @default(3) @db.SmallInt
+
+  // Section E - Auto-diagnostic
+  forces        String? @db.Text
+  faiblesses    String? @db.Text
+
+  // Section F - Attentes
+  attentes      String? @db.Text
+  contributions String? @db.Text
+
+  // Métadonnées
+  submittedAt   DateTime?
+  reviewedAt    DateTime?
+  reviewedBy    String? // User ID
+
+  // Audit
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@map("submissions")
+  @@index([institutionId, status])
+  @@index([submittedAt])
+}
+
+enum SubmissionStatus {
+  DRAFT      // En cours de remplissage
+  SUBMITTED  // Soumis par l'institution
+  REVIEWED   // Relu par SENUM
+  VALIDATED  // Validé final
+  ARCHIVED   // Archivé
+}
+
+// ============================================================================
+// APPLICATIONS ET SYSTÈMES (Section B.1)
+// ============================================================================
+
+model Application {
+  id            String     @id @default(uuid())
+  submissionId  String
+  submission    Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+
+  nom           String
+  description   String?    @db.Text
+  editeur       String?    // Éditeur/fournisseur
+  anneeInstallation Int?
+
+  ordre         Int        @default(0) // Pour tri
+
+  createdAt     DateTime   @default(now())
+
+  @@map("applications")
+  @@index([submissionId])
+}
+
+// ============================================================================
+// REGISTRES / BASES DE RÉFÉRENCE (Section B.2)
+// ============================================================================
+
+model Registre {
+  id            String     @id @default(uuid())
+  submissionId  String
+  submission    Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+
+  nom           String
+  description   String?    @db.Text
+  volumetrie    String?    // Ex: "5M entités", "250K entreprises"
+
+  // E.6 — Indicateurs de qualité
+  tauxCompletude      Int?       // 0-100
+  tauxDoublons        Int?       // 0-100
+  dernierNettoyage    DateTime?
+  planQualiteExiste   Boolean    @default(false)
+  processusCorrection String?    @db.Text
+  frequenceAudit      String?    // Jamais, Annuel, Semestriel, Trimestriel, Mensuel
+
+  ordre         Int        @default(0)
+
+  createdAt     DateTime   @default(now())
+
+  @@map("registres")
+  @@index([submissionId])
+}
+
+// ============================================================================
+// BESOINS EN DONNÉES (Section C)
+// ============================================================================
+
+// C.1 - Données à CONSOMMER
+model DonneeConsommer {
+  id            String     @id @default(uuid())
+  submissionId  String
+  submission    Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+
+  donnee        String     // Type de donnée recherchée
+  source        String     // Administration source
+  usage         String?    @db.Text // Usage prévu
+  priorite      Int        @default(3) @db.SmallInt // 1-5
+
+  ordre         Int        @default(0)
+
+  createdAt     DateTime   @default(now())
+
+  @@map("donnees_consommer")
+  @@index([submissionId])
+}
+
+// C.2 - Données à FOURNIR
+model DonneeFournir {
+  id            String     @id @default(uuid())
+  submissionId  String
+  submission    Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+
+  donnee        String     // Type de donnée
+  destinataires String?    // Qui pourrait consommer
+  frequence     String?    // Fréquence de MAJ
+  format        String?    // Format disponible (API, fichier, etc.)
+
+  ordre         Int        @default(0)
+
+  createdAt     DateTime   @default(now())
+
+  @@map("donnees_fournir")
+  @@index([submissionId])
+}
+
+// C.3 - Flux existants
+model FluxExistant {
+  id            String     @id @default(uuid())
+  submissionId  String
+  submission    Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+
+  source        String
+  destination   String
+  donnee        String?
+  mode          String?    // API REST, fichier, email, etc.
+  frequence     String?
+
+  ordre         Int        @default(0)
+
+  createdAt     DateTime   @default(now())
+
+  @@map("flux_existants")
+  @@index([submissionId])
+}
+
+// C.4 - Cas d'usage prioritaires
+model CasUsage {
+  id            String     @id @default(uuid())
+  submissionId  String
+  submission    Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+
+  titre         String
+  description   String     @db.Text
+  acteurs       String?    @db.Text
+  priorite      Int        @default(3) @db.SmallInt
+
+  // P.6 — Lien avec cas d'usage MVP
+  casUsageMVPId String?
+  casUsageMVP   CasUsageMVP? @relation(fields: [casUsageMVPId], references: [id])
+
+  ordre         Int        @default(0)
+
+  createdAt     DateTime   @default(now())
+
+  @@map("cas_usage")
+  @@index([submissionId, priorite])
+}
+
+// ============================================================================
+// F.1 — DIAGNOSTIC 5 NIVEAUX D'INTEROPÉRABILITÉ
+// ============================================================================
+
+model NiveauInterop {
+  id            String     @id @default(uuid())
+  submissionId  String
+  submission    Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+
+  niveau        String     // POLITIQUE, JURIDIQUE, ORGANISATIONNEL, SEMANTIQUE, TECHNIQUE
+  question      String
+  reponse       String     // Oui, Non, En cours, Partiellement, etc.
+  details       String?    @db.Text
+
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  @@map("niveaux_interop")
+  @@unique([submissionId, niveau, question])
+  @@index([submissionId])
+}
+
+// ============================================================================
+// F.3 — CONFORMITÉ AUX 13 PRINCIPES
+// ============================================================================
+
+model ConformitePrincipe {
+  id            String     @id @default(uuid())
+  submissionId  String
+  submission    Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+
+  principeNumero Int       // 1-13
+  categorie     String     // A, B, C, D
+  score         Int        @default(1) @db.SmallInt // 1-5
+  commentaire   String?    @db.Text
+
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  @@map("conformite_principes")
+  @@unique([submissionId, principeNumero])
+  @@index([submissionId])
+}
+
+// ============================================================================
+// F.4 — DICTIONNAIRE DE DONNÉES SÉMANTIQUE
+// ============================================================================
+
+model DictionnaireDonnee {
+  id                 String     @id @default(uuid())
+  submissionId       String
+  submission         Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+
+  nomChamp           String
+  definition         String?    @db.Text
+  formatTechnique    String?    // Texte, Numérique, Date, Booléen, Code, Montant, Autre
+  taille             String?
+  referentielOrigine String?    // Institution source de vérité
+  nomenclature       String?
+  identifiantPivot   Boolean    @default(false)
+  frequenceMAJ       String?
+  sensibilite        String?    // Public, Usage interne, Confidentiel, Secret
+  observations       String?    @db.Text
+
+  createdAt          DateTime   @default(now())
+  updatedAt          DateTime   @updatedAt
+
+  @@map("dictionnaire_donnees")
+  @@index([submissionId])
+}
+
+// ============================================================================
+// F.5 — PRÉPARATION AU DÉCRET INTEROPÉRABILITÉ
+// ============================================================================
+
+model PreparationDecret {
+  id            String     @id @default(uuid())
+  submissionId  String
+  submission    Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+
+  chapitre      String     // CHAPITRE_2, CHAPITRE_3, CHAPITRE_4
+  question      String
+  reponse       String
+  details       String?    @db.Text
+
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  @@map("preparation_decret")
+  @@unique([submissionId, chapitre, question])
+  @@index([submissionId])
+}
+
+// ============================================================================
+// INFRASTRUCTURE TECHNIQUE (Section B.3)
+// ============================================================================
+
+model InfrastructureItem {
+  id              String     @id @default(uuid())
+  submissionId    String
+  submission      Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+
+  domain          String     // EQUIPEMENTS_SYSTEME, RESEAU_CONNECTIVITE, API_SERVICES, SECURITE_CERTIFICATS, ENERGIE_CONTINUITE, RESSOURCES_HUMAINES, LICENCES_LOGICIELS
+  element         String     // Ex: "Datacenter", "Serveurs en production"
+  disponibilite   Boolean?   // Oui/Non/null
+  qualifications  String?    // Détails texte libre
+  observations    String?    // Spécifications / observations
+
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+
+  @@map("infrastructure_items")
+  @@index([submissionId])
+  @@unique([submissionId, domain, element])
+}
+
+// ============================================================================
+// E.4 — CONVENTIONS D'ÉCHANGE
+// ============================================================================
+
+model Convention {
+  id              String           @id @default(uuid())
+  institutionAId  String
+  institutionA    Institution      @relation("conventionPartieA", fields: [institutionAId], references: [id])
+  institutionBId  String
+  institutionB    Institution      @relation("conventionPartieB", fields: [institutionBId], references: [id])
+
+  objet           String
+  donneesVisees   String?          @db.Text
+  statut          ConventionStatus @default(NON_INITIEE)
+
+  dateInitiation  DateTime?
+  dateRedaction   DateTime?
+  dateSignatureA  DateTime?
+  dateSignatureB  DateTime?
+  dateActivation  DateTime?
+  dateExpiration  DateTime?
+
+  referenceDocument String?
+  lienDocument      String?        // URL vers le document partagé (SharePoint, Drive, etc.)
+  observations      String?        @db.Text
+
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  createdBy       String?
+
+  @@map("conventions")
+  @@index([institutionAId])
+  @@index([institutionBId])
+}
+
+enum ConventionStatus {
+  NON_INITIEE
+  EN_COURS_REDACTION
+  EN_ATTENTE_SIGNATURE_A
+  EN_ATTENTE_SIGNATURE_B
+  SIGNEE
+  ACTIVE
+  EXPIREE
+  SUSPENDUE
+}
+
+// ============================================================================
+// E.5 — PIPELINE X-ROAD
+// ============================================================================
+
+model XRoadReadiness {
+  id                    String      @id @default(uuid())
+  institutionId         String      @unique
+  institution           Institution @relation(fields: [institutionId], references: [id])
+
+  serveurDedie          JalonStatus @default(NON_DEMARRE)
+  serveurDedieDate      DateTime?
+  connectiviteReseau    JalonStatus @default(NON_DEMARRE)
+  connectiviteDate      DateTime?
+  certificatsSSL        JalonStatus @default(NON_DEMARRE)
+  certificatsDate       DateTime?
+  securityServerInstall JalonStatus @default(NON_DEMARRE)
+  securityServerDate    DateTime?
+  premierServicePublie  JalonStatus @default(NON_DEMARRE)
+  premierServiceDate    DateTime?
+  premierEchangeReussi  JalonStatus @default(NON_DEMARRE)
+  premierEchangeDate    DateTime?
+
+  observations          String?     @db.Text
+  blocage               String?
+  prochainJalon         String?
+
+  // Hébergement du Security Server
+  hebergement           HebergementType @default(SENUM_CENTRALISE)
+  hebergementCible      HebergementType?
+  dateMigrationPrevue   DateTime?
+  prerequisMigration    String?     @db.Text
+
+  // Maturité API
+  disposeAPI            Boolean     @default(false)
+  maturiteAPI           String?
+  systemeSource         String?
+  protocoleAPI          String?
+  observationsAPI       String?     @db.Text
+
+  updatedAt             DateTime    @updatedAt
+  updatedBy             String?
+
+  @@map("xroad_readiness")
+}
+
+enum HebergementType {
+  SENUM_CENTRALISE
+  HEBERGEMENT_PROPRE
+  MIXTE
+}
+
+enum JalonStatus {
+  NON_DEMARRE
+  EN_COURS
+  BLOQUE
+  TERMINE
+}
+
+// ============================================================================
+// RAPPORTS ET EXPORTS
+// ============================================================================
+
+model Report {
+  id            String     @id @default(uuid())
+  type          ReportType
+  format        String     // PDF, CSV, XLSX, JSON
+
+  // Fichier généré
+  filename      String
+  filepath      String?
+  filesize      Int?       // bytes
+
+  // Métadonnées
+  generatedBy   String?    // User ID
+  parameters    Json?      // Paramètres du rapport
+
+  createdAt     DateTime   @default(now())
+
+  @@map("reports")
+  @@index([type, createdAt])
+}
+
+// ============================================================================
+// CATALOGUE DPI — BUILDING BLOCKS
+// ============================================================================
+
+model BuildingBlock {
+  id               String    @id @default(uuid())
+  code             String    @unique
+  nom              String
+  description      String    @db.Text
+  couche           CoucheDPI
+
+  statut           StatutBB  @default(NON_DEMARRE)
+  operateur        String?
+  compatibleXRoad  Boolean   @default(false)
+
+  urlDocumentation String?
+  technologie      String?
+  dateDeploiement  DateTime?
+  observations     String?   @db.Text
+
+  ordre            Int       @default(0)
+
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  @@map("building_blocks")
+  @@index([couche])
+}
+
+enum CoucheDPI {
+  FONDATION
+  INTEGRATION
+  INFRASTRUCTURE
+  APPLICATION
+}
+
+enum StatutBB {
+  OPERATIONNEL
+  EN_DEPLOIEMENT
+  PLANIFIE
+  NON_DEMARRE
+}
+
+// ============================================================================
+// REGISTRES NATIONAUX (référentiel autoritaire)
+// ============================================================================
+
+model RegistreNational {
+  id                  String    @id @default(uuid())
+  code                String    @unique
+  nom                 String
+  description         String?   @db.Text
+  domaine             String
+
+  institutionCode     String
+  institutionNom      String
+
+  systemeSource       String?
+  identifiantPivot    String?
+  formatIdentifiant   String?
+  volumeEstime        String?
+
+  statutNumerisation  String?
+  statutEjokkoo       String?
+  disposeAPI          Boolean   @default(false)
+  protocoleAPI        String?
+
+  baseLegale          String?   @db.Text
+  consommateurs       String?   @db.Text
+  observations        String?   @db.Text
+
+  tauxCompletude      Int?
+  tauxDoublons        Int?
+
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  @@map("registres_nationaux")
+  @@index([domaine])
+}
+
+enum ReportType {
+  COMPILATION          // Compilation globale
+  MATRICE_FLUX         // Matrice fournisseur/consommateur
+  STATISTIQUES         // Stats générales
+  EXPORT_INSTITUTION   // Export données d'une institution
+  EXPORT_COMPLET       // Export toutes données
+}
+
+// ============================================================================
+// P.1 — PARTENAIRES TECHNIQUES ET FINANCIERS (PTF)
+// ============================================================================
+
+model PTF {
+  id            String    @id @default(uuid())
+  code          String    @unique
+  nom           String
+  acronyme      String
+  type          PTFType
+  pays          String?
+  contactNom    String?
+  contactEmail  String?
+  contactTel    String?
+  programmes    Programme[]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  @@map("ptf")
+}
+
+enum PTFType {
+  BILATERAL
+  MULTILATERAL
+  FONDATION
+  ETAT
+  PRIVE
+}
+
+model Programme {
+  id                  String          @id @default(uuid())
+  ptfId               String
+  ptf                 PTF             @relation(fields: [ptfId], references: [id])
+  code                String          @unique
+  nom                 String
+  description         String?         @db.Text
+  consortium          String?
+  partenaireTechnique String?
+  montantTotal        Float?
+  devise              String          @default("FCFA")
+  montantDecaisse     Float?
+  dateDebut           DateTime?
+  dateFin             DateTime?
+  statut              ProgrammeStatus @default(ACTIF)
+  composantsDPI       String?
+  financements        Financement[]
+  expertises          Expertise[]
+  createdAt           DateTime        @default(now())
+  updatedAt           DateTime        @updatedAt
+  @@map("programmes")
+  @@index([ptfId])
+}
+
+enum ProgrammeStatus {
+  EN_PREPARATION
+  ACTIF
+  EN_CLOTURE
+  CLOTURE
+  SUSPENDU
+}
+
+model Expertise {
+  id            String    @id @default(uuid())
+  programmeId   String
+  programme     Programme @relation(fields: [programmeId], references: [id])
+  nom           String
+  profil        String
+  role          String?
+  dateDebut     DateTime?
+  dateFin       DateTime?
+  actif         Boolean   @default(true)
+  prestataire   String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  @@map("expertises")
+  @@index([programmeId])
+}
+
+// ============================================================================
+// PHASES MVP & CAS D'USAGE
+// ============================================================================
+
+model PhaseMVP {
+  id                  String      @id @default(uuid())
+  code                String      @unique
+  nom                 String
+  description         String?     @db.Text
+  dateDebutPrevue     DateTime?
+  dateFinPrevue       DateTime?
+  dateDebutEffective  DateTime?
+  dateFinEffective    DateTime?
+  statut              PhaseStatus @default(PLANIFIE)
+  livrablesCles       String?     @db.Text
+  casUsageMVP         CasUsageMVP[]
+  createdAt           DateTime    @default(now())
+  updatedAt           DateTime    @updatedAt
+  @@map("phases_mvp")
+}
+
+enum PhaseStatus {
+  PLANIFIE
+  EN_COURS
+  TERMINE
+  REPORTE
+}
+
+model CasUsageMVP {
+  id                    String              @id @default(uuid())
+  code                  String              @unique
+  titre                 String
+  description           String?             @db.Text
+  institutionSourceCode String?
+  institutionCibleCode  String?
+  autresInstitutions    String?
+  donneesEchangees      String?
+  registresConcernes    String?
+  axePrioritaire        String?
+  impact                ImpactLevel         @default(MOYEN)
+  complexite            ImpactLevel         @default(MOYEN)
+  phaseMVPId            String?
+  phaseMVP              PhaseMVP?           @relation(fields: [phaseMVPId], references: [id])
+  statutImpl            StatutImplementation @default(IDENTIFIE)
+  prerequis             String?             @db.Text
+  conventionRequise     Boolean             @default(true)
+  conventionSignee      Boolean             @default(false)
+  financements          Financement[]
+  declarationsInst      CasUsage[]
+  fluxInstitutions      FluxInstitution[]
+  dateIdentification    DateTime?
+  dateLancement         DateTime?
+  dateMiseEnProd        DateTime?
+  observations          String?             @db.Text
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
+  @@map("cas_usage_mvp")
+  @@index([phaseMVPId])
+  @@index([axePrioritaire])
+}
+
+enum ImpactLevel {
+  FAIBLE
+  MOYEN
+  ELEVE
+  CRITIQUE
+}
+
+enum StatutImplementation {
+  IDENTIFIE
+  PRIORISE
+  EN_PREPARATION
+  EN_DEVELOPPEMENT
+  EN_TEST
+  EN_PRODUCTION
+  SUSPENDU
+}
+
+model Financement {
+  id              String            @id @default(uuid())
+  casUsageMVPId   String
+  casUsageMVP     CasUsageMVP       @relation(fields: [casUsageMVPId], references: [id], onDelete: Cascade)
+  programmeId     String
+  programme       Programme         @relation(fields: [programmeId], references: [id])
+  montantAlloue   Float?
+  typeFinancement String?
+  statut          FinancementStatus @default(DEMANDE)
+  dateDemande     DateTime?
+  dateAccord      DateTime?
+  observations    String?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  @@map("financements")
+  @@index([casUsageMVPId])
+  @@index([programmeId])
+  @@unique([casUsageMVPId, programmeId])
+}
+
+enum FinancementStatus {
+  IDENTIFIE
+  DEMANDE
+  EN_NEGOCIATION
+  ACCORDE
+  EN_COURS
+  CLOTURE
+  REFUSE
+}
+
+// ============================================================================
+// FLUX × INSTITUTION (table de liaison registre unique)
+// ============================================================================
+
+model FluxInstitution {
+  id               String      @id @default(uuid())
+  submissionId     String
+  submission       Submission  @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  casUsageMVPId    String
+  casUsageMVP      CasUsageMVP @relation(fields: [casUsageMVPId], references: [id])
+
+  roleInstitution  String      // FOURNISSEUR, CONSOMMATEUR, BIDIRECTIONNEL
+  modeActuel       String?
+  frequence        String?
+  conventionSignee Boolean     @default(false)
+  volumeEstime     String?
+  observations     String?     @db.Text
+  priorite         Int         @default(3) @db.SmallInt
+
+  // Qualification par l'institution
+  justificationMetier  String?      @db.Text
+  problemeActuel       String?      @db.Text
+  beneficeAttendu      String?      @db.Text
+  impactEstime         ImpactLevel?
+  urgence              Int?         @db.SmallInt // 1-5
+  pretTechniquement    String?      // Oui API existante, Oui API à développer, Partiellement, Non
+
+  // Qualification par le SENUM
+  qualifie             Boolean      @default(false)
+  dateQualification    DateTime?
+  qualifiePar          String?
+  noteQualification    String?      @db.Text
+  impactValide         ImpactLevel?
+  complexiteTechnique  ImpactLevel?
+  scoreTotal           Int?
+
+  // Prérequis identifiés
+  prerequisConvention       Boolean @default(false)
+  prerequisSecurityServer   Boolean @default(false)
+  prerequisAPI              Boolean @default(false)
+  prerequisNettoyage        Boolean @default(false)
+  prerequisAutre            String? @db.Text
+
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+
+  @@map("flux_institutions")
+  @@unique([submissionId, casUsageMVPId])
+  @@index([casUsageMVPId])
+  @@index([qualifie])
+}
+
+// ============================================================================
+// AUDIT LOGS (optionnel mais recommandé pour SENUM)
+// ============================================================================
+
+model AuditLog {
+  id            String     @id @default(uuid())
+
+  userId        String?
+  action        String     // LOGIN, CREATE, UPDATE, DELETE, EXPORT, etc.
+  entity        String?    // Table concernée
+  entityId      String?
+
+  changes       Json?      // Détails des changements
+  ipAddress     String?
+  userAgent     String?
+
+  createdAt     DateTime   @default(now())
+
+  @@map("audit_logs")
+  @@index([userId, createdAt])
+  @@index([action, createdAt])
+}
