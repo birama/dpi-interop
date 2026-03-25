@@ -219,6 +219,7 @@ export class SubmissionsService {
           await tx.donneeConsommer.createMany({
             data: input.donneesConsommer.map((d, idx) => ({
               ...d,
+              priorite: d.priorite ?? undefined,
               submissionId: id,
               ordre: idx,
             })),
@@ -261,6 +262,7 @@ export class SubmissionsService {
           await tx.casUsage.createMany({
             data: input.casUsage.map((c, idx) => ({
               ...c,
+              priorite: c.priorite ?? undefined,
               submissionId: id,
               ordre: idx,
             })),

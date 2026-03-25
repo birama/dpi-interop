@@ -7,7 +7,7 @@ import { reportsRoutes } from './reports/index.js';
 // Inline routes for conventions and xroad
 async function conventionsRoutes(app: FastifyInstance) {
   // List all
-  app.get('/', { onRequest: [app.authenticateAdmin], schema: { tags: ['Conventions'] } }, async (req: any, reply: any) => {
+  app.get('/', { onRequest: [app.authenticateAdmin], schema: { tags: ['Conventions'] } }, async (_req: any, reply: any) => {
     const conventions = await app.prisma.convention.findMany({
       include: { institutionA: { select: { id: true, code: true, nom: true } }, institutionB: { select: { id: true, code: true, nom: true } } },
       orderBy: { updatedAt: 'desc' },
