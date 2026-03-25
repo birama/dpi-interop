@@ -1,8 +1,7 @@
 import { Link } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Shield, ArrowRight, Layers, CreditCard, Fingerprint, Network, Building2, Globe, Lock, Server } from 'lucide-react';
+import { Shield, ArrowRight, Layers, CreditCard, Fingerprint, Network, Building2, Globe, Server } from 'lucide-react';
 
 export function AboutPage() {
   return (

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,7 +9,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/components/ui/use-toast';
 import { useAuthStore } from '@/store/auth';
 import { submissionsApi, institutionsApi } from '@/services/api';
-import { cn } from '@/lib/utils';
 import { ChevronLeft, ChevronRight, Save, Send, Loader2, Plus, Trash2 } from 'lucide-react';
 import { SearchableSelect } from '@/components/ui/searchable-select';
 import { MultiSearchableSelect } from '@/components/ui/multi-searchable-select';

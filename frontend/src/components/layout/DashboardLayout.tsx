@@ -10,8 +10,6 @@ import {
   Menu,
   X,
   ChevronDown,
-  ChevronLeft,
-  ChevronRight,
   User,
   PanelLeftClose,
   PanelLeft,
@@ -27,7 +25,6 @@ import {
   Map as MapIcon,
   Wallet,
   ClipboardCheck,
-  Handshake,
   Users,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';

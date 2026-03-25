@@ -8,7 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/components/ui/use-toast';
 import { useAuthStore } from '@/store/auth';
 import { api } from '@/services/api';
-import { Pencil, Plus, X, Loader2, ExternalLink, Network } from 'lucide-react';
+import { Pencil, Plus, X, Loader2, Network } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const COUCHE_CONFIG: Record<string, { label: string; couleur: string }> = {

@@ -77,7 +77,7 @@ export function RegistresNationauxPage() {
 
       <div className="flex gap-2 flex-wrap">
         <button onClick={() => setFilter('')} className={cn('px-3 py-1 rounded-full text-xs font-medium', !filter ? 'bg-navy text-white' : 'bg-gray-100 text-gray-600')}>Tous ({registres.length})</button>
-        {domaines.map(d => <button key={d} onClick={() => setFilter(d === filter ? '' : d)} className={cn('px-3 py-1 rounded-full text-xs font-medium', d === filter ? 'bg-navy text-white' : 'bg-gray-100 text-gray-600')}>{d}</button>)}
+        {(domaines as string[]).map((d: string) => <button key={d} onClick={() => setFilter(d === filter ? '' : d)} className={cn('px-3 py-1 rounded-full text-xs font-medium', d === filter ? 'bg-navy text-white' : 'bg-gray-100 text-gray-600')}>{d}</button>)}
       </div>
 
       {Object.entries(grouped).map(([domaine, regs]) => {

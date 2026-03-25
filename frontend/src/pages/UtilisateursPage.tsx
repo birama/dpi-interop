@@ -8,7 +8,7 @@ import { api } from '@/services/api';
 import { useToast } from '@/components/ui/use-toast';
 import { SearchableSelect } from '@/components/ui/searchable-select';
 import { MultiSearchableSelect } from '@/components/ui/multi-searchable-select';
-import { Loader2, Users, ShieldCheck, Building2, EyeOff, Plus, Pencil, Trash2, KeyRound, X, UserPlus, Download, AlertCircle } from 'lucide-react';
+import { Loader2, Plus, Pencil, Trash2, KeyRound, X, UserPlus, Download, AlertCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const ROLE_COLORS: Record<string, string> = {

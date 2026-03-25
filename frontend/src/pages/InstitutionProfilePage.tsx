@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { submissionsApi, institutionsApi, api } from '@/services/api';
 import { useToast } from '@/components/ui/use-toast';
-import { Loader2, FileDown, Building2, Users, Shield, BarChart3 } from 'lucide-react';
+import { Loader2, FileDown, Building2, Users, BarChart3 } from 'lucide-react';
 import { RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer } from 'recharts';
 import { cn } from '@/lib/utils';
 
@@ -164,14 +164,14 @@ export function InstitutionProfilePage() {
       </div>
 
       {/* Applications */}
-      {sub?.applications?.length > 0 && (
+      {(sub?.applications?.length ?? 0) > 0 && (
         <Card>
           <CardHeader><CardTitle className="text-navy">Applications en production</CardTitle></CardHeader>
           <CardContent>
             <table className="w-full text-sm">
               <thead><tr className="border-b bg-gray-50"><th className="p-2 text-left text-gray-500">Nom</th><th className="p-2 text-left text-gray-500">Éditeur</th><th className="p-2 text-left text-gray-500">Description</th></tr></thead>
               <tbody>
-                {sub.applications.map((app: any, i: number) => (
+                {sub!.applications!.map((app: any, i: number) => (
                   <tr key={app.id} className={cn('border-b', i % 2 === 1 && 'bg-gray-50/50')}>
                     <td className="p-2 font-medium">{app.nom}</td>
                     <td className="p-2 text-gray-500">{app.editeur || '—'}</td>
@@ -185,14 +185,14 @@ export function InstitutionProfilePage() {
       )}
 
       {/* Flux */}
-      {sub?.fluxExistants?.length > 0 && (
+      {(sub?.fluxExistants?.length ?? 0) > 0 && (
         <Card>
           <CardHeader><CardTitle className="text-navy">Flux de données</CardTitle></CardHeader>
           <CardContent>
             <table className="w-full text-sm">
               <thead><tr className="border-b bg-gray-50"><th className="p-2 text-left text-gray-500">Source</th><th className="p-2 text-left text-gray-500">Destination</th><th className="p-2 text-left text-gray-500">Données</th><th className="p-2 text-left text-gray-500">Mode</th></tr></thead>
               <tbody>
-                {sub.fluxExistants.map((f: any, i: number) => (
+                {sub!.fluxExistants!.map((f: any, i: number) => (
                   <tr key={f.id} className={cn('border-b', i % 2 === 1 && 'bg-gray-50/50')}>
                     <td className="p-2 font-medium">{f.source}</td>
                     <td className="p-2">{f.destination}</td>
@@ -207,14 +207,14 @@ export function InstitutionProfilePage() {
       )}
 
       {/* Cas d'usage déclarés — P.6 liaison MVP */}
-      {sub?.casUsage?.length > 0 && (
+      {(sub?.casUsage?.length ?? 0) > 0 && (
         <Card>
           <CardHeader><CardTitle className="text-navy">Cas d'usage déclarés</CardTitle></CardHeader>
           <CardContent>
             <table className="w-full text-sm">
               <thead><tr className="border-b bg-gray-50"><th className="p-2 text-left text-gray-500">Titre</th><th className="p-2 text-left text-gray-500">Acteurs</th><th className="p-2 text-center text-gray-500">Priorité</th><th className="p-2 text-left text-gray-500">Lié au MVP</th></tr></thead>
               <tbody>
-                {sub.casUsage.map((cu: any) => (
+                {sub!.casUsage!.map((cu: any) => (
                   <tr key={cu.id} className="border-b">
                     <td className="p-2 font-medium">{cu.titre}</td>
                     <td className="p-2 text-xs text-gray-500">{cu.acteurs || '—'}</td>

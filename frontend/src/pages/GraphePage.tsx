@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,7 +8,6 @@ import { api } from '@/services/api';
 import { useToast } from '@/components/ui/use-toast';
 import { useAuthStore } from '@/store/auth';
 import { Loader2, X, Save } from 'lucide-react';
-import { cn } from '@/lib/utils';
 import * as d3 from 'd3';
 
 const MODE_COLORS: Record<string, string> = {
@@ -46,7 +45,7 @@ export function GraphePage() {
   const [selectedNode, setSelectedNode] = useState<GNode | null>(null);
   const [selectedLink, setSelectedLink] = useState<GLink | null>(null);
   const [editForm, setEditForm] = useState<any>({});
-  const [dimensions, setDimensions] = useState({ width: 900, height: 600 });
+  const [, setDimensions] = useState({ width: 900, height: 600 });
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { user } = useAuthStore();
@@ -106,7 +105,7 @@ export function GraphePage() {
     const node = g.append('g').selectAll('g').data(nodes).join('g')
       .style('cursor', 'pointer')
       .on('click', (_e, d) => { setSelectedNode(d); setSelectedLink(null); })
-      .call(d3.drag<SVGGElement, GNode>()
+      .call(d3.drag<any, GNode>()
         .on('start', (event, d) => { if (!event.active) simulation.alphaTarget(0.3).restart(); d.fx = d.x; d.fy = d.y; })
         .on('drag', (event, d) => { d.fx = event.x; d.fy = event.y; })
         .on('end', (event, d) => { if (!event.active) simulation.alphaTarget(0); d.fx = null; d.fy = null; })

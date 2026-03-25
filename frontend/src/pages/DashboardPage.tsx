@@ -10,12 +10,10 @@ import {
   FileText,
   Building2,
   CheckCircle,
-  Clock,
   BarChart3,
   ArrowRight,
   Plus,
   TrendingUp,
-  Users,
 } from 'lucide-react';
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 
@@ -56,7 +54,7 @@ export function DashboardPage() {
     queryFn: () => submissionsApi.getAll({ limit: 10 }),
   });
 
-  const { data: allInstitutions } = useQuery({
+  useQuery({
     queryKey: ['institutions-all-dashboard'],
     queryFn: () => institutionsApi.getAll({ limit: 500 }),
     enabled: isAdmin,

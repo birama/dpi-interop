@@ -39,7 +39,8 @@ export function FinancementsPage() {
   const { data: allCUData } = useQuery({ queryKey: ['all-cu'], queryFn: () => api.get('/cas-usage-mvp') });
 
   // Mutations
-  const mut = (fn: any, keys: string[], msg: string) => useMutation({ mutationFn: fn, onSuccess: () => { inv(keys); setModal(null); toast({ title: msg }); }, onError: (e: any) => toast({ variant: 'destructive', title: 'Erreur', description: e?.response?.data?.error || '' }) });
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const mut = <T = any,>(fn: (vars: T) => Promise<any>, keys: string[], msg: string) => useMutation<any, any, T>({ mutationFn: fn, onSuccess: () => { inv(keys); setModal(null); toast({ title: msg }); }, onError: (e: any) => toast({ variant: 'destructive', title: 'Erreur', description: e?.response?.data?.error || '' }) });
 
   const createPTF = mut((d: any) => api.post('/ptf', d), ['ptf'], 'PTF créé');
   const updatePTF = mut(({ id, d }: any) => api.patch(`/ptf/${id}`, d), ['ptf'], 'PTF modifié');

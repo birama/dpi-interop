@@ -23,6 +23,8 @@ export interface LoginRequest {
 export interface LoginResponse {
   user: User;
   token: string;
+  refreshToken?: string;
+  mustChangePassword?: boolean;
 }
 
 // ============================================================================
@@ -71,10 +73,22 @@ export interface Submission {
   status: SubmissionStatus;
   currentStep: number;
 
+  // Section A — Gouvernance
+  dataOwnerNom?: string;
+  dataOwnerFonction?: string;
+  dataOwnerEmail?: string;
+  dataOwnerTelephone?: string;
+  dataStewardNom?: string;
+  dataStewardProfil?: string;
+  dataStewardFonction?: string;
+  dataStewardEmail?: string;
+  dataStewardTelephone?: string;
+
   // Section B
   applications?: Application[];
   registres?: Registre[];
   infrastructure?: InfrastructureData;
+  infrastructureItems?: any[];
 
   // Section C
   donneesConsommer?: DonneeConsommer[];
@@ -97,6 +111,10 @@ export interface Submission {
   // Section F
   attentes?: string;
   contributions?: string;
+  niveauxInterop?: any[];
+  dictionnaireDonnees?: any[];
+  conformitePrincipes?: any[];
+  preparationDecret?: any[];
 
   // Metadata
   submittedAt?: string;

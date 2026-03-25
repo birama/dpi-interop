@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { submissionsApi, institutionsApi, api } from '@/services/api';
 import { formatDate } from '@/lib/utils';
-import { Loader2, AlertTriangle, Building2, FileCheck, Server, Database, ArrowRight } from 'lucide-react';
+import { AlertTriangle, Building2, FileCheck, Server, Database } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 

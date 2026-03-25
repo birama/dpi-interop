@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { api } from '@/services/api';
-import { Loader2, CheckCircle, Circle, AlertTriangle, Clock, Server, Wifi } from 'lucide-react';
+import { Loader2, CheckCircle, Circle, AlertTriangle, Clock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const JALONS = [
