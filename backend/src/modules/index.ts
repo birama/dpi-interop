@@ -111,7 +111,7 @@ async function grapheRoutes(app: FastifyInstance) {
         if (f.source && f.destination && f.source !== f.destination) {
           ensureNode(f.source);
           ensureNode(f.destination);
-          links.push({ source: f.source, target: f.destination, donnee: f.donnee || '', mode: f.mode || 'Manuel', frequence: f.frequence || '' });
+          links.push({ id: f.id, type: 'flux', source: f.source, target: f.destination, donnee: f.donnee || '', mode: f.mode || 'Manuel', frequence: f.frequence || '' });
         }
       });
 
@@ -140,6 +140,8 @@ async function grapheRoutes(app: FastifyInstance) {
       else if (cu.statutImpl === 'IDENTIFIE' && cu.code.startsWith('HIST-')) mode = cu.observations?.includes('Manuel') ? 'Manuel' : 'Fichier (CSV/Excel)';
 
       links.push({
+        id: cu.id,
+        type: 'casUsageMVP',
         source: cu.institutionSourceCode,
         target: cu.institutionCibleCode,
         donnee: cu.donneesEchangees || cu.titre,
@@ -149,6 +151,27 @@ async function grapheRoutes(app: FastifyInstance) {
     });
 
     return reply.send({ nodes: Array.from(nodesMap.values()), links });
+  });
+
+  // PATCH flux — modifier un lien du graphe
+  app.patch('/flux/:id', { onRequest: [app.authenticateAdmin] }, async (req: any, reply: any) => {
+    const { id } = req.params;
+    const { donnee, mode, frequence, type } = req.body as any;
+
+    if (type === 'casUsageMVP') {
+      const cu = await app.prisma.casUsageMVP.update({
+        where: { id },
+        data: { ...(donnee !== undefined && { donneesEchangees: donnee }), ...(mode !== undefined && { observations: `Mode: ${mode}` }) },
+      });
+      return reply.send(cu);
+    }
+
+    // Default: FluxExistant
+    const flux = await app.prisma.fluxExistant.update({
+      where: { id },
+      data: { ...(donnee !== undefined && { donnee }), ...(mode !== undefined && { mode }), ...(frequence !== undefined && { frequence }) },
+    });
+    return reply.send(flux);
   });
 }
 

@@ -1,8 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { api } from '@/services/api';
-import { Loader2, X } from 'lucide-react';
+import { useToast } from '@/components/ui/use-toast';
+import { useAuthStore } from '@/store/auth';
+import { Loader2, X, Save } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import * as d3 from 'd3';
 
@@ -40,7 +45,12 @@ export function GraphePage() {
   const svgRef = useRef<SVGSVGElement>(null);
   const [selectedNode, setSelectedNode] = useState<GNode | null>(null);
   const [selectedLink, setSelectedLink] = useState<GLink | null>(null);
+  const [editForm, setEditForm] = useState<any>({});
   const [dimensions, setDimensions] = useState({ width: 900, height: 600 });
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const { user } = useAuthStore();
+  const isAdmin = user?.role === 'ADMIN';
 
   const { data, isLoading } = useQuery({
     queryKey: ['graphe-data'],
@@ -90,7 +100,7 @@ export function GraphePage() {
       .attr('stroke-width', 1.5)
       .attr('stroke-opacity', 0.6)
       .style('cursor', 'pointer')
-      .on('click', (_e, d) => { setSelectedLink(d); setSelectedNode(null); });
+      .on('click', (_e, d) => { setSelectedLink(d); setSelectedNode(null); setEditForm({ donnee: d.donnee, mode: d.mode, frequence: d.frequence }); });
 
     // Nodes
     const node = g.append('g').selectAll('g').data(nodes).join('g')
@@ -209,6 +219,44 @@ export function GraphePage() {
                 <p><span className="font-medium">Données:</span> {selectedLink.donnee || '—'}</p>
                 <p><span className="font-medium">Mode:</span> <span className="px-1.5 py-0.5 rounded" style={{ backgroundColor: getModeColor(selectedLink.mode) + '20', color: getModeColor(selectedLink.mode) }}>{selectedLink.mode}</span></p>
                 <p><span className="font-medium">Fréquence:</span> {selectedLink.frequence || '—'}</p>
+                {isAdmin && (
+                  <Button size="sm" variant="outline" className="w-full h-6 text-[10px] mt-2" onClick={() => setEditForm({ ...editForm, editing: true })}>
+                    Modifier ce flux
+                  </Button>
+                )}
+                {isAdmin && editForm.editing && (
+                  <div className="border-t pt-2 mt-2 space-y-2">
+                    <div><Label className="text-[10px]">Données</Label><Input value={editForm.donnee ?? ''} onChange={e => setEditForm({ ...editForm, donnee: e.target.value })} className="h-7 text-xs" /></div>
+                    <div><Label className="text-[10px]">Mode</Label>
+                      <select value={editForm.mode ?? ''} onChange={e => setEditForm({ ...editForm, mode: e.target.value })} className="w-full h-7 px-2 text-xs border rounded-md">
+                        <option value="Manuel">Manuel</option><option value="Courrier">Courrier</option><option value="Email">Email</option>
+                        <option value="Fichier (CSV/Excel)">Fichier (CSV/Excel)</option><option value="API REST">API REST</option>
+                        <option value="Web Service SOAP">Web Service SOAP</option><option value="X-Road">X-Road</option><option value="Autre">Autre</option>
+                      </select>
+                    </div>
+                    <div><Label className="text-[10px]">Fréquence</Label>
+                      <select value={editForm.frequence ?? ''} onChange={e => setEditForm({ ...editForm, frequence: e.target.value })} className="w-full h-7 px-2 text-xs border rounded-md">
+                        <option value="">—</option><option value="Temps réel">Temps réel</option><option value="Quotidien">Quotidien</option>
+                        <option value="Hebdomadaire">Hebdomadaire</option><option value="Mensuel">Mensuel</option><option value="Trimestriel">Trimestriel</option>
+                        <option value="Annuel">Annuel</option><option value="À la demande">À la demande</option>
+                      </select>
+                    </div>
+                    <div className="flex space-x-1">
+                      <Button size="sm" className="flex-1 bg-teal hover:bg-teal-dark h-6 text-[10px]" onClick={async () => {
+                        try {
+                          const linkId = (selectedLink as any).id;
+                          const linkType = (selectedLink as any).type || 'flux';
+                          if (!linkId) { toast({ variant: 'destructive', title: 'Ce flux ne peut pas être modifié' }); return; }
+                          await api.patch(`/graphe/flux/${linkId}`, { type: linkType, donnee: editForm.donnee, mode: editForm.mode, frequence: editForm.frequence });
+                          queryClient.invalidateQueries({ queryKey: ['graphe-data'] });
+                          setEditForm({});
+                          toast({ title: 'Flux mis à jour' });
+                        } catch { toast({ variant: 'destructive', title: 'Erreur' }); }
+                      }}><Save className="w-3 h-3 mr-1" /> Sauver</Button>
+                      <Button size="sm" variant="outline" className="h-6 text-[10px]" onClick={() => setEditForm({})}>Annuler</Button>
+                    </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
           )}
