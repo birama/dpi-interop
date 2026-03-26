@@ -10,8 +10,6 @@ services:
       POSTGRES_DB: ${POSTGRES_DB:-questionnaire_interop}
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    networks:
-      - internal
 
   backend:
     build:
@@ -22,7 +20,7 @@ services:
       NODE_ENV: production
       HOST: 0.0.0.0
       PORT: 3000
-      DATABASE_URL: postgresql://${POSTGRES_USER:-ejokkoo}:${POSTGRES_PASSWORD:-ejokkoo2026}@db:5432/${POSTGRES_DB:-questionnaire_interop}?schema=public
+      DATABASE_URL: ${DATABASE_URL:-postgresql://${POSTGRES_USER:-ejokkoo}:${POSTGRES_PASSWORD:-ejokkoo2026}@db:5432/${POSTGRES_DB:-questionnaire_interop}?schema=public}
       JWT_SECRET: ${JWT_SECRET:-f3c9b8d2e6a4f91c7b5e2d8a9c1f6e3b7a4c9d2e8f1b6c3d5a9e7f2c1b8d6e4}
       JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
       CORS_ORIGIN: ${CORS_ORIGIN:-*}
@@ -31,8 +29,12 @@ services:
       LOG_LEVEL: info
     depends_on:
       - db
-    networks:
-      - internal
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 5s
+      start_period: 60s
+      retries: 5
 
   frontend:
     build:
@@ -43,14 +45,10 @@ services:
         VITE_API_URL: ${VITE_API_URL:-}
     restart: always
     ports:
-      - "${APP_PORT:-83}:80"
+      - "${APP_PORT:-80}:80"
     depends_on:
-      - backend
-    networks:
-      - internal
-
-networks:
-  internal:
+      backend:
+        condition: service_healthy
 
 volumes:
   postgres_data:

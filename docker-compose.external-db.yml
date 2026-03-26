@@ -11,7 +11,7 @@ services:
       HOST: 0.0.0.0
       PORT: 3000
       DATABASE_URL: ${DATABASE_URL}
-      JWT_SECRET: ${JWT_SECRET}
+      JWT_SECRET: ${JWT_SECRET:-change-me-production-64-chars-minimum-security-key-here}
       JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
       CORS_ORIGIN: ${CORS_ORIGIN:-*}
       RATE_LIMIT_MAX: 200
@@ -21,10 +21,8 @@ services:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/health"]
       interval: 30s
       timeout: 5s
-      start_period: 40s
-      retries: 3
-    networks:
-      - internal
+      start_period: 60s
+      retries: 5
 
   frontend:
     build:
@@ -39,8 +37,3 @@ services:
     depends_on:
       backend:
         condition: service_healthy
-    networks:
-      - internal
-
-networks:
-  internal:
