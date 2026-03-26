@@ -27,7 +27,7 @@ services:
       NODE_ENV: production
       HOST: 0.0.0.0
       PORT: 3000
-      DATABASE_URL: postgresql://${POSTGRES_USER:-ejokkoo}:${POSTGRES_PASSWORD:-ejokkoo2026}@db:5432/${POSTGRES_DB:-questionnaire_interop}?schema=public
+      DATABASE_URL: ${DATABASE_URL:-postgresql://${POSTGRES_USER:-ejokkoo}:${POSTGRES_PASSWORD:-ejokkoo2026}@db:5432/${POSTGRES_DB:-questionnaire_interop}?schema=public}
       JWT_SECRET: ${JWT_SECRET:-change-me-in-production-64-chars-minimum-security}
       JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
       CORS_ORIGIN: ${CORS_ORIGIN:-*}
