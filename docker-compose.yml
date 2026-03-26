@@ -1,23 +1,6 @@
 version: '3.8'
 
 services:
-  db:
-    image: postgres:15-alpine
-    restart: always
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER:-ejokkoo}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-ejokkoo2026}
-      POSTGRES_DB: ${POSTGRES_DB:-questionnaire_interop}
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-ejokkoo}"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    networks:
-      - internal
-
   backend:
     build:
       context: ./backend
@@ -34,9 +17,6 @@ services:
       RATE_LIMIT_MAX: 200
       RATE_LIMIT_TIMEWINDOW: 60000
       LOG_LEVEL: info
-    depends_on:
-      db:
-        condition: service_healthy
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/health"]
       interval: 30s
@@ -61,9 +41,6 @@ services:
         condition: service_healthy
     networks:
       - internal
-
-volumes:
-  postgres_data:
 
 networks:
   internal:
