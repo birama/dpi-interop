@@ -12,11 +12,6 @@ services:
       - postgres_data:/var/lib/postgresql/data
     networks:
       - internal
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-ejokkoo}"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
 
   backend:
     build:
@@ -35,16 +30,9 @@ services:
       RATE_LIMIT_TIMEWINDOW: 60000
       LOG_LEVEL: info
     depends_on:
-      db:
-        condition: service_healthy
+      - db
     networks:
       - internal
-    healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:3000/health || exit 1"]
-      interval: 30s
-      timeout: 5s
-      start_period: 40s
-      retries: 3
 
   frontend:
     build:
@@ -57,8 +45,7 @@ services:
     ports:
       - "${APP_PORT:-80}:80"
     depends_on:
-      backend:
-        condition: service_healthy
+      - backend
     networks:
       - internal
 
