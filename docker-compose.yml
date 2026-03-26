@@ -1,6 +1,23 @@
 version: '3.8'
 
 services:
+  db:
+    image: postgres:15
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-ejokkoo}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-ejokkoo2026}
+      POSTGRES_DB: ${POSTGRES_DB:-questionnaire_interop}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - internal
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-ejokkoo}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   backend:
     build:
       context: ./backend
@@ -10,21 +27,24 @@ services:
       NODE_ENV: production
       HOST: 0.0.0.0
       PORT: 3000
-      DATABASE_URL: ${DATABASE_URL:-postgresql://${POSTGRES_USER:-ejokkoo}:${POSTGRES_PASSWORD:-ejokkoo2026}@db:5432/${POSTGRES_DB:-questionnaire_interop}?schema=public}
-      JWT_SECRET: ${JWT_SECRET:-change-me-in-production-64-chars-minimum-security}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-ejokkoo}:${POSTGRES_PASSWORD:-ejokkoo2026}@db:5432/${POSTGRES_DB:-questionnaire_interop}?schema=public
+      JWT_SECRET: ${JWT_SECRET:-f3c9b8d2e6a4f91c7b5e2d8a9c1f6e3b7a4c9d2e8f1b6c3d5a9e7f2c1b8d6e4}
       JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
       CORS_ORIGIN: ${CORS_ORIGIN:-*}
       RATE_LIMIT_MAX: 200
       RATE_LIMIT_TIMEWINDOW: 60000
       LOG_LEVEL: info
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - internal
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/health"]
+      test: ["CMD-SHELL", "curl -f http://localhost:3000/health || exit 1"]
       interval: 30s
       timeout: 5s
       start_period: 40s
       retries: 3
-    networks:
-      - internal
 
   frontend:
     build:
@@ -44,3 +64,6 @@ services:
 
 networks:
   internal:
+
+volumes:
+  postgres_data:
