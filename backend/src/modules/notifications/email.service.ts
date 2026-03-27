@@ -30,19 +30,19 @@ export class EmailService {
     if (!this.transporter) { this.app.log.warn('Email non envoyé (SMTP non configuré)'); return false; }
 
     await this.transporter.sendMail({
-      from: `"SENUM — e-jokkoo" <${this.from}>`,
+      from: `"SENUM — PINS" <${this.from}>`,
       to,
-      subject: 'Invitation — Questionnaire d\'Interopérabilité e-jokkoo',
+      subject: 'Invitation — Questionnaire d\'Interopérabilité PINS',
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <div style="background: #0C1F3A; padding: 20px; text-align: center;">
-            <h1 style="color: #D4A820; margin: 0;">e-jokkoo</h1>
+            <h1 style="color: #D4A820; margin: 0;">PINS</h1>
             <p style="color: #ccc; margin: 5px 0 0;">Plateforme Nationale d'Interopérabilité</p>
           </div>
           <div style="padding: 30px; background: #f8f9fa;">
             <p>Bonjour,</p>
             <p>Vous êtes invité(e) à remplir le <strong>Questionnaire d'Interopérabilité</strong> pour <strong>${institutionNom}</strong>.</p>
-            <p>Ce questionnaire permet de cartographier vos systèmes d'information, vos besoins en échange de données et votre maturité numérique dans le cadre du projet e-jokkoo.</p>
+            <p>Ce questionnaire permet de cartographier vos systèmes d'information, vos besoins en échange de données et votre maturité numérique dans le cadre du projet PINS.</p>
             <div style="background: white; padding: 15px; border-radius: 8px; margin: 20px 0;">
               <p style="margin: 0;"><strong>Identifiants :</strong></p>
               <p style="margin: 5px 0;">Email : <code>${email}</code></p>
@@ -66,13 +66,13 @@ export class EmailService {
     if (!this.transporter) return false;
 
     await this.transporter.sendMail({
-      from: `"SENUM — e-jokkoo" <${this.from}>`,
+      from: `"SENUM — PINS" <${this.from}>`,
       to,
-      subject: 'Questionnaire soumis avec succès — e-jokkoo',
+      subject: 'Questionnaire soumis avec succès — PINS',
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <div style="background: #0C1F3A; padding: 20px; text-align: center;">
-            <h1 style="color: #D4A820; margin: 0;">e-jokkoo</h1>
+            <h1 style="color: #D4A820; margin: 0;">PINS</h1>
           </div>
           <div style="padding: 30px; background: #f8f9fa;">
             <p>Bonjour,</p>
@@ -90,13 +90,13 @@ export class EmailService {
     if (!this.transporter) return false;
 
     await this.transporter.sendMail({
-      from: `"SENUM — e-jokkoo" <${this.from}>`,
+      from: `"SENUM — PINS" <${this.from}>`,
       to,
       subject: 'Relance — Questionnaire d\'Interopérabilité en attente',
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <div style="background: #0C1F3A; padding: 20px; text-align: center;">
-            <h1 style="color: #D4A820; margin: 0;">e-jokkoo</h1>
+            <h1 style="color: #D4A820; margin: 0;">PINS</h1>
           </div>
           <div style="padding: 30px; background: #f8f9fa;">
             <p>Bonjour,</p>

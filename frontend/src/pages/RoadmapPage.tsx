@@ -100,7 +100,7 @@ export function RoadmapPage() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-bold text-navy">Roadmap MVP — Cas d'usage e-jokkoo</h1>
+          <h1 className="text-xl font-bold text-navy">Roadmap MVP — Cas d'usage PINS</h1>
           <p className="text-xs text-gray-500 mt-0.5">Glisser-déposer les cas d'usage entre phases pour les réorganiser</p>
         </div>
         <Button size="sm" onClick={() => { setShowPhaseForm(true); setEditingPhase(null); setPhaseForm({ ...EMPTY_PHASE }); }} className="bg-teal hover:bg-teal-dark">

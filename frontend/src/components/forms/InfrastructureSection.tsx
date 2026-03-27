@@ -53,7 +53,7 @@ const DOMAINS = [
       'Bus d\'intégration / ESB',
       'Format d\'échange (JSON, XML, CSV)',
       'Protocoles d\'échange (REST, SOAP, gRPC)',
-      'Expérience X-Road / e-jokkoo',
+      'Expérience X-Road / PINS',
     ],
   },
   {

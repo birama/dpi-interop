@@ -19,7 +19,7 @@ const DOMAINE_COLORS: Record<string, { border: string }> = {
   'Finances Publiques': { border: 'border-l-success' },
   'Protection Sociale': { border: 'border-l-blue-500' },
 };
-const STATUT_EJOKKOO: Record<string, string> = {
+const STATUT_PINS: Record<string, string> = {
   'Connecté': 'bg-success/10 text-success', 'En cours': 'bg-teal-50 text-teal', 'En cours (MVP 1.0)': 'bg-teal-50 text-teal',
   'Planifié': 'bg-gold-50 text-gold', 'Non connecté': 'bg-gray-100 text-gray-500',
 };
@@ -71,7 +71,7 @@ export function RegistresNationauxPage() {
       <div className="grid grid-cols-4 gap-3">
         <Card className="border-l-4 border-l-navy"><CardContent className="p-3"><p className="text-[10px] text-gray-500">Registres</p><p className="text-lg font-bold text-navy">{registres.length}</p></CardContent></Card>
         <Card className="border-l-4 border-l-teal"><CardContent className="p-3"><p className="text-[10px] text-gray-500">Avec API</p><p className="text-lg font-bold text-teal">{withAPI}</p></CardContent></Card>
-        <Card className="border-l-4 border-l-success"><CardContent className="p-3"><p className="text-[10px] text-gray-500">e-jokkoo</p><p className="text-lg font-bold text-success">{connected}</p></CardContent></Card>
+        <Card className="border-l-4 border-l-success"><CardContent className="p-3"><p className="text-[10px] text-gray-500">PINS</p><p className="text-lg font-bold text-success">{connected}</p></CardContent></Card>
         <Card className="border-l-4 border-l-gold"><CardContent className="p-3"><p className="text-[10px] text-gray-500">Domaines</p><p className="text-lg font-bold text-gold">{domaines.length}</p></CardContent></Card>
       </div>
 
@@ -101,7 +101,7 @@ export function RegistresNationauxPage() {
                     </div>
                     <div className="flex flex-wrap gap-1 mt-2">
                       {reg.statutNumerisation && <span className={cn('px-1.5 py-0.5 rounded text-[9px] font-medium', STATUT_NUM[reg.statutNumerisation] || 'bg-gray-100 text-gray-500')}>{reg.statutNumerisation}</span>}
-                      {reg.statutEjokkoo && <span className={cn('px-1.5 py-0.5 rounded text-[9px] font-medium', STATUT_EJOKKOO[reg.statutEjokkoo] || 'bg-gray-100 text-gray-500')}>e-jokkoo: {reg.statutEjokkoo}</span>}
+                      {reg.statutEjokkoo && <span className={cn('px-1.5 py-0.5 rounded text-[9px] font-medium', STATUT_PINS[reg.statutEjokkoo] || 'bg-gray-100 text-gray-500')}>PINS: {reg.statutEjokkoo}</span>}
                       <span className={cn('px-1.5 py-0.5 rounded text-[9px] font-medium', reg.disposeAPI ? 'bg-teal-50 text-teal' : 'bg-red-50 text-red-500')}>API: {reg.disposeAPI ? 'Oui' : 'Non'}</span>
                     </div>
                     {reg.identifiantPivot && <p className="text-[10px] text-gray-500 mt-1.5">Pivot : <span className="font-medium text-navy">{reg.identifiantPivot}</span></p>}
@@ -151,7 +151,7 @@ export function RegistresNationauxPage() {
               </div>
               <div className="grid grid-cols-3 gap-3">
                 <div><Label className="text-xs">Statut numérisation</Label><select value={form.statutNumerisation || ''} onChange={e => setForm({ ...form, statutNumerisation: e.target.value })} className="w-full h-8 px-2 text-sm border rounded-md"><option value="">—</option><option value="Opérationnel">Opérationnel</option><option value="En cours">En cours</option><option value="En déploiement">En déploiement</option><option value="Planifié">Planifié</option></select></div>
-                <div><Label className="text-xs">Statut e-jokkoo</Label><select value={form.statutEjokkoo || ''} onChange={e => setForm({ ...form, statutEjokkoo: e.target.value })} className="w-full h-8 px-2 text-sm border rounded-md"><option value="">—</option><option value="Connecté">Connecté</option><option value="En cours">En cours</option><option value="En cours (MVP 1.0)">En cours (MVP 1.0)</option><option value="Planifié">Planifié</option><option value="Non connecté">Non connecté</option></select></div>
+                <div><Label className="text-xs">Statut PINS</Label><select value={form.statutEjokkoo || ''} onChange={e => setForm({ ...form, statutEjokkoo: e.target.value })} className="w-full h-8 px-2 text-sm border rounded-md"><option value="">—</option><option value="Connecté">Connecté</option><option value="En cours">En cours</option><option value="En cours (MVP 1.0)">En cours (MVP 1.0)</option><option value="Planifié">Planifié</option><option value="Non connecté">Non connecté</option></select></div>
                 <div className="flex items-end pb-1"><label className="flex items-center space-x-1 text-xs"><input type="checkbox" checked={form.disposeAPI || false} onChange={e => setForm({ ...form, disposeAPI: e.target.checked })} className="rounded" /><span>API disponible</span></label></div>
               </div>
               <div><Label className="text-xs">Protocole API</Label><Input value={form.protocoleAPI || ''} onChange={e => setForm({ ...form, protocoleAPI: e.target.value })} className="h-8 text-sm" /></div>

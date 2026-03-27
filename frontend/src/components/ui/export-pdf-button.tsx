@@ -30,7 +30,7 @@ export function ExportPDFButton({ targetId, filename = 'export', title }: Export
       pdf.rect(0, 0, pageWidth, 15, 'F');
       pdf.setTextColor(212, 168, 32); // gold
       pdf.setFontSize(10);
-      pdf.text('MCTN / SENUM — Plateforme d\'Interopérabilité e-jokkoo', pageWidth / 2, 10, { align: 'center' });
+      pdf.text('MCTN / SENUM — Plateforme d\'Interopérabilité PINS', pageWidth / 2, 10, { align: 'center' });
 
       // Image
       const imgWidth = pageWidth - 20;

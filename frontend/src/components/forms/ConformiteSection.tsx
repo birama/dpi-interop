@@ -47,7 +47,7 @@ const CAT_LABELS: Record<string, string> = {
 };
 
 const DECRET_QUESTIONS = [
-  { chapitre: 'CHAPITRE_2', question: 'Êtes-vous prêt à partager vos données de référence via e-jokkoo ?', options: ['Prêt', 'En préparation', 'Non prêt'] },
+  { chapitre: 'CHAPITRE_2', question: 'Êtes-vous prêt à partager vos données de référence via PINS ?', options: ['Prêt', 'En préparation', 'Non prêt'] },
   { chapitre: 'CHAPITRE_2', question: 'Respectez-vous les exigences de sécurité pour l\'échange de données ?', options: ['Oui', 'Partiellement', 'Non'] },
   { chapitre: 'CHAPITRE_2', question: 'Avez-vous identifié vos services consommateurs et fournisseurs ?', options: ['Oui', 'En cours', 'Non'] },
   { chapitre: 'CHAPITRE_3', question: 'Pouvez-vous désigner un représentant au Comité National d\'Interopérabilité (CNI) ?', options: ['Oui', 'À confirmer'] },

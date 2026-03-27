@@ -40,7 +40,7 @@ async function main() {
           donneesVisees: 'Actes d\'état civil (naissances, décès), données biométriques CNI, annulation CNI personnes décédées',
           statut: 'ACTIVE',
           dateSignatureA: new Date('2025-07-01'), dateSignatureB: new Date('2025-07-01'), dateActivation: new Date('2025-07-01'),
-          observations: 'Première convention d\'interopérabilité signée entre deux administrations. Authentification automatique des actes pour les demandes de CNI, échange automatisé naissances/décès, annulation CNI des personnes décédées. Fonctionne en bilatéral (hors e-jokkoo pour le moment).',
+          observations: 'Première convention d\'interopérabilité signée entre deux administrations. Authentification automatique des actes pour les demandes de CNI, échange automatisé naissances/décès, annulation CNI des personnes décédées. Fonctionne en bilatéral (hors PINS pour le moment).',
         },
       });
       console.log('✅ Convention ANEC-DAF créée');

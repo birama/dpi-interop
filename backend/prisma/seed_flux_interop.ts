@@ -199,7 +199,7 @@ async function main() {
         source: 'Template_Identification_Flux_Interop_COMPLET.xlsx',
       },
       forces: 'Cartographie exhaustive des flux existants et planifiés',
-      attentes: 'Mise en œuvre progressive via plateforme e-jokkoo (X-Road)',
+      attentes: 'Mise en œuvre progressive via plateforme PINS (X-Road)',
     },
   });
 

@@ -95,7 +95,7 @@ export function DashboardLayout() {
             </div>
             {!sidebarCollapsed && (
               <div className="flex flex-col leading-tight">
-                <span className="font-semibold text-gold text-sm whitespace-nowrap">e-jokkoo</span>
+                <span className="font-semibold text-gold text-sm whitespace-nowrap">PINS</span>
                 <span className="text-[10px] text-gray-400 whitespace-nowrap">Interopérabilité</span>
               </div>
             )}
@@ -231,7 +231,7 @@ export function DashboardLayout() {
 
         {/* Footer */}
         <footer className="py-4 px-6 border-t border-gray-200 text-center text-sm text-gray-500">
-          SENUM / MCTN — Plateforme Nationale d'Interopérabilité e-jokkoo — Sénégal
+          SENUM / MCTN — Plateforme Nationale d'Interopérabilité PINS — Sénégal
         </footer>
       </div>
     </div>

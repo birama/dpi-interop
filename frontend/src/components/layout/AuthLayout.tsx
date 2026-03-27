@@ -16,7 +16,7 @@ export function AuthLayout() {
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-teal text-white mb-4">
             <span className="text-3xl font-bold">e</span>
           </div>
-          <h1 className="text-2xl font-bold text-gold">e-jokkoo</h1>
+          <h1 className="text-2xl font-bold text-gold">PINS</h1>
           <p className="text-gray-300 mt-1">Plateforme Nationale d'Interopérabilité</p>
           <p className="text-gray-400 text-sm mt-2">Questionnaire de collecte des besoins</p>
         </div>

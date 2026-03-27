@@ -1,6 +1,6 @@
 #!/bin/bash
 # ============================================================================
-# Script de déploiement — e-jokkoo
+# Script de déploiement — PINS
 # Usage: ./deploy.sh [server_ip]
 # ============================================================================
 
@@ -8,10 +8,10 @@ set -e
 
 SERVER=${1:-192.168.40.128}
 USER=${2:-root}
-REMOTE_DIR="/opt/ejokkoo"
+REMOTE_DIR="/opt/pins"
 ENV_FILE=".env.production"
 
-echo "🚀 Déploiement e-jokkoo sur $SERVER"
+echo "🚀 Déploiement PINS sur $SERVER"
 echo "============================================"
 
 # Vérifier que le fichier .env.production existe
@@ -44,7 +44,7 @@ sleep 15
 
 # 6. Vérification
 echo "✅ Vérification..."
-ssh $USER@$SERVER "docker ps --filter 'name=ejokkoo' --format '{{.Names}}: {{.Status}}'"
+ssh $USER@$SERVER "docker ps --filter 'name=pins' --format '{{.Names}}: {{.Status}}'"
 
 STATUS=$(ssh $USER@$SERVER "curl -s http://localhost/api/health 2>/dev/null | grep -o '\"status\":\"ok\"'" || true)
 if [ -n "$STATUS" ]; then
@@ -55,7 +55,7 @@ if [ -n "$STATUS" ]; then
 else
     echo ""
     echo "⚠️  L'application ne répond pas encore. Vérifiez les logs :"
-    echo "   ssh $USER@$SERVER 'docker logs ejokkoo-api'"
+    echo "   ssh $USER@$SERVER 'docker logs pins-api'"
 fi
 
 echo ""

@@ -60,7 +60,7 @@ export function CockpitPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-navy">Cockpit DPI — Pilotage e-jokkoo</h1>
+        <h1 className="text-2xl font-bold text-navy">Cockpit DPI — Pilotage PINS</h1>
         <p className="text-gray-500 mt-1">Vue stratégique du projet d'interopérabilité</p>
       </div>
 

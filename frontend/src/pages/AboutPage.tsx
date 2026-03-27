@@ -12,7 +12,7 @@ export function AboutPage() {
           <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-teal text-white mb-6">
             <span className="text-4xl font-bold">e</span>
           </div>
-          <h1 className="text-4xl font-bold text-gold mb-4">e-jokkoo</h1>
+          <h1 className="text-4xl font-bold text-gold mb-4">PINS</h1>
           <p className="text-xl text-gray-300 max-w-3xl mx-auto">
             Plateforme Nationale d'Interopérabilité du Sénégal
           </p>
@@ -60,7 +60,7 @@ export function AboutPage() {
               </div>
               <h3 className="text-lg font-bold text-navy mb-2">Échange de Données</h3>
               <p className="text-sm text-gray-500">
-                Plateforme e-jokkoo basée sur X-Road pour l'échange sécurisé
+                Plateforme PINS basée sur X-Road pour l'échange sécurisé
                 et tracé de données entre administrations.
               </p>
               <div className="mt-4 text-xs text-teal font-medium">COUCHE FONDATION</div>
@@ -126,7 +126,7 @@ export function AboutPage() {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {[
-            { step: '1', title: 'Installation', desc: 'L\'institution installe un Security Server connecté au réseau e-jokkoo', color: 'teal' },
+            { step: '1', title: 'Installation', desc: 'L\'institution installe un Security Server connecté au réseau PINS', color: 'teal' },
             { step: '2', title: 'Publication', desc: 'Elle publie ses services de données (API) sur la plateforme centrale', color: 'gold' },
             { step: '3', title: 'Consommation', desc: 'Les autres institutions consomment ces services de manière sécurisée et tracée', color: 'success' },
           ].map((item) => (
@@ -161,7 +161,7 @@ export function AboutPage() {
         <div className="max-w-4xl mx-auto px-6 text-center">
           <h2 className="text-2xl font-bold text-gold mb-4">Participez au projet d'interopérabilité</h2>
           <p className="text-gray-300 mb-8">
-            Votre institution souhaite rejoindre la plateforme e-jokkoo ?
+            Votre institution souhaite rejoindre la plateforme PINS ?
             Remplissez le questionnaire de collecte des besoins.
           </p>
           <div className="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4">

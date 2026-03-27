@@ -5,8 +5,8 @@ services:
     image: postgres:15
     restart: always
     environment:
-      POSTGRES_USER: ${POSTGRES_USER:-ejokkoo}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-ejokkoo2026}
+      POSTGRES_USER: ${POSTGRES_USER:-pins}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-pins2026}
       POSTGRES_DB: ${POSTGRES_DB:-questionnaire_interop}
     volumes:
       - postgres_data:/var/lib/postgresql/data
@@ -20,7 +20,7 @@ services:
       NODE_ENV: production
       HOST: 0.0.0.0
       PORT: 3000
-      DATABASE_URL: ${DATABASE_URL:-postgresql://${POSTGRES_USER:-ejokkoo}:${POSTGRES_PASSWORD:-ejokkoo2026}@db:5432/${POSTGRES_DB:-questionnaire_interop}?schema=public}
+      DATABASE_URL: ${DATABASE_URL:-postgresql://${POSTGRES_USER:-pins}:${POSTGRES_PASSWORD:-pins2026}@db:5432/${POSTGRES_DB:-questionnaire_interop}?schema=public}
       JWT_SECRET: ${JWT_SECRET:-f3c9b8d2e6a4f91c7b5e2d8a9c1f6e3b7a4c9d2e8f1b6c3d5a9e7f2c1b8d6e4}
       JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
       CORS_ORIGIN: ${CORS_ORIGIN:-*}

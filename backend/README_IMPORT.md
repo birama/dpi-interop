@@ -262,7 +262,7 @@ if (!institution) {
    - Une soumission spéciale "template" est créée
    - Status : VALIDATED
    - Contient tous les flux de la cartographie Excel
-   - Sert de référence pour la plateforme e-jokkoo
+   - Sert de référence pour la plateforme PINS
 
 4. **Pas de duplication**
    - Si vous relancez l'import, les institutions existantes ne seront pas dupliquées
@@ -312,4 +312,4 @@ En cas de problème :
 
 ---
 
-**🇸🇳 Fait pour SENUM - Plateforme e-jokkoo (X-Road Sénégal)**
+**🇸🇳 Fait pour SENUM - Plateforme PINS (X-Road Sénégal)**

@@ -448,7 +448,7 @@ export function QuestionnairePage() {
               <div className="border border-gold/30 rounded-lg p-5 bg-gold-50/30">
                 <h3 className="font-semibold text-navy mb-1">Data Steward (Correspondant opérationnel interopérabilité)</h3>
                 <p className="text-xs text-gray-500 italic mb-4">
-                  Le Data Steward est le correspondant technique responsable de la qualité des données et de la mise à disposition via e-jokkoo.
+                  Le Data Steward est le correspondant technique responsable de la qualité des données et de la mise à disposition via PINS.
                 </p>
                 <div className="grid grid-cols-2 gap-4">
                   <div>

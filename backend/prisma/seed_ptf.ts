@@ -17,7 +17,7 @@ async function main() {
   const progJICA = await prisma.programme.upsert({
     where: { code: 'JICA-XROAD' },
     update: {},
-    create: { ptfId: jica.id, code: 'JICA-XROAD', nom: 'Projet de mise en place de la plateforme nationale d\'interopérabilité X-Road', partenaireTechnique: 'Accenture', composantsDPI: 'Interopérabilité (X-Road/e-jokkoo)', statut: 'ACTIF', dateDebut: new Date('2024-01-01') },
+    create: { ptfId: jica.id, code: 'JICA-XROAD', nom: 'Projet de mise en place de la plateforme nationale d\'interopérabilité X-Road', partenaireTechnique: 'Accenture', composantsDPI: 'Interopérabilité (X-Road/PINS)', statut: 'ACTIF', dateDebut: new Date('2024-01-01') },
   });
   console.log('✅ JICA + Programme JICA-XROAD');
 
@@ -91,7 +91,7 @@ async function main() {
   const mvp3 = await prisma.phaseMVP.upsert({
     where: { code: 'MVP-3.0' },
     update: {},
-    create: { code: 'MVP-3.0', nom: 'MVP 3.0 — Services aux citoyens', statut: 'PLANIFIE', dateDebutPrevue: new Date('2027-01-01'), livrablesCles: 'Portail citoyen e-jokkoo, Services de bout en bout' },
+    create: { code: 'MVP-3.0', nom: 'MVP 3.0 — Services aux citoyens', statut: 'PLANIFIE', dateDebutPrevue: new Date('2027-01-01'), livrablesCles: 'Portail citoyen PINS, Services de bout en bout' },
   });
   console.log('✅ Phases MVP 1.0, 2.0, 3.0');
 

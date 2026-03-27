@@ -70,7 +70,7 @@ export class WordExportService {
       new Paragraph({ children: [new TextRun({ text: 'Un Peuple – Un But – Une Foi', font: 'Tahoma', size: 20, italics: true, color: NAVY })], alignment: AlignmentType.CENTER }),
       new Paragraph({ spacing: { before: 600 } }),
       new Paragraph({ children: [new TextRun({ text: 'Ministère de la Communication, des Télécommunications et du Numérique', font: 'Tahoma', size: 22, color: TEAL })], alignment: AlignmentType.CENTER }),
-      new Paragraph({ children: [new TextRun({ text: 'Plateforme Nationale d\'Interopérabilité (e-jokkoo)', font: 'Tahoma', size: 22, color: TEAL })], alignment: AlignmentType.CENTER }),
+      new Paragraph({ children: [new TextRun({ text: 'Plateforme Nationale d\'Interopérabilité (PINS)', font: 'Tahoma', size: 22, color: TEAL })], alignment: AlignmentType.CENTER }),
       new Paragraph({ spacing: { before: 1000 } }),
       new Paragraph({ children: [new TextRun({ text: 'Recueil de l\'existant', font: 'Tahoma', size: 36, bold: true, color: NAVY })], alignment: AlignmentType.CENTER }),
       new Paragraph({ children: [new TextRun({ text: inst.nom, font: 'Tahoma', size: 28, bold: true, color: TEAL })], alignment: AlignmentType.CENTER }),
@@ -227,7 +227,7 @@ export class WordExportService {
         headers: {
           default: new Header({
             children: [new Paragraph({
-              children: [new TextRun({ text: 'MCTN / SENUM — Plateforme d\'Interopérabilité e-jokkoo', font: 'Tahoma', size: 16, color: TEAL })],
+              children: [new TextRun({ text: 'MCTN / SENUM — Plateforme d\'Interopérabilité PINS', font: 'Tahoma', size: 16, color: TEAL })],
               alignment: AlignmentType.RIGHT,
             })],
           }),
@@ -271,7 +271,7 @@ export class WordExportService {
       new Paragraph({ children: [new TextRun({ text: 'REPUBLIQUE DU SENEGAL', font: 'Tahoma', size: 24, color: NAVY })], alignment: AlignmentType.CENTER }),
       new Paragraph({ children: [new TextRun({ text: 'Un Peuple – Un But – Une Foi', font: 'Tahoma', size: 20, italics: true, color: NAVY })], alignment: AlignmentType.CENTER }),
       new Paragraph({ spacing: { before: 600 } }),
-      new Paragraph({ children: [new TextRun({ text: 'Plateforme Nationale d\'Interopérabilité (e-jokkoo)', font: 'Tahoma', size: 24, color: TEAL })], alignment: AlignmentType.CENTER }),
+      new Paragraph({ children: [new TextRun({ text: 'Plateforme Nationale d\'Interopérabilité (PINS)', font: 'Tahoma', size: 24, color: TEAL })], alignment: AlignmentType.CENTER }),
       new Paragraph({ spacing: { before: 800 } }),
       new Paragraph({ children: [new TextRun({ text: 'Compilation des réponses', font: 'Tahoma', size: 36, bold: true, color: NAVY })], alignment: AlignmentType.CENTER }),
       new Paragraph({ children: [new TextRun({ text: 'au questionnaire pré-atelier', font: 'Tahoma', size: 28, color: NAVY })], alignment: AlignmentType.CENTER }),
@@ -489,7 +489,7 @@ export class WordExportService {
 
     // 1. CONTEXTE
     sections.push(sectionTitle('1. Contexte'));
-    sections.push(new Paragraph({ children: [new TextRun({ text: 'Le Sénégal, dans le cadre du New Deal Technologique et de la Vision Sénégal 2050, a engagé la construction de son Infrastructure Publique Numérique (DPI) autour de trois piliers fondamentaux : l\'identité numérique, l\'échange de données (plateforme e-jokkoo basée sur X-Road) et la passerelle de paiement.', font: 'Times New Roman', size: 22 })] }));
+    sections.push(new Paragraph({ children: [new TextRun({ text: 'Le Sénégal, dans le cadre du New Deal Technologique et de la Vision Sénégal 2050, a engagé la construction de son Infrastructure Publique Numérique (DPI) autour de trois piliers fondamentaux : l\'identité numérique, l\'échange de données (plateforme PINS basée sur X-Road) et la passerelle de paiement.', font: 'Times New Roman', size: 22 })] }));
     sections.push(new Paragraph({ spacing: { before: 200 }, children: [new TextRun({ text: `État d'avancement : ${totalInstitutions} institutions cartographiées, ${totalSubmissions} questionnaires reçus, ${allCU.length} cas d'usage identifiés.`, font: 'Times New Roman', size: 22 })] }));
 
     // 2. BILAN FINANCEMENT EXISTANT
