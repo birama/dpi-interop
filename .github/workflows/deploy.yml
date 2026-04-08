@@ -1,128 +1,31 @@
-name: Deploy DPI-Interop
+name: Build Check
 
 on:
   push:
     branches: [main]
 
 jobs:
-  deploy:
+  build-check:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - name: Copy files to server
-        uses: appleboy/scp-action@v0.1.7
+      - name: Setup Node
+        uses: actions/setup-node@v4
         with:
-          host: ${{ secrets.DEPLOY_HOST }}
-          username: ${{ secrets.DEPLOY_USER }}
-          password: ${{ secrets.DEPLOY_PASSWORD }}
-          source: "."
-          target: "/opt/dpi-interop"
-          rm: false
-          overwrite: true
+          node-version: 20
 
-      - name: Deploy via SSH
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.DEPLOY_HOST }}
-          username: ${{ secrets.DEPLOY_USER }}
-          password: ${{ secrets.DEPLOY_PASSWORD }}
-          command_timeout: 15m
-          script: |
-            set -e
-            cd /opt/dpi-interop
+      - name: Check backend build
+        working-directory: backend
+        run: |
+          npm ci
+          npx prisma generate
+          npm run build
+          echo "Backend build OK"
 
-            echo "=== 1. Create .env ==="
-            echo 'NODE_ENV=production' > backend/.env
-            echo 'HOST=0.0.0.0' >> backend/.env
-            echo 'PORT=3000' >> backend/.env
-            echo 'DATABASE_URL=postgresql://dpiuser:iE3Occp0n0CCSmY@172.17.0.1:5432/dpidb?schema=public' >> backend/.env
-            echo 'JWT_SECRET=${{ secrets.JWT_SECRET }}' >> backend/.env
-            echo 'JWT_EXPIRES_IN=24h' >> backend/.env
-            echo 'CORS_ORIGIN=https://dpi-interop.sec.gouv.sn' >> backend/.env
-            echo 'RATE_LIMIT_MAX=200' >> backend/.env
-            echo 'RATE_LIMIT_TIMEWINDOW=60000' >> backend/.env
-            echo 'LOG_LEVEL=info' >> backend/.env
-            cat backend/.env
-            echo ""
-
-            echo "=== 2. Ensure PostgreSQL ==="
-            if docker ps --format '{{.Names}}' | grep -q pins-db; then
-              echo "pins-db already running"
-            else
-              docker rm -f pins-db 2>/dev/null || true
-              docker run -d --name pins-db \
-                -e POSTGRES_USER=dpiuser \
-                -e POSTGRES_PASSWORD=iE3Occp0n0CCSmY \
-                -e POSTGRES_DB=dpidb \
-                -p 5432:5432 \
-                --restart always \
-                postgres:15-alpine
-              sleep 5
-            fi
-            docker exec pins-db pg_isready -U dpiuser || { echo "FAIL: PostgreSQL not ready"; exit 1; }
-            echo "PostgreSQL OK"
-
-            echo "=== 3. Network ==="
-            docker network create pins-net 2>/dev/null || true
-            docker network connect pins-net pins-db 2>/dev/null || true
-
-            echo "=== 4. Build images ==="
-            docker compose -f docker-compose.prod.yml build --no-cache backend frontend
-            echo "Build OK"
-
-            echo "=== 5. Start backend ==="
-            docker rm -f pins-api 2>/dev/null || true
-            docker run -d --name pins-api \
-              --network pins-net \
-              --env-file backend/.env \
-              --restart always \
-              dpi-interop-backend
-            docker network connect pins-net pins-api 2>/dev/null || true
-
-            echo "Waiting for backend..."
-            for i in $(seq 1 12); do
-              if docker exec pins-api wget -qO- http://127.0.0.1:3000/health 2>/dev/null; then
-                echo ""
-                echo "Backend healthy after ${i}0 seconds"
-                break
-              fi
-              if [ $i -eq 12 ]; then
-                echo "FAIL: Backend not healthy after 120s"
-                docker logs pins-api --tail 30
-                exit 1
-              fi
-              sleep 10
-            done
-
-            echo "=== 6. Migrations ==="
-            docker exec pins-api sh -c "npx prisma migrate deploy" || { echo "FAIL: Migration failed"; docker logs pins-api --tail 20; exit 1; }
-            echo "Migrations OK"
-
-            echo "=== 7. Start frontend ==="
-            docker rm -f pins-frontend 2>/dev/null || true
-            docker run -d --name pins-frontend \
-              --network pins-net \
-              -p 80:80 \
-              --restart always \
-              dpi-interop-frontend
-
-            sleep 5
-            if ! docker ps --format '{{.Names}}' | grep -q pins-frontend; then
-              echo "FAIL: Frontend not running"
-              docker logs pins-frontend --tail 20
-              exit 1
-            fi
-            echo "Frontend running"
-
-            echo "=== 8. Final checks ==="
-            curl -sf http://localhost/ > /dev/null || { echo "FAIL: Frontend not serving"; exit 1; }
-            echo "Frontend serving OK"
-
-            docker exec pins-frontend wget -qO- http://pins-api:3000/health || { echo "FAIL: Frontend cannot reach backend"; exit 1; }
-            echo ""
-            echo "Backend reachable from frontend OK"
-
-            echo ""
-            echo "=== DEPLOYMENT SUCCESSFUL ==="
-            docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
+      - name: Check frontend build
+        working-directory: frontend
+        run: |
+          npm ci
+          npm run build
+          echo "Frontend build OK"
