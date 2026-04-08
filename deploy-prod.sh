@@ -63,11 +63,13 @@ done
 echo "=== 7. Migrations ==="
 docker exec pins-api sh -c "npx prisma migrate deploy" || echo "Migration skipped"
 
-echo "=== 8. Frontend ==="
+echo "=== 8. Frontend (HTTPS) ==="
 docker rm -f pins-frontend 2>/dev/null || true
 docker run -d --name pins-frontend \
   --network pins-net \
   -p 80:80 \
+  -p 443:443 \
+  -v /etc/letsencrypt:/etc/letsencrypt:ro \
   --restart always \
   dpi-interop-frontend
 
