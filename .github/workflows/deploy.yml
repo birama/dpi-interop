@@ -15,7 +15,7 @@ jobs:
         with:
           host: ${{ secrets.DEPLOY_HOST }}
           username: ${{ secrets.DEPLOY_USER }}
-          key: ${{ secrets.DEPLOY_KEY }}
+          password: ${{ secrets.DEPLOY_PASSWORD }}
           source: "."
           target: "/opt/dpi-interop"
           rm: true
@@ -25,7 +25,7 @@ jobs:
         with:
           host: ${{ secrets.DEPLOY_HOST }}
           username: ${{ secrets.DEPLOY_USER }}
-          key: ${{ secrets.DEPLOY_KEY }}
+          password: ${{ secrets.DEPLOY_PASSWORD }}
           script: |
             cd /opt/dpi-interop
 
