@@ -369,7 +369,18 @@ export async function confirmImport(app: FastifyInstance, data: ParsedData & { i
 
   // Infrastructure
   if (data.infrastructure.length > 0) {
-    await app.prisma.infrastructureItem.createMany({ data: data.infrastructure.map(item => ({ submissionId: subId, domain: item.domain, element: item.element, disponibilite: item.disponibilite, qualifications: item.qualifications, observations: item.observations })) });
+    // Dédupliquer par domain+element
+    const seen = new Set<string>();
+    const uniqueInfra = data.infrastructure.filter(item => {
+      const key = `${item.domain}::${item.element}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+    await app.prisma.infrastructureItem.createMany({
+      data: uniqueInfra.map(item => ({ submissionId: subId, domain: item.domain, element: item.element, disponibilite: item.disponibilite, qualifications: item.qualifications, observations: item.observations })),
+      skipDuplicates: true,
+    });
   }
 
   // Données à consommer
