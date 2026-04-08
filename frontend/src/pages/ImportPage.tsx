@@ -72,7 +72,8 @@ export function ImportPage() {
           onDragOver={e => { e.preventDefault(); setDragOver(true); }}
           onDragLeave={() => setDragOver(false)}
           onDrop={handleDrop}
-          className={cn('border-2 border-dashed rounded-xl p-12 text-center transition-colors', dragOver ? 'border-teal bg-teal-50/30' : 'border-gray-300 hover:border-teal/50')}
+          onClick={() => document.getElementById('file-upload')?.click()}
+          className={cn('border-2 border-dashed rounded-xl p-12 text-center transition-colors cursor-pointer relative', dragOver ? 'border-teal bg-teal-50/30' : 'border-gray-300 hover:border-teal/50')}
         >
           {uploadMut.isPending ? (
             <div className="flex flex-col items-center"><Loader2 className="w-10 h-10 animate-spin text-teal mb-3" /><p className="text-sm text-gray-500">Analyse du fichier en cours...</p></div>
@@ -81,7 +82,7 @@ export function ImportPage() {
               <Upload className="w-10 h-10 text-gray-400 mx-auto mb-3" />
               <p className="text-sm font-medium text-navy">Glisser-déposer un fichier .docx</p>
               <p className="text-xs text-gray-400 mt-1">ou cliquer pour parcourir</p>
-              <input type="file" accept=".docx" className="absolute inset-0 opacity-0 cursor-pointer" style={{ position: 'relative', marginTop: '12px' }}
+              <input id="file-upload" type="file" accept=".docx" className="hidden"
                 onChange={e => { if (e.target.files?.[0]) handleFile(e.target.files[0]); }} />
             </>
           )}
