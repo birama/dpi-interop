@@ -69,7 +69,8 @@ docker run -d --name pins-frontend \
   --network pins-net \
   -p 80:80 \
   -p 443:443 \
-  -v /etc/letsencrypt:/etc/letsencrypt:ro \
+  -v /etc/letsencrypt/live/dpi-interop.senum.sn:/etc/letsencrypt/live/dpi-interop.senum.sn:ro \
+  -v /etc/letsencrypt/archive/dpi-interop.senum.sn:/etc/letsencrypt/archive/dpi-interop.senum.sn:ro \
   --restart always \
   dpi-interop-frontend
 
