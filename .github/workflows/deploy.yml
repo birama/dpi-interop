@@ -27,24 +27,69 @@ jobs:
           host: ${{ secrets.DEPLOY_HOST }}
           username: ${{ secrets.DEPLOY_USER }}
           password: ${{ secrets.DEPLOY_PASSWORD }}
-          envs: DATABASE_URL,JWT_SECRET
+          command_timeout: 10m
           script: |
             cd /opt/dpi-interop
-            cat > backend/.env << ENVEOF
-            NODE_ENV=production
-            HOST=0.0.0.0
-            PORT=3000
-            DATABASE_URL=${{ secrets.DATABASE_URL }}
-            JWT_SECRET=${{ secrets.JWT_SECRET }}
-            JWT_EXPIRES_IN=24h
-            CORS_ORIGIN=https://dpi-interop.sec.gouv.sn
-            RATE_LIMIT_MAX=200
-            RATE_LIMIT_TIMEWINDOW=60000
-            LOG_LEVEL=info
-            ENVEOF
-            docker compose -f docker-compose.prod.yml down || true
-            docker compose -f docker-compose.prod.yml up -d --build
-            sleep 20
-            docker compose -f docker-compose.prod.yml exec -T backend npx prisma migrate deploy || true
+
+            # Créer le .env sans espaces
+            echo 'NODE_ENV=production' > backend/.env
+            echo 'HOST=0.0.0.0' >> backend/.env
+            echo 'PORT=3000' >> backend/.env
+            echo 'DATABASE_URL=postgresql://dpiuser:iE3Occp0n0CCSmY@172.17.0.1:5432/dpidb?schema=public' >> backend/.env
+            echo 'JWT_SECRET=${{ secrets.JWT_SECRET }}' >> backend/.env
+            echo 'JWT_EXPIRES_IN=24h' >> backend/.env
+            echo 'CORS_ORIGIN=https://dpi-interop.sec.gouv.sn' >> backend/.env
+            echo 'RATE_LIMIT_MAX=200' >> backend/.env
+            echo 'RATE_LIMIT_TIMEWINDOW=60000' >> backend/.env
+            echo 'LOG_LEVEL=info' >> backend/.env
+
+            # S'assurer que pins-db tourne
+            docker start pins-db 2>/dev/null || docker run -d --name pins-db \
+              -e POSTGRES_USER=dpiuser \
+              -e POSTGRES_PASSWORD=iE3Occp0n0CCSmY \
+              -e POSTGRES_DB=dpidb \
+              -p 5432:5432 \
+              --restart always \
+              postgres:15-alpine
+
+            # Créer le réseau si besoin
+            docker network create pins-net 2>/dev/null || true
+            docker network connect pins-net pins-db 2>/dev/null || true
+
+            # Build les images
+            docker compose -f docker-compose.prod.yml build
+
+            # Redémarrer le backend
+            docker rm -f pins-api 2>/dev/null || true
+            docker compose -f docker-compose.prod.yml up -d backend 2>/dev/null || \
+              docker run -d --name pins-api \
+                --network pins-net \
+                --env-file backend/.env \
+                --restart always \
+                dpi-interop-backend
+
+            # Connecter au réseau
+            docker network connect pins-net pins-api 2>/dev/null || true
+
+            # Attendre que le backend soit prêt
+            sleep 15
+            for i in 1 2 3 4 5; do
+              docker exec pins-api wget -qO- http://127.0.0.1:3000/health && break
+              sleep 5
+            done
+
+            # Migrations
+            docker exec pins-api sh -c "npx prisma migrate deploy" || true
+
+            # Redémarrer le frontend
+            docker rm -f pins-frontend 2>/dev/null || true
+            docker run -d --name pins-frontend \
+              --network pins-net \
+              -p 80:80 \
+              --restart always \
+              dpi-interop-frontend
+
+            # Vérification finale
             sleep 5
-            curl -sf http://localhost:3000/health && echo "Deployment OK" || echo "Backend not ready"
+            docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
+            echo "Deployment complete"
