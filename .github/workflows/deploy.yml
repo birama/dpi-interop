@@ -27,11 +27,12 @@ jobs:
           host: ${{ secrets.DEPLOY_HOST }}
           username: ${{ secrets.DEPLOY_USER }}
           password: ${{ secrets.DEPLOY_PASSWORD }}
-          command_timeout: 10m
+          command_timeout: 15m
           script: |
+            set -e
             cd /opt/dpi-interop
 
-            # Créer le .env sans espaces
+            echo "=== 1. Create .env ==="
             echo 'NODE_ENV=production' > backend/.env
             echo 'HOST=0.0.0.0' >> backend/.env
             echo 'PORT=3000' >> backend/.env
@@ -42,46 +43,63 @@ jobs:
             echo 'RATE_LIMIT_MAX=200' >> backend/.env
             echo 'RATE_LIMIT_TIMEWINDOW=60000' >> backend/.env
             echo 'LOG_LEVEL=info' >> backend/.env
+            cat backend/.env
+            echo ""
 
-            # S'assurer que pins-db tourne
-            docker start pins-db 2>/dev/null || docker run -d --name pins-db \
-              -e POSTGRES_USER=dpiuser \
-              -e POSTGRES_PASSWORD=iE3Occp0n0CCSmY \
-              -e POSTGRES_DB=dpidb \
-              -p 5432:5432 \
-              --restart always \
-              postgres:15-alpine
+            echo "=== 2. Ensure PostgreSQL ==="
+            if docker ps --format '{{.Names}}' | grep -q pins-db; then
+              echo "pins-db already running"
+            else
+              docker rm -f pins-db 2>/dev/null || true
+              docker run -d --name pins-db \
+                -e POSTGRES_USER=dpiuser \
+                -e POSTGRES_PASSWORD=iE3Occp0n0CCSmY \
+                -e POSTGRES_DB=dpidb \
+                -p 5432:5432 \
+                --restart always \
+                postgres:15-alpine
+              sleep 5
+            fi
+            docker exec pins-db pg_isready -U dpiuser || { echo "FAIL: PostgreSQL not ready"; exit 1; }
+            echo "PostgreSQL OK"
 
-            # Créer le réseau si besoin
+            echo "=== 3. Network ==="
             docker network create pins-net 2>/dev/null || true
             docker network connect pins-net pins-db 2>/dev/null || true
 
-            # Build les images
-            docker compose -f docker-compose.prod.yml build
+            echo "=== 4. Build images ==="
+            docker compose -f docker-compose.prod.yml build --no-cache backend frontend
+            echo "Build OK"
 
-            # Redémarrer le backend
+            echo "=== 5. Start backend ==="
             docker rm -f pins-api 2>/dev/null || true
-            docker compose -f docker-compose.prod.yml up -d backend 2>/dev/null || \
-              docker run -d --name pins-api \
-                --network pins-net \
-                --env-file backend/.env \
-                --restart always \
-                dpi-interop-backend
-
-            # Connecter au réseau
+            docker run -d --name pins-api \
+              --network pins-net \
+              --env-file backend/.env \
+              --restart always \
+              dpi-interop-backend
             docker network connect pins-net pins-api 2>/dev/null || true
 
-            # Attendre que le backend soit prêt
-            sleep 15
-            for i in 1 2 3 4 5; do
-              docker exec pins-api wget -qO- http://127.0.0.1:3000/health && break
-              sleep 5
+            echo "Waiting for backend..."
+            for i in $(seq 1 12); do
+              if docker exec pins-api wget -qO- http://127.0.0.1:3000/health 2>/dev/null; then
+                echo ""
+                echo "Backend healthy after ${i}0 seconds"
+                break
+              fi
+              if [ $i -eq 12 ]; then
+                echo "FAIL: Backend not healthy after 120s"
+                docker logs pins-api --tail 30
+                exit 1
+              fi
+              sleep 10
             done
 
-            # Migrations
-            docker exec pins-api sh -c "npx prisma migrate deploy" || true
+            echo "=== 6. Migrations ==="
+            docker exec pins-api sh -c "npx prisma migrate deploy" || { echo "FAIL: Migration failed"; docker logs pins-api --tail 20; exit 1; }
+            echo "Migrations OK"
 
-            # Redémarrer le frontend
+            echo "=== 7. Start frontend ==="
             docker rm -f pins-frontend 2>/dev/null || true
             docker run -d --name pins-frontend \
               --network pins-net \
@@ -89,7 +107,22 @@ jobs:
               --restart always \
               dpi-interop-frontend
 
-            # Vérification finale
             sleep 5
+            if ! docker ps --format '{{.Names}}' | grep -q pins-frontend; then
+              echo "FAIL: Frontend not running"
+              docker logs pins-frontend --tail 20
+              exit 1
+            fi
+            echo "Frontend running"
+
+            echo "=== 8. Final checks ==="
+            curl -sf http://localhost/ > /dev/null || { echo "FAIL: Frontend not serving"; exit 1; }
+            echo "Frontend serving OK"
+
+            docker exec pins-frontend wget -qO- http://pins-api:3000/health || { echo "FAIL: Frontend cannot reach backend"; exit 1; }
+            echo ""
+            echo "Backend reachable from frontend OK"
+
+            echo ""
+            echo "=== DEPLOYMENT SUCCESSFUL ==="
             docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
-            echo "Deployment complete"
