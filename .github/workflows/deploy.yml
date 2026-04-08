@@ -10,16 +10,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Clean target folder
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.DEPLOY_HOST }}
-          username: ${{ secrets.DEPLOY_USER }}
-          password: ${{ secrets.DEPLOY_PASSWORD }}
-          script: |
-            sudo rm -rf /opt/dpi-interop/*
-            sudo chown deploy:deploy /opt/dpi-interop
-
       - name: Copy files to server
         uses: appleboy/scp-action@v0.1.7
         with:
@@ -30,6 +20,7 @@ jobs:
           target: "/opt/dpi-interop"
           rm: false
           overwrite: true
+          strip_components: 0
 
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1.0.3
