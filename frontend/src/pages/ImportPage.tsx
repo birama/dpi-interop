@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { api, institutionsApi } from '@/services/api';
 import { useToast } from '@/components/ui/use-toast';
 import { SearchableSelect } from '@/components/ui/searchable-select';
-import { Upload, Loader2, CheckCircle, AlertTriangle, FileText, X, ChevronDown, ChevronRight } from 'lucide-react';
+import { Upload, Loader2, CheckCircle, FileText, X, ChevronDown, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export function ImportPage() {
