@@ -336,6 +336,20 @@ export async function confirmImport(app: FastifyInstance, data: ParsedData & { i
 
   const subId = sub.id;
   const sa = data.sectionA;
+
+  // Map maturité dimensions intelligemment
+  const matMap: Record<string, number> = {};
+  for (const m of data.maturite) {
+    if (!m.dimension || !m.note) continue;
+    const dim = m.dimension.toLowerCase();
+    if (dim.includes('infrastructure') || dim.includes('infra') || dim.includes('technique')) matMap.infra = m.note;
+    else if (dim.includes('donnée') || dim.includes('donnee') || dim.includes('data') || dim.includes('capacité')) matMap.donnees = m.note;
+    else if (dim.includes('compétence') || dim.includes('competence') || dim.includes('équipe') || dim.includes('humain')) matMap.competences = m.note;
+    else if (dim.includes('gouvernance') || dim.includes('organisation') || dim.includes('pilotage')) matMap.gouvernance = m.note;
+    else if (dim.includes('numérisation') || dim.includes('processus')) matMap.infra = matMap.infra || m.note;
+    else if (dim.includes('échange') || dim.includes('interopérabilité') || dim.includes('interop')) matMap.donnees = matMap.donnees || m.note;
+    else if (dim.includes('conformité') || dim.includes('juridique')) matMap.gouvernance = matMap.gouvernance || m.note;
+  }
   const avgMaturite = data.maturite.length > 0 ? Math.round(data.maturite.reduce((s, m) => s + (m.note || 0), 0) / data.maturite.length) : 3;
 
   // Update submission
@@ -349,7 +363,10 @@ export async function confirmImport(app: FastifyInstance, data: ParsedData & { i
       dataStewardEmail: sa.email, dataStewardTelephone: sa.telephone,
       contraintesJuridiques: data.contraintes.juridiques || null,
       contraintesTechniques: data.contraintes.techniques || null,
-      maturiteInfra: avgMaturite, maturiteDonnees: avgMaturite, maturiteCompetences: avgMaturite, maturiteGouvernance: avgMaturite,
+      maturiteInfra: matMap.infra || avgMaturite || 1,
+      maturiteDonnees: matMap.donnees || avgMaturite || 1,
+      maturiteCompetences: matMap.competences || avgMaturite || 1,
+      maturiteGouvernance: matMap.gouvernance || avgMaturite || 1,
       forces: data.forces.map(f => f.description).join('. ') || null,
       faiblesses: data.faiblesses.map(f => f.description).join('. ') || null,
       attentes: [data.attentes.questionsPreoccupations, data.attentes.besoinsFormation, data.attentes.suggestionsGouvernance].filter(Boolean).join('. ') || null,
