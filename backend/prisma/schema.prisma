@@ -139,6 +139,11 @@ model Submission {
   reviewedAt    DateTime?
   reviewedBy    String? // User ID
 
+  // Import tracking
+  importHash      String?   // MD5 hash du fichier Word importé
+  importFilename  String?   // Nom du fichier importé
+  importedAt      DateTime? // Date d'import
+
   // Audit
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt

@@ -103,6 +103,29 @@ export function ImportPage() {
             </CardContent>
           </Card>
 
+          {/* Alerte doublon */}
+          {parsed.isDuplicate && (
+            <Card className={cn('border-l-4', parsed.sameFile ? 'border-l-red-500 bg-red-50/30' : 'border-l-gold bg-gold-50/30')}>
+              <CardContent className="p-3 flex items-start space-x-2">
+                {parsed.sameFile ? (
+                  <X className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+                ) : (
+                  <FileText className="w-5 h-5 text-gold flex-shrink-0 mt-0.5" />
+                )}
+                <div>
+                  <p className="text-sm font-medium text-navy">{parsed.sameFile ? 'Fichier déjà importé' : 'Soumission existante'}</p>
+                  <p className="text-xs text-gray-600">{parsed.message}</p>
+                  {parsed.existingSubmission && (
+                    <p className="text-[10px] text-gray-400 mt-1">
+                      Soumission {parsed.existingSubmission.status} du {new Date(parsed.existingSubmission.createdAt).toLocaleDateString('fr-FR')}
+                      {parsed.existingSubmission.importFilename && ` — fichier: ${parsed.existingSubmission.importFilename}`}
+                    </p>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
           {/* Institution */}
           <SectionCard title="Institution" id="institution" isOpen={isOpen} toggle={toggle}
             badge={parsed.institutionTrouvee ? <span className="px-2 py-0.5 rounded text-[10px] bg-success/10 text-success font-medium">Trouvée : {parsed.institutionCode}</span> : <span className="px-2 py-0.5 rounded text-[10px] bg-orange-100 text-orange-600 font-medium">Non trouvée</span>}>
@@ -161,10 +184,16 @@ export function ImportPage() {
 
           {/* Confirm button */}
           <div className="flex space-x-3 pt-2">
-            <Button className="bg-teal hover:bg-teal-dark" disabled={!selectedInstId || confirmMut.isPending} onClick={handleConfirm}>
-              {confirmMut.isPending ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <CheckCircle className="w-4 h-4 mr-2" />}
-              Confirmer l'import
-            </Button>
+            {parsed.sameFile ? (
+              <Button variant="outline" className="text-gray-500" disabled>
+                <X className="w-4 h-4 mr-2" /> Fichier déjà importé — rien à faire
+              </Button>
+            ) : (
+              <Button className="bg-teal hover:bg-teal-dark" disabled={!selectedInstId || confirmMut.isPending} onClick={handleConfirm}>
+                {confirmMut.isPending ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <CheckCircle className="w-4 h-4 mr-2" />}
+                {parsed.isDuplicate ? 'Mettre à jour la soumission existante' : 'Confirmer l\'import'}
+              </Button>
+            )}
             <Button variant="outline" onClick={reset}>Annuler</Button>
           </div>
         </div>

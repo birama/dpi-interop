@@ -306,13 +306,22 @@ export async function matchInstitution(app: FastifyInstance, parsed: ParsedData)
   return parsed;
 }
 
-export async function confirmImport(app: FastifyInstance, data: ParsedData & { institutionId: string }): Promise<any> {
+export async function confirmImport(app: FastifyInstance, data: ParsedData & { institutionId: string; contentHash?: string; filename?: string }): Promise<any> {
   const instId = data.institutionId;
 
-  // Check existing submission
-  let sub = await app.prisma.submission.findFirst({ where: { institutionId: instId, status: 'DRAFT' } });
+  // Check existing submission (any status, not just DRAFT)
+  let sub = await app.prisma.submission.findFirst({
+    where: { institutionId: instId },
+    orderBy: { createdAt: 'desc' },
+  });
+
+  // If same hash → skip (exact same file already imported)
+  if (sub && data.contentHash && (sub as any).importHash === data.contentHash) {
+    return { submissionId: sub.id, skipped: true, message: 'Fichier déjà importé (contenu identique). Aucune modification.' };
+  }
+
   if (sub) {
-    // Clean existing data
+    // Clean existing related data before re-import
     await app.prisma.application.deleteMany({ where: { submissionId: sub.id } });
     await app.prisma.registre.deleteMany({ where: { submissionId: sub.id } });
     await app.prisma.infrastructureItem.deleteMany({ where: { submissionId: sub.id } });
@@ -334,6 +343,7 @@ export async function confirmImport(app: FastifyInstance, data: ParsedData & { i
     where: { id: subId },
     data: {
       currentStep: 7, status: 'SUBMITTED', submittedAt: new Date(),
+      importHash: data.contentHash || null, importFilename: data.filename || null, importedAt: new Date(),
       dataOwnerNom: sa.dataOwnerNom || sa.directeur, dataOwnerFonction: sa.dataOwnerFonction,
       dataStewardNom: sa.dataStewardNom, dataStewardProfil: sa.dataStewardProfil,
       dataStewardEmail: sa.email, dataStewardTelephone: sa.telephone,
@@ -406,6 +416,7 @@ export async function confirmImport(app: FastifyInstance, data: ParsedData & { i
   return {
     submissionId: subId,
     institutionCode: data.institutionCode,
+    updated: !!sub,
     nbApps: data.applications.length,
     nbRegistres: data.registres.length,
     nbInfra: data.infrastructure.length,
