@@ -20,7 +20,6 @@ jobs:
           target: "/opt/dpi-interop"
           rm: false
           overwrite: true
-          strip_components: 0
 
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1.0.3
@@ -28,11 +27,10 @@ jobs:
           host: ${{ secrets.DEPLOY_HOST }}
           username: ${{ secrets.DEPLOY_USER }}
           password: ${{ secrets.DEPLOY_PASSWORD }}
+          envs: DATABASE_URL,JWT_SECRET
           script: |
             cd /opt/dpi-interop
-
-            # Créer le .env production
-            cat > backend/.env << EOF
+            cat > backend/.env << ENVEOF
             NODE_ENV=production
             HOST=0.0.0.0
             PORT=3000
@@ -40,17 +38,13 @@ jobs:
             JWT_SECRET=${{ secrets.JWT_SECRET }}
             JWT_EXPIRES_IN=24h
             CORS_ORIGIN=https://dpi-interop.sec.gouv.sn
-            EOF
-
-            # Build et deploy
+            RATE_LIMIT_MAX=200
+            RATE_LIMIT_TIMEWINDOW=60000
+            LOG_LEVEL=info
+            ENVEOF
             docker compose -f docker-compose.prod.yml down || true
             docker compose -f docker-compose.prod.yml up -d --build
-
-            # Migrations
-            sleep 15
+            sleep 20
             docker compose -f docker-compose.prod.yml exec -T backend npx prisma migrate deploy || true
-
-            # Healthcheck
-            sleep 10
-            curl -sf http://localhost:3000/health || echo "⚠ Backend not ready yet"
-            echo "✅ Deployment complete"
+            sleep 5
+            curl -sf http://localhost:3000/health && echo "Deployment OK" || echo "Backend not ready"
