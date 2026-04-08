@@ -12,7 +12,7 @@ echo 'PORT=3000' >> backend/.env
 echo 'DATABASE_URL=postgresql://dpiuser:iE3Occp0n0CCSmY@172.17.0.1:5432/dpidb?schema=public' >> backend/.env
 echo 'JWT_SECRET=changeme64charsminimumforproductionsecuritykey1234567890abcdef' >> backend/.env
 echo 'JWT_EXPIRES_IN=24h' >> backend/.env
-echo 'CORS_ORIGIN=https://dpi-interop.sec.gouv.sn' >> backend/.env
+echo 'CORS_ORIGIN=https://dpi-interop.senum.sn' >> backend/.env
 echo 'RATE_LIMIT_MAX=200' >> backend/.env
 echo 'RATE_LIMIT_TIMEWINDOW=60000' >> backend/.env
 echo 'LOG_LEVEL=info' >> backend/.env
