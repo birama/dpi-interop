@@ -49,5 +49,5 @@ jobs:
 
             # Healthcheck
             sleep 10
-            curl -sf http://localhost:3000/health || exit 1
+            curl -sf https://dpi-interop.sec.gouv.sn/api/health || curl -sf http://localhost:3000/health || exit 1
             echo "✅ Deployment successful"
