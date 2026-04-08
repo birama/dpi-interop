@@ -29,6 +29,7 @@ import { RoadmapPage } from '@/pages/RoadmapPage';
 import { FinancementsPage } from '@/pages/FinancementsPage';
 import { QualificationPage } from '@/pages/QualificationPage';
 import { UtilisateursPage } from '@/pages/UtilisateursPage';
+import { ImportPage } from '@/pages/ImportPage';
 import { NotFoundPage } from '@/pages/NotFoundPage';
 
 // Protected Route wrapper
@@ -110,6 +111,14 @@ function App() {
             element={
               <ProtectedRoute adminOnly>
                 <UtilisateursPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/import"
+            element={
+              <ProtectedRoute adminOnly>
+                <ImportPage />
               </ProtectedRoute>
             }
           />

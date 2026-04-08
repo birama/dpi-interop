@@ -3,6 +3,7 @@ import { authRoutes } from './auth/index.js';
 import { institutionsRoutes } from './institutions/index.js';
 import { submissionsRoutes } from './submissions/index.js';
 import { reportsRoutes } from './reports/index.js';
+import { importRoutes } from './import/import.routes.js';
 
 // Inline routes for conventions and xroad
 async function conventionsRoutes(app: FastifyInstance) {
@@ -768,6 +769,7 @@ export async function registerRoutes(app: FastifyInstance) {
       api.register(financementsRoutes, { prefix: '/financements' });
       api.register(expertisesRoutes, { prefix: '/expertises' });
       api.register(registresNationauxRoutes, { prefix: '/registres-nationaux' });
+      api.register(importRoutes, { prefix: '/import' });
     },
     { prefix: '/api' }
   );

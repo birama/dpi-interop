@@ -1,0 +1,53 @@
+name: Deploy DPI-Interop
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Copy files to server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_KEY }}
+          source: "."
+          target: "/opt/dpi-interop"
+          rm: true
+
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_KEY }}
+          script: |
+            cd /opt/dpi-interop
+
+            # Créer le .env production
+            cat > backend/.env << EOF
+            NODE_ENV=production
+            HOST=0.0.0.0
+            PORT=3000
+            DATABASE_URL=${{ secrets.DATABASE_URL }}
+            JWT_SECRET=${{ secrets.JWT_SECRET }}
+            JWT_EXPIRES_IN=24h
+            CORS_ORIGIN=https://dpi-interop.sec.gouv.sn
+            EOF
+
+            # Build et deploy
+            docker compose -f docker-compose.prod.yml down
+            docker compose -f docker-compose.prod.yml up -d --build
+
+            # Migrations
+            docker compose -f docker-compose.prod.yml exec -T backend npx prisma migrate deploy
+
+            # Healthcheck
+            sleep 10
+            curl -sf http://localhost:3000/health || exit 1
+            echo "✅ Deployment successful"

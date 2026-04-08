@@ -26,6 +26,7 @@ import {
   Wallet,
   ClipboardCheck,
   Users,
+  Upload,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -37,6 +38,7 @@ const navigation = [
   { name: 'Catalogue DPI', href: '/catalogue', icon: BookOpen },
   { name: 'Institutions', href: '/institutions', icon: Building2, adminOnly: true },
   { name: 'Utilisateurs', href: '/admin/utilisateurs', icon: Users, adminOnly: true },
+  { name: 'Import Word', href: '/admin/import', icon: Upload, adminOnly: true },
   { name: 'Roadmap MVP', href: '/admin/roadmap', icon: MapIcon, adminOnly: true },
   { name: 'Financements', href: '/admin/financements', icon: Wallet, adminOnly: true },
   { name: 'Graphe flux', href: '/admin/graphe', icon: Network, adminOnly: true },
