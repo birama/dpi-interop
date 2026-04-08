@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { api, institutionsApi } from '@/services/api';
 import { useToast } from '@/components/ui/use-toast';
 import { SearchableSelect } from '@/components/ui/searchable-select';
-import { Upload, Loader2, CheckCircle, FileText, X, ChevronDown, ChevronRight } from 'lucide-react';
+import { Upload, Loader2, CheckCircle, FileText, X, ChevronDown, ChevronRight, Download } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export function ImportPage() {
@@ -18,6 +18,7 @@ export function ImportPage() {
   const [dragOver, setDragOver] = useState(false);
 
   const { data: instsData } = useQuery({ queryKey: ['institutions-import'], queryFn: () => institutionsApi.getAll({ limit: 500 }) });
+  const { data: filesData, refetch: refetchFiles } = useQuery({ queryKey: ['import-files'], queryFn: () => api.get('/import/files') });
   const institutions = instsData?.data?.data || [];
   const instOptions = institutions.map((i: any) => ({ value: i.id, label: i.nom, sublabel: `${i.code} — ${i.ministere}` }));
 
@@ -39,7 +40,7 @@ export function ImportPage() {
 
   const confirmMut = useMutation({
     mutationFn: (data: any) => api.post('/import/questionnaire/confirm', data),
-    onSuccess: (res) => { setResult(res.data); setStep('done'); toast({ title: 'Import réussi' }); },
+    onSuccess: (res) => { setResult(res.data); setStep('done'); refetchFiles(); toast({ title: 'Import réussi' }); },
     onError: (e: any) => toast({ variant: 'destructive', title: 'Erreur', description: e?.response?.data?.details || e.message }),
   });
 
@@ -223,6 +224,51 @@ export function ImportPage() {
           </CardContent>
         </Card>
       )}
+
+      {/* Historique des fichiers importés */}
+      <Card>
+        <div className="p-3 border-b">
+          <h3 className="text-sm font-bold text-navy">Fichiers importés</h3>
+        </div>
+        <CardContent className="pt-3">
+          {(() => {
+            const files = filesData?.data || [];
+            if (files.length === 0) return <p className="text-xs text-gray-400 text-center py-4">Aucun fichier importé</p>;
+            return (
+              <table className="w-full text-xs">
+                <thead><tr className="border-b text-gray-500">
+                  <th className="p-2 text-left">Institution</th>
+                  <th className="p-2 text-left">Fichier</th>
+                  <th className="p-2 text-center">Statut</th>
+                  <th className="p-2 text-center">Date</th>
+                  <th className="p-2 text-right">Action</th>
+                </tr></thead>
+                <tbody>
+                  {files.map((f: any) => (
+                    <tr key={f.id} className="border-b hover:bg-gray-50">
+                      <td className="p-2"><span className="px-1.5 py-0.5 rounded bg-navy/10 text-navy text-[10px] font-medium">{f.institution?.code}</span> <span className="text-gray-500">{f.institution?.nom}</span></td>
+                      <td className="p-2 text-navy">{f.importFilename}</td>
+                      <td className="p-2 text-center"><span className={cn('px-1.5 py-0.5 rounded text-[10px]', f.status === 'SUBMITTED' ? 'bg-teal-50 text-teal' : 'bg-gray-100 text-gray-500')}>{f.status}</span></td>
+                      <td className="p-2 text-center text-gray-500">{f.importedAt ? new Date(f.importedAt).toLocaleDateString('fr-FR') : '—'}</td>
+                      <td className="p-2 text-right">
+                        <Button size="sm" variant="ghost" onClick={async () => {
+                          try {
+                            const res = await api.get(`/import/files/${f.id}/download`, { responseType: 'blob' });
+                            const url = URL.createObjectURL(res.data);
+                            const a = document.createElement('a'); a.href = url; a.download = f.importFilename; a.click(); URL.revokeObjectURL(url);
+                          } catch { toast({ variant: 'destructive', title: 'Fichier non disponible' }); }
+                        }}>
+                          <Download className="w-3 h-3 mr-1" /> Télécharger
+                        </Button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            );
+          })()}
+        </CardContent>
+      </Card>
     </div>
   );
 }

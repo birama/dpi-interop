@@ -2,12 +2,17 @@
 import { FastifyInstance } from 'fastify';
 import multipart from '@fastify/multipart';
 import crypto from 'crypto';
+import fs from 'fs';
+import path from 'path';
 import { parseDocx, matchInstitution, confirmImport } from './import.service.js';
+
+const UPLOADS_DIR = '/app/uploads';
+if (!fs.existsSync(UPLOADS_DIR)) fs.mkdirSync(UPLOADS_DIR, { recursive: true });
 
 export async function importRoutes(app: FastifyInstance) {
   await app.register(multipart, { limits: { fileSize: 10 * 1024 * 1024 } });
 
-  // Preview — parse sans insérer
+  // Preview — parse sans insérer, sauvegarder le fichier temporairement
   app.post('/questionnaire', { onRequest: [app.authenticateAdmin] }, async (req: any, reply: any) => {
     try {
       const data = await req.file();
@@ -20,8 +25,12 @@ export async function importRoutes(app: FastifyInstance) {
         return reply.status(400).send({ error: 'Seuls les fichiers .docx sont acceptés' });
       }
 
-      // Hash du contenu pour détecter les doublons
       const contentHash = crypto.createHash('md5').update(buffer).digest('hex');
+
+      // Sauvegarder le fichier avec le hash comme nom
+      const storedFilename = `${contentHash}_${filename}`;
+      const filepath = path.join(UPLOADS_DIR, storedFilename);
+      fs.writeFileSync(filepath, buffer);
 
       const parsed = await parseDocx(buffer);
       const matched = await matchInstitution(app, parsed);
@@ -30,7 +39,6 @@ export async function importRoutes(app: FastifyInstance) {
       const duplicateInfo: any = { isDuplicate: false, existingSubmission: null, sameFile: false };
 
       if (matched.institutionId) {
-        // Chercher une soumission existante pour cette institution
         const existing = await app.prisma.submission.findFirst({
           where: { institutionId: matched.institutionId },
           orderBy: { createdAt: 'desc' },
@@ -39,16 +47,11 @@ export async function importRoutes(app: FastifyInstance) {
 
         if (existing) {
           duplicateInfo.existingSubmission = {
-            id: existing.id,
-            status: existing.status,
-            createdAt: existing.createdAt,
-            currentStep: existing.currentStep,
-            importHash: (existing as any).importHash || null,
-            importFilename: (existing as any).importFilename || null,
+            id: existing.id, status: existing.status, createdAt: existing.createdAt,
+            importHash: existing.importHash || null, importFilename: existing.importFilename || null,
           };
 
-          // Même contenu de fichier ?
-          if ((existing as any).importHash === contentHash) {
+          if (existing.importHash === contentHash) {
             duplicateInfo.isDuplicate = true;
             duplicateInfo.sameFile = true;
             duplicateInfo.message = 'Ce fichier a déjà été importé (contenu identique). Aucune modification nécessaire.';
@@ -60,7 +63,7 @@ export async function importRoutes(app: FastifyInstance) {
         }
       }
 
-      return reply.send({ ...matched, filename, filesize: buffer.length, contentHash, ...duplicateInfo });
+      return reply.send({ ...matched, filename, filesize: buffer.length, contentHash, storedFilename, ...duplicateInfo });
     } catch (e: any) {
       return reply.status(400).send({ error: 'Erreur de parsing', details: e.message });
     }
@@ -76,5 +79,56 @@ export async function importRoutes(app: FastifyInstance) {
     } catch (e: any) {
       return reply.status(500).send({ error: 'Erreur import', details: e.message });
     }
+  });
+
+  // Liste des fichiers importés
+  app.get('/files', { onRequest: [app.authenticate] }, async (req: any, reply: any) => {
+    const where: any = {};
+    // Institution users can only see their own
+    if (req.user.role !== 'ADMIN' && req.user.institutionId) {
+      where.institutionId = req.user.institutionId;
+    }
+    where.importFilename = { not: null };
+
+    const submissions = await app.prisma.submission.findMany({
+      where,
+      select: {
+        id: true, importFilename: true, importHash: true, importedAt: true, status: true,
+        institution: { select: { id: true, code: true, nom: true } },
+      },
+      orderBy: { importedAt: 'desc' },
+    });
+
+    return reply.send(submissions);
+  });
+
+  // Télécharger un fichier importé
+  app.get('/files/:submissionId/download', { onRequest: [app.authenticate] }, async (req: any, reply: any) => {
+    const sub = await app.prisma.submission.findUnique({
+      where: { id: req.params.submissionId },
+      select: { importFilename: true, importHash: true, institutionId: true },
+    });
+
+    if (!sub || !sub.importFilename || !sub.importHash) {
+      return reply.status(404).send({ error: 'Fichier non trouvé' });
+    }
+
+    // Institution users can only download their own
+    if (req.user.role !== 'ADMIN' && req.user.institutionId !== sub.institutionId) {
+      return reply.status(403).send({ error: 'Accès refusé' });
+    }
+
+    const storedFilename = `${sub.importHash}_${sub.importFilename}`;
+    const filepath = path.join(UPLOADS_DIR, storedFilename);
+
+    if (!fs.existsSync(filepath)) {
+      return reply.status(404).send({ error: 'Fichier non trouvé sur le serveur' });
+    }
+
+    const fileBuffer = fs.readFileSync(filepath);
+    reply
+      .header('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document')
+      .header('Content-Disposition', `attachment; filename="${sub.importFilename}"`)
+      .send(fileBuffer);
   });
 }

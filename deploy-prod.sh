@@ -43,9 +43,11 @@ echo "Build OK"
 
 echo "=== 6. Backend ==="
 docker rm -f pins-api 2>/dev/null || true
+mkdir -p /opt/dpi-interop/uploads
 docker run -d --name pins-api \
   --network pins-net \
   --env-file backend/.env \
+  -v /opt/dpi-interop/uploads:/app/uploads \
   --restart always \
   dpi-interop-backend
 
