@@ -85,6 +85,18 @@ export class AuthService {
     // Audit log for successful login
     await this.app.prisma.auditLog.create({ data: { userId: user.id, userEmail: user.email, userRole: user.role, action: 'LOGIN_SUCCESS', resource: 'auth', resourceLabel: user.email } });
 
+    // Create session
+    const crypto = await import('crypto');
+    const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+    await this.app.prisma.userSession.create({
+      data: {
+        userId: user.id,
+        tokenHash,
+        expiresAt: new Date(Date.now() + 2 * 60 * 60 * 1000), // 2h
+        isActive: true,
+      },
+    });
+
     return {
       token,
       refreshToken,
