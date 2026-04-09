@@ -58,10 +58,11 @@ export class ReportsService {
     await this.app.prisma.auditLog.create({
       data: {
         userId,
+        userEmail: 'system', userRole: 'SYSTEM',
         action: 'EXPORT',
-        entity: 'reports',
-        entityId: report.id,
-        changes: { type, format },
+        resource: 'reports',
+        resourceId: report.id,
+        details: { type, format },
       },
     });
 

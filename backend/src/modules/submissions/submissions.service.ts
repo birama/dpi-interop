@@ -51,8 +51,8 @@ export class SubmissionsService {
       data: {
         userId,
         action: 'CREATE',
-        entity: 'submissions',
-        entityId: submission.id,
+        userEmail: 'system', userRole: 'SYSTEM', resource: 'submissions',
+        resourceId: submission.id,
       },
     });
 
@@ -287,9 +287,9 @@ export class SubmissionsService {
       data: {
         userId,
         action: 'UPDATE',
-        entity: 'submissions',
-        entityId: id,
-        changes: input as any,
+        userEmail: 'system', userRole: 'SYSTEM', resource: 'submissions',
+        resourceId: id,
+        details: input as any,
       },
     });
 
@@ -327,9 +327,9 @@ export class SubmissionsService {
       data: {
         userId,
         action: 'STATUS_CHANGE',
-        entity: 'submissions',
-        entityId: id,
-        changes: { oldStatus: existing.status, newStatus: input.status },
+        userEmail: 'system', userRole: 'SYSTEM', resource: 'submissions',
+        resourceId: id,
+        details: { oldStatus: existing.status, newStatus: input.status },
       },
     });
 
@@ -358,8 +358,8 @@ export class SubmissionsService {
       data: {
         userId,
         action: 'DELETE',
-        entity: 'submissions',
-        entityId: id,
+        userEmail: 'system', userRole: 'SYSTEM', resource: 'submissions',
+        resourceId: id,
       },
     });
 

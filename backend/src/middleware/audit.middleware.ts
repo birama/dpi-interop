@@ -1,121 +1,63 @@
 import { FastifyRequest } from 'fastify';
-import { Prisma, PrismaClient } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
 import { getClientIP, getUserAgent } from '../utils/security.js';
 
 const prisma = new PrismaClient();
 
-/**
- * Log an action to the audit log
- */
 export async function logAuditEvent(
   request: FastifyRequest,
   action: string,
-  entity?: string,
-  entityId?: string,
-  changes?: Record<string, unknown>
+  resource?: string,
+  resourceId?: string,
+  details?: Record<string, unknown>
 ): Promise<void> {
   try {
     await prisma.auditLog.create({
       data: {
-        userId: request.user?.id || null,
+        userId: (request as any).user?.id || null,
+        userEmail: (request as any).user?.email || 'system',
+        userRole: (request as any).user?.role || 'UNKNOWN',
         action,
-        entity: entity || null,
-        entityId: entityId || null,
-        changes: changes as Prisma.InputJsonValue | undefined,
+        resource: resource || 'system',
+        resourceId: resourceId || null,
+        details: details as any,
         ipAddress: getClientIP(request),
         userAgent: getUserAgent(request),
       },
     });
   } catch (error) {
     console.error('Failed to log audit event:', error);
-    // Don't throw - audit logging should not break the request
   }
 }
 
-/**
- * Middleware to log successful authentication
- */
 export async function logLogin(request: FastifyRequest, userId: string): Promise<void> {
-  await logAuditEvent(request, 'LOGIN', 'User', userId);
+  await logAuditEvent(request, 'LOGIN', 'auth', userId);
 }
 
-/**
- * Middleware to log logout
- */
 export async function logLogout(request: FastifyRequest): Promise<void> {
-  await logAuditEvent(request, 'LOGOUT', 'User', request.user?.id);
+  await logAuditEvent(request, 'LOGOUT', 'auth', (request as any).user?.id);
 }
 
-/**
- * Middleware to log data access
- */
-export async function logDataAccess(
-  request: FastifyRequest,
-  entity: string,
-  entityId: string
-): Promise<void> {
-  await logAuditEvent(request, 'READ', entity, entityId);
+export async function logDataAccess(request: FastifyRequest, resource: string, resourceId: string): Promise<void> {
+  await logAuditEvent(request, 'READ', resource, resourceId);
 }
 
-/**
- * Middleware to log data creation
- */
-export async function logDataCreation(
-  request: FastifyRequest,
-  entity: string,
-  entityId: string,
-  data?: Record<string, unknown>
-): Promise<void> {
-  await logAuditEvent(request, 'CREATE', entity, entityId, data);
+export async function logDataCreation(request: FastifyRequest, resource: string, resourceId: string, data?: Record<string, unknown>): Promise<void> {
+  await logAuditEvent(request, 'CREATE', resource, resourceId, data);
 }
 
-/**
- * Middleware to log data update
- */
-export async function logDataUpdate(
-  request: FastifyRequest,
-  entity: string,
-  entityId: string,
-  changes?: Record<string, unknown>
-): Promise<void> {
-  await logAuditEvent(request, 'UPDATE', entity, entityId, changes);
+export async function logDataUpdate(request: FastifyRequest, resource: string, resourceId: string, changes?: Record<string, unknown>): Promise<void> {
+  await logAuditEvent(request, 'UPDATE', resource, resourceId, changes);
 }
 
-/**
- * Middleware to log data deletion
- */
-export async function logDataDeletion(
-  request: FastifyRequest,
-  entity: string,
-  entityId: string
-): Promise<void> {
-  await logAuditEvent(request, 'DELETE', entity, entityId);
+export async function logDataDeletion(request: FastifyRequest, resource: string, resourceId: string): Promise<void> {
+  await logAuditEvent(request, 'DELETE', resource, resourceId);
 }
 
-/**
- * Middleware to log export actions
- */
-export async function logExport(
-  request: FastifyRequest,
-  reportType: string,
-  parameters?: Record<string, unknown>
-): Promise<void> {
-  await logAuditEvent(request, 'EXPORT', 'Report', undefined, {
-    type: reportType,
-    parameters,
-  });
+export async function logExport(request: FastifyRequest, reportType: string, parameters?: Record<string, unknown>): Promise<void> {
+  await logAuditEvent(request, 'EXPORT', 'report', undefined, { type: reportType, parameters });
 }
 
-/**
- * Middleware to log failed authentication attempts
- */
-export async function logFailedLogin(
-  request: FastifyRequest,
-  email: string,
-  reason: string
-): Promise<void> {
-  await logAuditEvent(request, 'LOGIN_FAILED', 'User', undefined, {
-    email,
-    reason,
-  });
+export async function logFailedLogin(request: FastifyRequest, email: string, reason: string): Promise<void> {
+  await logAuditEvent(request, 'LOGIN_FAILED', 'auth', undefined, { email, reason });
 }
