@@ -9,19 +9,22 @@ interface FluxEntry {
   donnee: string;
   mode: string;
   frequence: string;
-  source: 'questionnaire' | 'reference' | 'mvp' | 'historique';
+  source: string;
+  detail?: string;
 }
 
 const SOURCE_LABELS: Record<string, { label: string; color: string }> = {
   questionnaire: { label: 'Questionnaire', color: 'bg-blue-100 text-blue-700' },
-  reference: { label: 'Référence', color: 'bg-teal-50 text-teal' },
-  mvp: { label: 'Cas d\'usage MVP', color: 'bg-gold-50 text-gold' },
-  historique: { label: 'Historique 2017', color: 'bg-orange-100 text-orange-600' },
+  'mvp1': { label: 'MVP 1.0', color: 'bg-teal-50 text-teal' },
+  'mvp2': { label: 'MVP 2.0', color: 'bg-gold-50 text-gold' },
+  mvp: { label: 'Autres MVP', color: 'bg-emerald-50 text-emerald-700' },
+  reference: { label: 'Référence XRN', color: 'bg-navy/10 text-navy' },
+  historique: { label: 'Historique', color: 'bg-orange-100 text-orange-600' },
 };
 
 export function MatricePage() {
   const [selectedCell, setSelectedCell] = useState<{ src: string; dst: string } | null>(null);
-  const [filters, setFilters] = useState({ questionnaire: true, reference: true, mvp: true, historique: true });
+  const [filters, setFilters] = useState<Record<string, boolean>>({ questionnaire: true, 'mvp1': true, 'mvp2': true, mvp: true, reference: true, historique: true });
 
   const { data: subsData, isLoading: loadingSubs } = useQuery({
     queryKey: ['all-subs-matrice'],
@@ -67,15 +70,37 @@ export function MatricePage() {
     });
   });
 
-  // SOURCE 2+3 — CasUsageMVP (reference + mvp + historique)
+  // SOURCE 2+3 — CasUsageMVP (classifié par code + phase + financement)
   mvpCasUsages.forEach((cu: any) => {
     if (!cu.institutionSourceCode || !cu.institutionCibleCode) return;
-    const src = cu.code.startsWith('HIST-') ? 'historique' as const :
-                cu.code.startsWith('XRN-') && cu.phaseMVPId ? 'mvp' as const : 'reference' as const;
+
+    // Déterminer la source
+    let srcType = 'reference';
+    const phaseCode = cu.phaseMVP?.code || '';
+    const finPTF = cu.financements?.[0]?.programme?.ptf?.code || '';
+
+    if (cu.code.startsWith('HIST-')) {
+      srcType = 'historique';
+    } else if (cu.code.startsWith('MVP1-') || phaseCode === 'MVP-1.0') {
+      srcType = 'mvp1';
+    } else if (cu.code.startsWith('MVP2-') || phaseCode === 'MVP-2.0') {
+      srcType = 'mvp2';
+    } else if (cu.phaseMVPId) {
+      srcType = 'mvp';
+    }
+
+    // Déterminer le mode
+    let mode = 'Manuel';
+    if (['EN_TEST', 'EN_PRODUCTION'].includes(cu.statutImpl)) mode = 'X-Road';
+    else if (cu.observations?.includes('API')) mode = 'API REST';
+    else if (cu.observations?.includes('Fichier') || cu.observations?.includes('FTP')) mode = 'Fichier (CSV/Excel)';
+    else if (cu.observations?.includes('X-Road')) mode = 'X-Road';
+
+    const detail = [phaseCode, finPTF ? `Financé: ${finPTF}` : null, cu.statutImpl].filter(Boolean).join(' | ');
+
     addFlux(cu.institutionSourceCode, cu.institutionCibleCode, {
       donnee: cu.donneesEchangees || cu.titre,
-      mode: cu.observations?.includes('Manuel') ? 'Manuel' : cu.observations?.includes('Fichier') ? 'Fichier (CSV/Excel)' : 'X-Road',
-      frequence: '', source: src,
+      mode, frequence: '', source: srcType, detail,
     });
   });
 
@@ -205,8 +230,11 @@ export function MatricePage() {
                       <div className="space-y-1">
                         {items.map((f, i) => (
                           <div key={i} className="flex items-center justify-between text-sm py-1 border-b last:border-0">
-                            <span className="text-gray-700">{f.donnee}</span>
-                            <div className="flex items-center space-x-2">
+                            <div>
+                              <span className="text-gray-700">{f.donnee}</span>
+                              {f.detail && <span className="text-[10px] text-gray-400 ml-2">({f.detail})</span>}
+                            </div>
+                            <div className="flex items-center space-x-2 flex-shrink-0">
                               <span className={cn('px-1.5 py-0.5 rounded text-[10px]',
                                 f.mode.includes('X-Road') ? 'bg-teal-50 text-teal' :
                                 f.mode.includes('API') ? 'bg-emerald-50 text-emerald-700' :
