@@ -14,7 +14,7 @@ interface FluxEntry {
 
 const SOURCE_LABELS: Record<string, { label: string; color: string }> = {
   questionnaire: { label: 'Questionnaire', color: 'bg-blue-100 text-blue-700' },
-  reference: { label: 'Référence JICA', color: 'bg-teal-50 text-teal' },
+  reference: { label: 'Référence', color: 'bg-teal-50 text-teal' },
   mvp: { label: 'Cas d\'usage MVP', color: 'bg-gold-50 text-gold' },
   historique: { label: 'Historique 2017', color: 'bg-orange-100 text-orange-600' },
 };

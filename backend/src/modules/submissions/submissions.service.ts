@@ -82,6 +82,8 @@ export class SubmissionsService {
           institution: {
             select: { id: true, code: true, nom: true, ministere: true },
           },
+          fluxExistants: true,
+          donneesConsommer: true,
           _count: {
             select: {
               applications: true,
