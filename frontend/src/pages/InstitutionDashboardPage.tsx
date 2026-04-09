@@ -26,7 +26,7 @@ export function InstitutionDashboardPage() {
   if (isLoading) return <div className="flex items-center justify-center h-64"><Loader2 className="w-6 h-6 animate-spin text-teal" /></div>;
   if (!data) return <div className="text-center py-12 text-gray-400">Aucune institution liée à votre compte</div>;
 
-  const { institution, submission, conventions, casUsages, readiness, actions, stats } = data;
+  const { institution, submission, conventions, casUsages, readiness, actions, stats, flux } = data;
   const mat = stats?.maturiteMoyenne || 0;
 
   return (
@@ -79,18 +79,22 @@ export function InstitutionDashboardPage() {
         </Card>
       )}
 
-      {/* Section 2: Flux de données */}
+      {/* Section 2: Flux de données (fusionné questionnaire + MVP) */}
       <div className="grid grid-cols-2 gap-4">
         <Card>
           <CardContent className="p-3">
-            <h3 className="text-sm font-bold text-navy mb-2">Données que je consomme</h3>
-            {(submission?.donneesConsommer || []).length === 0 ? (
-              <p className="text-xs text-gray-400 italic">Aucune donnée déclarée</p>
+            <h3 className="text-sm font-bold text-navy mb-2">Données que je consomme ({flux?.consommer?.length || 0})</h3>
+            {(flux?.consommer || []).length === 0 ? (
+              <p className="text-xs text-gray-400 italic">Aucune donnée identifiée</p>
             ) : (
               <div className="space-y-1.5">
-                {submission.donneesConsommer.map((dc: any, i: number) => (
+                {flux.consommer.map((dc: any, i: number) => (
                   <div key={i} className="flex items-center justify-between text-xs py-1 border-b last:border-0">
-                    <div><span className="px-1.5 py-0.5 rounded bg-navy/10 text-navy text-[10px] font-medium">{dc.source}</span> <span className="text-gray-600 ml-1">{dc.donnee}</span></div>
+                    <div className="flex-1 min-w-0">
+                      <span className="px-1.5 py-0.5 rounded bg-navy/10 text-navy text-[10px] font-medium">{dc.partenaire}</span>
+                      <span className="text-gray-600 ml-1">{dc.donnees}</span>
+                    </div>
+                    <span className={cn('px-1 py-0.5 rounded text-[9px] flex-shrink-0 ml-1', dc.source === 'questionnaire' ? 'bg-blue-100 text-blue-600' : 'bg-gold-50 text-gold')}>{dc.source === 'questionnaire' ? 'Déclaré' : dc.phase || 'MVP'}</span>
                   </div>
                 ))}
               </div>
@@ -99,14 +103,18 @@ export function InstitutionDashboardPage() {
         </Card>
         <Card>
           <CardContent className="p-3">
-            <h3 className="text-sm font-bold text-navy mb-2">Données que je fournis</h3>
-            {(submission?.donneesFournir || []).length === 0 ? (
-              <p className="text-xs text-gray-400 italic">Aucune donnée déclarée</p>
+            <h3 className="text-sm font-bold text-navy mb-2">Données que je fournis ({flux?.fournir?.length || 0})</h3>
+            {(flux?.fournir || []).length === 0 ? (
+              <p className="text-xs text-gray-400 italic">Aucune donnée identifiée</p>
             ) : (
               <div className="space-y-1.5">
-                {submission.donneesFournir.map((df: any, i: number) => (
+                {flux.fournir.map((df: any, i: number) => (
                   <div key={i} className="flex items-center justify-between text-xs py-1 border-b last:border-0">
-                    <div><span className="text-gray-600">{df.donnee}</span> <span className="text-[10px] text-gray-400">→ {df.destinataires || '?'}</span></div>
+                    <div className="flex-1 min-w-0">
+                      <span className="text-gray-600">{df.donnees}</span>
+                      <span className="text-[10px] text-gray-400 ml-1">→ {df.destinataires || '?'}</span>
+                    </div>
+                    <span className={cn('px-1 py-0.5 rounded text-[9px] flex-shrink-0 ml-1', df.source === 'questionnaire' ? 'bg-blue-100 text-blue-600' : 'bg-gold-50 text-gold')}>{df.source === 'questionnaire' ? 'Déclaré' : df.phase || 'MVP'}</span>
                   </div>
                 ))}
               </div>

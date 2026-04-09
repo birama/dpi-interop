@@ -2,42 +2,89 @@
 import { FastifyInstance } from 'fastify';
 
 export async function institutionDashboardRoutes(app: FastifyInstance) {
-  // Dashboard consolidé pour l'institution connectée
   app.get('/dashboard', { onRequest: [app.authenticate] }, async (req: any, reply: any) => {
     const instId = req.user.institutionId;
     if (!instId) return reply.status(400).send({ error: 'Pas d\'institution liée' });
 
-    const [institution, submission, conventions, casUsages, readiness, demandes] = await Promise.all([
-      app.prisma.institution.findUnique({ where: { id: instId } }),
+    const institution = await app.prisma.institution.findUnique({ where: { id: instId } });
+    if (!institution) return reply.status(404).send({ error: 'Institution non trouvée' });
+    const instCode = institution.code;
+
+    const [submission, conventions, casUsages, readiness, demandes] = await Promise.all([
       app.prisma.submission.findFirst({ where: { institutionId: instId }, orderBy: { createdAt: 'desc' }, include: { donneesConsommer: true, donneesFournir: true, fluxExistants: true, casUsage: true } }),
-      app.prisma.convention.findMany({ where: { OR: [{ institutionAId: instId }, { institutionBId: instId }] }, include: { institutionA: { select: { code: true, nom: true } }, institutionB: { select: { code: true, nom: true } } } }),
-      app.prisma.casUsageMVP.findMany({ where: { OR: [{ institutionSourceCode: (await app.prisma.institution.findUnique({ where: { id: instId } }))?.code }, { institutionCibleCode: (await app.prisma.institution.findUnique({ where: { id: instId } }))?.code }] }, include: { phaseMVP: true, financements: { include: { programme: { include: { ptf: true } } } } } }),
-      app.prisma.xRoadReadiness.findFirst({ where: { institutionId: instId }, include: { institution: true } }),
+      app.prisma.convention.findMany({ where: { OR: [{ institutionAId: instId }, { institutionBId: instId }] }, include: { institutionA: { select: { id: true, code: true, nom: true } }, institutionB: { select: { id: true, code: true, nom: true } } } }),
+      app.prisma.casUsageMVP.findMany({ where: { OR: [{ institutionSourceCode: instCode }, { institutionCibleCode: instCode }] }, include: { phaseMVP: true, financements: { include: { programme: { include: { ptf: true } } } } } }),
+      app.prisma.xRoadReadiness.findFirst({ where: { institutionId: instId } }),
       app.prisma.demandeInterop.findMany({ where: { institutionId: instId }, orderBy: { createdAt: 'desc' }, take: 10 }),
     ]);
 
-    // Flux entrants (autres institutions déclarent fournir à cette institution)
-    const instCode = institution?.code;
-    const fluxEntrants = instCode ? await app.prisma.donneeConsommer.findMany({
-      where: { source: instCode },
-      include: { submission: { include: { institution: { select: { code: true, nom: true } } } } },
-    }) : [];
+    // === AGRÉGATION DES FLUX ===
+    // Source 1: Questionnaire (donneesConsommer, donneesFournir, fluxExistants)
+    const fluxQuestionnaire = (submission?.fluxExistants || []).map((f: any) => ({
+      partenaire: f.source === instCode ? f.destination : f.source,
+      donnees: f.donnee, mode: f.mode || 'Manuel', frequence: f.frequence,
+      direction: f.source === instCode ? 'ENVOI' : 'RECEPTION',
+      source: 'questionnaire',
+    }));
+
+    const consommerQuestionnaire = (submission?.donneesConsommer || []).map((d: any) => ({
+      partenaire: d.source, donnees: d.donnee, usage: d.usage, priorite: d.priorite,
+      source: 'questionnaire',
+    }));
+
+    const fournirQuestionnaire = (submission?.donneesFournir || []).map((d: any) => ({
+      destinataires: d.destinataires, donnees: d.donnee, frequence: d.frequence, format: d.format,
+      source: 'questionnaire',
+    }));
+
+    // Source 2: Cas d'usage MVP (flux implicites)
+    const fluxMVP = casUsages.map((cu: any) => ({
+      partenaire: cu.institutionSourceCode === instCode ? cu.institutionCibleCode : cu.institutionSourceCode,
+      donnees: cu.donneesEchangees || cu.titre,
+      mode: ['EN_TEST', 'EN_PRODUCTION'].includes(cu.statutImpl) ? 'PINS/X-Road' : 'À définir',
+      direction: cu.institutionSourceCode === instCode ? 'ENVOI' : 'RECEPTION',
+      statut: cu.statutImpl, phase: cu.phaseMVP?.code,
+      financement: cu.financements?.[0]?.programme?.ptf?.acronyme,
+      source: 'mvp', code: cu.code,
+    }));
+
+    const consommerMVP = casUsages
+      .filter((cu: any) => cu.institutionCibleCode === instCode)
+      .map((cu: any) => ({
+        partenaire: cu.institutionSourceCode, donnees: cu.donneesEchangees || cu.titre,
+        usage: cu.description, source: 'mvp', code: cu.code, phase: cu.phaseMVP?.code,
+      }));
+
+    const fournirMVP = casUsages
+      .filter((cu: any) => cu.institutionSourceCode === instCode)
+      .map((cu: any) => ({
+        destinataires: cu.institutionCibleCode, donnees: cu.donneesEchangees || cu.titre,
+        source: 'mvp', code: cu.code, phase: cu.phaseMVP?.code,
+      }));
+
+    // Fusionner
+    const tousFlux = [...fluxQuestionnaire, ...fluxMVP];
+    const toutConsommer = [...consommerQuestionnaire, ...consommerMVP];
+    const toutFournir = [...fournirQuestionnaire, ...fournirMVP];
 
     // Actions requises
-    const actions = [];
+    const actions: any[] = [];
     if (!submission || submission.status === 'DRAFT') actions.push({ type: 'warning', message: 'Questionnaire non soumis', link: '/questionnaire' });
-    if (!submission?.dataOwnerNom) actions.push({ type: 'warning', message: 'Data Owner non désigné' });
-    const convAttente = conventions.filter(c => ['EN_ATTENTE_SIGNATURE_A', 'EN_ATTENTE_SIGNATURE_B'].includes(c.statut));
-    convAttente.forEach(c => actions.push({ type: 'action', message: `Convention "${c.objet}" en attente de signature` }));
+    if (submission && !submission.dataOwnerNom) actions.push({ type: 'warning', message: 'Data Owner non désigné', link: '/questionnaire' });
+    conventions.filter((c: any) => ['EN_ATTENTE_SIGNATURE_A', 'EN_ATTENTE_SIGNATURE_B'].includes(c.statut))
+      .forEach((c: any) => actions.push({ type: 'action', message: `Convention "${c.objet.substring(0, 50)}" en attente de signature` }));
     if (!readiness) actions.push({ type: 'info', message: 'Votre institution n\'est pas encore dans le pipeline PINS' });
-    else if (readiness.securityServerInstall === 'NON_DEMARRE') actions.push({ type: 'warning', message: 'Security Server non installé' });
-    const demandesNonTraitees = demandes.filter(d => d.statut === 'SOUMISE').length;
+    else if (readiness.securityServerInstall === 'NON_DEMARRE') actions.push({ type: 'warning', message: 'Security Server non installé — bloque les cas d\'usage PINS' });
+    casUsages.filter((cu: any) => cu.statutImpl === 'EN_PREPARATION')
+      .forEach((cu: any) => actions.push({ type: 'action', message: `Cas d'usage ${cu.code} : votre participation est requise` }));
 
     return reply.send({
-      institution, submission, conventions, casUsages, readiness,
-      demandes, fluxEntrants, actions, demandesNonTraitees,
+      institution, submission, conventions, casUsages, readiness, demandes, actions,
+      flux: { tous: tousFlux, consommer: toutConsommer, fournir: toutFournir },
       stats: {
-        nbFlux: (submission?.fluxExistants?.length || 0) + (submission?.donneesConsommer?.length || 0) + (submission?.donneesFournir?.length || 0),
+        nbFlux: tousFlux.length,
+        nbConsommer: toutConsommer.length,
+        nbFournir: toutFournir.length,
         nbCasUsages: casUsages.length,
         nbConventions: conventions.length,
         maturiteMoyenne: submission ? Math.round((submission.maturiteInfra + submission.maturiteDonnees + submission.maturiteCompetences + submission.maturiteGouvernance) / 4 * 10) / 10 : 0,
@@ -45,7 +92,6 @@ export async function institutionDashboardRoutes(app: FastifyInstance) {
     });
   });
 
-  // Flux de l'institution
   app.get('/flux', { onRequest: [app.authenticate] }, async (req: any, reply: any) => {
     const instId = req.user.institutionId;
     if (!instId) return reply.status(400).send({ error: 'Pas d\'institution liée' });
@@ -54,7 +100,6 @@ export async function institutionDashboardRoutes(app: FastifyInstance) {
     return reply.send({ institution: inst, submission: sub });
   });
 
-  // Conventions de l'institution
   app.get('/conventions', { onRequest: [app.authenticate] }, async (req: any, reply: any) => {
     const instId = req.user.institutionId;
     if (!instId) return reply.status(400).send({ error: 'Pas d\'institution liée' });
@@ -62,7 +107,6 @@ export async function institutionDashboardRoutes(app: FastifyInstance) {
     return reply.send(conventions);
   });
 
-  // Readiness X-Road
   app.get('/readiness', { onRequest: [app.authenticate] }, async (req: any, reply: any) => {
     const instId = req.user.institutionId;
     if (!instId) return reply.status(400).send({ error: 'Pas d\'institution liée' });
@@ -72,7 +116,6 @@ export async function institutionDashboardRoutes(app: FastifyInstance) {
 }
 
 export async function demandesRoutes(app: FastifyInstance) {
-  // Institution: créer une demande
   app.post('/', { onRequest: [app.authenticate] }, async (req: any, reply: any) => {
     const instId = req.user.institutionId;
     if (!instId) return reply.status(400).send({ error: 'Pas d\'institution liée' });
@@ -80,7 +123,6 @@ export async function demandesRoutes(app: FastifyInstance) {
     return reply.status(201).send(demande);
   });
 
-  // Institution: mes demandes
   app.get('/mine', { onRequest: [app.authenticate] }, async (req: any, reply: any) => {
     const instId = req.user.institutionId;
     if (!instId) return reply.status(400).send({ error: 'Pas d\'institution liée' });
@@ -88,7 +130,6 @@ export async function demandesRoutes(app: FastifyInstance) {
     return reply.send(demandes);
   });
 
-  // Admin: toutes les demandes
   app.get('/', { onRequest: [app.authenticateAdmin] }, async (req: any, reply: any) => {
     const { statut, type, institutionId } = req.query as any;
     const where: any = {};
@@ -96,15 +137,12 @@ export async function demandesRoutes(app: FastifyInstance) {
     if (type) where.type = type;
     if (institutionId) where.institutionId = institutionId;
     const demandes = await app.prisma.demandeInterop.findMany({ where, orderBy: { createdAt: 'desc' } });
-    // Enrichir avec institution
-    const instIds = [...new Set(demandes.map(d => d.institutionId))];
+    const instIds = [...new Set(demandes.map((d: any) => d.institutionId))];
     const institutions = await app.prisma.institution.findMany({ where: { id: { in: instIds } }, select: { id: true, code: true, nom: true } });
-    const instMap = Object.fromEntries(institutions.map(i => [i.id, i]));
-    const enriched = demandes.map(d => ({ ...d, institution: instMap[d.institutionId] || null }));
-    return reply.send(enriched);
+    const instMap = Object.fromEntries(institutions.map((i: any) => [i.id, i]));
+    return reply.send(demandes.map((d: any) => ({ ...d, institution: instMap[d.institutionId] || null })));
   });
 
-  // Admin: traiter une demande
   app.patch('/:id', { onRequest: [app.authenticateAdmin] }, async (req: any, reply: any) => {
     const data: any = { ...req.body };
     if (data.statut === 'RESOLUE' || data.statut === 'REJETEE') data.traiteeAt = new Date();
@@ -112,12 +150,11 @@ export async function demandesRoutes(app: FastifyInstance) {
     return reply.send(demande);
   });
 
-  // Admin: stats
   app.get('/stats', { onRequest: [app.authenticateAdmin] }, async (_req: any, reply: any) => {
     const all = await app.prisma.demandeInterop.findMany();
     const byStatut: Record<string, number> = {};
     const byType: Record<string, number> = {};
-    all.forEach(d => { byStatut[d.statut] = (byStatut[d.statut] || 0) + 1; byType[d.type] = (byType[d.type] || 0) + 1; });
-    return reply.send({ total: all.length, byStatut, byType, nonTraitees: all.filter(d => d.statut === 'SOUMISE').length });
+    all.forEach((d: any) => { byStatut[d.statut] = (byStatut[d.statut] || 0) + 1; byType[d.type] = (byType[d.type] || 0) + 1; });
+    return reply.send({ total: all.length, byStatut, byType, nonTraitees: all.filter((d: any) => d.statut === 'SOUMISE').length });
   });
 }
