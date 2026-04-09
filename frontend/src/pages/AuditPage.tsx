@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { api } from '@/services/api';
 import { useToast } from '@/components/ui/use-toast';
-import { Shield, Loader2, LogOut, Users, Activity, AlertTriangle, Pencil } from 'lucide-react';
+import { Shield, Loader2, LogOut, Users } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 type AuditLog = {
