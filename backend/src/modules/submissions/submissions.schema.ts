@@ -110,7 +110,7 @@ export const submissionQuerySchema = z.object({
   status: z.enum(['DRAFT', 'SUBMITTED', 'REVIEWED', 'VALIDATED', 'ARCHIVED']).optional(),
   institutionId: z.string().uuid().optional(),
   page: z.coerce.number().min(1).default(1),
-  limit: z.coerce.number().min(1).max(100).default(20),
+  limit: z.coerce.number().min(1).max(500).default(20),
 });
 
 // Status update
