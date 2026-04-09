@@ -28,6 +28,7 @@ import {
   Users,
   Upload,
   Shield,
+  MessageSquare,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -37,6 +38,7 @@ const navigation = [
   { name: 'Questionnaire', href: '/questionnaire', icon: FileText },
   { name: 'Soumissions', href: '/submissions', icon: ClipboardList },
   { name: 'Catalogue DPI', href: '/catalogue', icon: BookOpen },
+  { name: 'Mes demandes', href: '/institution/demandes', icon: MessageSquare, institutionOnly: true },
   { name: 'Institutions', href: '/institutions', icon: Building2, adminOnly: true },
   { name: 'Utilisateurs', href: '/admin/utilisateurs', icon: Users, adminOnly: true },
   { name: 'Import Word', href: '/admin/import', icon: Upload, adminOnly: true },
@@ -50,6 +52,7 @@ const navigation = [
   { name: 'Conventions', href: '/admin/conventions', icon: FileCheck, adminOnly: true },
   { name: 'Pipeline X-Road', href: '/admin/xroad-pipeline', icon: GitBranch, adminOnly: true },
   { name: 'Rapports', href: '/reports', icon: BarChart3, adminOnly: true },
+  { name: 'Demandes', href: '/admin/demandes', icon: MessageSquare, adminOnly: true },
   { name: 'Audit', href: '/admin/audit', icon: Shield, adminOnly: true },
 ];
 
@@ -67,7 +70,11 @@ export function DashboardLayout() {
   };
 
   const filteredNavigation = navigation.filter(
-    (item) => !item.adminOnly || user?.role === 'ADMIN'
+    (item: any) => {
+      if (item.adminOnly && user?.role !== 'ADMIN') return false;
+      if (item.institutionOnly && user?.role === 'ADMIN') return false;
+      return true;
+    }
   );
 
   const sidebarWidth = sidebarCollapsed ? 'w-16' : 'w-64';

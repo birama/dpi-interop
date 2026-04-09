@@ -908,3 +908,32 @@ model UserSession {
   @@index([userId])
   @@index([isActive])
 }
+
+// ============================================================================
+// DEMANDES D'INTEROPÉRABILITÉ
+// ============================================================================
+
+model DemandeInterop {
+  id                 String         @id @default(uuid())
+  institutionId      String
+  demandeurNom       String
+  demandeurEmail     String
+  type               String         // ACCES_DONNEES, CONVENTION, CONNEXION_PINS, ACCOMPAGNEMENT, SIGNALEMENT
+  titre              String
+  description        String         @db.Text
+  institutionCibleId String?
+  donneesVisees      String?        @db.Text
+  justification      String?        @db.Text
+  frequenceSouhaitee String?
+  urgence            String         @default("NORMALE") // FAIBLE, NORMALE, HAUTE, CRITIQUE
+  statut             String         @default("SOUMISE")  // SOUMISE, EN_COURS_TRAITEMENT, EN_ATTENTE_PARTENAIRE, RESOLUE, REJETEE
+  reponse            String?        @db.Text
+  respondantNom      String?
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+  traiteeAt          DateTime?
+
+  @@map("demandes_interop")
+  @@index([institutionId])
+  @@index([statut])
+}

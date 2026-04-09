@@ -31,6 +31,7 @@ import { QualificationPage } from '@/pages/QualificationPage';
 import { UtilisateursPage } from '@/pages/UtilisateursPage';
 import { ImportPage } from '@/pages/ImportPage';
 import { AuditPage } from '@/pages/AuditPage';
+import { DemandesPage } from '@/pages/DemandesPage';
 import { NotFoundPage } from '@/pages/NotFoundPage';
 
 // Protected Route wrapper
@@ -233,6 +234,22 @@ function App() {
             element={
               <ProtectedRoute adminOnly>
                 <AuditPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/demandes"
+            element={
+              <ProtectedRoute adminOnly>
+                <DemandesPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/institution/demandes"
+            element={
+              <ProtectedRoute>
+                <DemandesPage />
               </ProtectedRoute>
             }
           />

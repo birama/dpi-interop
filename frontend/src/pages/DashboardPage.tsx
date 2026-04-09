@@ -33,9 +33,17 @@ const STATUS_LABELS: Record<string, string> = {
   ARCHIVED: 'Archivé',
 };
 
+// Lazy import for institution dashboard
+import { InstitutionDashboardPage } from './InstitutionDashboardPage';
+
 export function DashboardPage() {
   const { user } = useAuthStore();
   const isAdmin = user?.role === 'ADMIN';
+
+  // Institution users get the enriched dashboard
+  if (!isAdmin && user?.institutionId) {
+    return <InstitutionDashboardPage />;
+  }
 
   const { data: submissionStats } = useQuery({
     queryKey: ['submissions-stats'],

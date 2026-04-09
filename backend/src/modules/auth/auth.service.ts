@@ -68,6 +68,13 @@ export class AuthService {
     const validPassword = await bcrypt.compare(password, user.password);
     if (!validPassword) {
       await this.app.prisma.auditLog.create({ data: { userEmail: email, userRole: 'UNKNOWN', action: 'LOGIN_FAILED', resource: 'auth', resourceLabel: email } });
+      // Check brute force
+      const recentFails = await this.app.prisma.auditLog.count({
+        where: { action: 'LOGIN_FAILED', userEmail: email, createdAt: { gte: new Date(Date.now() - 15 * 60 * 1000) } }
+      });
+      if (recentFails >= 5) {
+        await this.app.prisma.auditLog.create({ data: { userEmail: email, userRole: 'UNKNOWN', action: 'BRUTE_FORCE_SUSPECTED', resource: 'auth', resourceLabel: email } });
+      }
       throw { statusCode: 401, message: 'Email ou mot de passe incorrect' };
     }
 

@@ -105,6 +105,7 @@ export async function reportsRoutes(app: FastifyInstance) {
         .header('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document')
         .header('Content-Disposition', `attachment; filename=rapport-${submissionId}.docx`)
         .send(buffer);
+      try { await app.prisma.auditLog.create({ data: { userId: request.user.id, userEmail: request.user.email, userRole: request.user.role, action: 'EXPORT_WORD', resource: 'submission', resourceId: submissionId, ipAddress: request.headers['x-forwarded-for']?.toString() || request.ip, userAgent: request.headers['user-agent'] } }); } catch {}
     },
   });
 
@@ -124,6 +125,7 @@ export async function reportsRoutes(app: FastifyInstance) {
         .header('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document')
         .header('Content-Disposition', `attachment; filename=note-financement-${ptfCode}.docx`)
         .send(buffer);
+      try { await app.prisma.auditLog.create({ data: { userId: request.user.id, userEmail: request.user.email, userRole: request.user.role, action: 'EXPORT_WORD', resource: 'note-financement', resourceLabel: ptfCode, ipAddress: request.headers['x-forwarded-for']?.toString() || request.ip, userAgent: request.headers['user-agent'] } }); } catch {}
     },
   });
 
@@ -143,6 +145,7 @@ export async function reportsRoutes(app: FastifyInstance) {
         .header('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document')
         .header('Content-Disposition', `attachment; filename=compilation-interop-${date}.docx`)
         .send(buffer);
+      try { await app.prisma.auditLog.create({ data: { userId: _request.user.id, userEmail: _request.user.email, userRole: _request.user.role, action: 'EXPORT_COMPILATION', resource: 'compilation', resourceLabel: `compilation-${date}`, ipAddress: _request.headers['x-forwarded-for']?.toString() || _request.ip, userAgent: _request.headers['user-agent'] } }); } catch {}
     },
   });
 }

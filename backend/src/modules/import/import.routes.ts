@@ -75,6 +75,7 @@ export async function importRoutes(app: FastifyInstance) {
       const body = req.body;
       if (!body.institutionId) return reply.status(400).send({ error: 'institutionId requis' });
       const result = await confirmImport(app, body);
+      try { await app.prisma.auditLog.create({ data: { userId: req.user.id, userEmail: req.user.email, userRole: req.user.role, action: 'IMPORT_QUESTIONNAIRE', resource: 'submission', resourceId: result.submissionId, resourceLabel: result.institutionCode, details: { nbApps: result.nbApps, nbFlux: result.nbFlux, nbInfra: result.nbInfra }, ipAddress: req.headers['x-forwarded-for']?.toString() || req.ip, userAgent: req.headers['user-agent'] } }); } catch {}
       return reply.status(201).send(result);
     } catch (e: any) {
       return reply.status(500).send({ error: 'Erreur import', details: e.message });
