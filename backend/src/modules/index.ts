@@ -747,6 +747,69 @@ async function notificationRoutes(app: FastifyInstance) {
   });
 }
 
+// Audit & Session tracking
+async function auditRoutes(app: FastifyInstance) {
+  // GET /api/audit/logs — List audit logs with filters
+  app.get('/logs', { onRequest: [app.authenticateAdmin] }, async (req: any, reply: any) => {
+    const { page = '1', limit = '50', userId, action, resource, dateFrom, dateTo } = req.query as any;
+    const pageNum = Math.max(1, parseInt(page));
+    const limitNum = Math.min(100, Math.max(1, parseInt(limit)));
+    const skip = (pageNum - 1) * limitNum;
+
+    const where: any = {};
+    if (userId) where.userId = userId;
+    if (action) where.action = action;
+    if (resource) where.resource = resource;
+    if (dateFrom || dateTo) {
+      where.createdAt = {};
+      if (dateFrom) where.createdAt.gte = new Date(dateFrom);
+      if (dateTo) where.createdAt.lte = new Date(dateTo);
+    }
+
+    const [logs, total] = await Promise.all([
+      app.prisma.auditLog.findMany({ where, orderBy: { createdAt: 'desc' }, skip, take: limitNum }),
+      app.prisma.auditLog.count({ where }),
+    ]);
+
+    return reply.send({ data: logs, total, page: pageNum, limit: limitNum, totalPages: Math.ceil(total / limitNum) });
+  });
+
+  // GET /api/audit/sessions/active — Active sessions
+  app.get('/sessions/active', { onRequest: [app.authenticateAdmin] }, async (_req: any, reply: any) => {
+    const thirtyMinAgo = new Date(Date.now() - 30 * 60 * 1000);
+    const sessions = await app.prisma.userSession.findMany({
+      where: { isActive: true, lastActivityAt: { gte: thirtyMinAgo } },
+      orderBy: { lastActivityAt: 'desc' },
+    });
+    return reply.send(sessions);
+  });
+
+  // GET /api/audit/stats — Dashboard stats
+  app.get('/stats', { onRequest: [app.authenticateAdmin] }, async (_req: any, reply: any) => {
+    const now = new Date();
+    const h24ago = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+    const thirtyMinAgo = new Date(now.getTime() - 30 * 60 * 1000);
+
+    const [totalLogins24h, failedLogins24h, modifications24h, activeSessionsNow] = await Promise.all([
+      app.prisma.auditLog.count({ where: { action: 'LOGIN_SUCCESS', createdAt: { gte: h24ago } } }),
+      app.prisma.auditLog.count({ where: { action: 'LOGIN_FAILED', createdAt: { gte: h24ago } } }),
+      app.prisma.auditLog.count({ where: { action: { in: ['CREATE', 'UPDATE', 'DELETE'] }, createdAt: { gte: h24ago } } }),
+      app.prisma.userSession.count({ where: { isActive: true, lastActivityAt: { gte: thirtyMinAgo } } }),
+    ]);
+
+    return reply.send({ totalLogins24h, activeSessionsNow, failedLogins24h, modifications24h });
+  });
+
+  // DELETE /api/audit/sessions/:id — Force logout
+  app.delete('/sessions/:id', { onRequest: [app.authenticateAdmin] }, async (req: any, reply: any) => {
+    const session = await app.prisma.userSession.update({
+      where: { id: req.params.id },
+      data: { isActive: false, logoutAt: new Date() },
+    });
+    return reply.send(session);
+  });
+}
+
 export async function registerRoutes(app: FastifyInstance) {
   app.register(
     async function (api) {
@@ -770,6 +833,7 @@ export async function registerRoutes(app: FastifyInstance) {
       api.register(expertisesRoutes, { prefix: '/expertises' });
       api.register(registresNationauxRoutes, { prefix: '/registres-nationaux' });
       api.register(importRoutes, { prefix: '/import' });
+      api.register(auditRoutes, { prefix: '/audit' });
     },
     { prefix: '/api' }
   );

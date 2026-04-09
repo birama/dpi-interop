@@ -30,6 +30,7 @@ import { FinancementsPage } from '@/pages/FinancementsPage';
 import { QualificationPage } from '@/pages/QualificationPage';
 import { UtilisateursPage } from '@/pages/UtilisateursPage';
 import { ImportPage } from '@/pages/ImportPage';
+import { AuditPage } from '@/pages/AuditPage';
 import { NotFoundPage } from '@/pages/NotFoundPage';
 
 // Protected Route wrapper
@@ -224,6 +225,14 @@ function App() {
             element={
               <ProtectedRoute adminOnly>
                 <RegistresNationauxPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/audit"
+            element={
+              <ProtectedRoute adminOnly>
+                <AuditPage />
               </ProtectedRoute>
             }
           />

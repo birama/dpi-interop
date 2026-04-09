@@ -27,6 +27,7 @@ import {
   ClipboardCheck,
   Users,
   Upload,
+  Shield,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -49,6 +50,7 @@ const navigation = [
   { name: 'Conventions', href: '/admin/conventions', icon: FileCheck, adminOnly: true },
   { name: 'Pipeline X-Road', href: '/admin/xroad-pipeline', icon: GitBranch, adminOnly: true },
   { name: 'Rapports', href: '/reports', icon: BarChart3, adminOnly: true },
+  { name: 'Audit', href: '/admin/audit', icon: Shield, adminOnly: true },
 ];
 
 export function DashboardLayout() {

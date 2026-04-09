@@ -60,12 +60,14 @@ export class AuthService {
     });
 
     if (!user) {
+      await this.app.prisma.auditLog.create({ data: { userEmail: email, userRole: 'UNKNOWN', action: 'LOGIN_FAILED', resource: 'auth', resourceLabel: email } });
       throw { statusCode: 401, message: 'Email ou mot de passe incorrect' };
     }
 
     // Verify password
     const validPassword = await bcrypt.compare(password, user.password);
     if (!validPassword) {
+      await this.app.prisma.auditLog.create({ data: { userEmail: email, userRole: 'UNKNOWN', action: 'LOGIN_FAILED', resource: 'auth', resourceLabel: email } });
       throw { statusCode: 401, message: 'Email ou mot de passe incorrect' };
     }
 
@@ -79,6 +81,9 @@ export class AuthService {
     const payload = { id: user.id, email: user.email, role: user.role, institutionId: user.institutionId || undefined };
     const token = this.app.jwt.sign(payload, { expiresIn: '2h' });
     const refreshToken = this.app.jwt.sign({ ...payload, type: 'refresh' } as any, { expiresIn: '7d' });
+
+    // Audit log for successful login
+    await this.app.prisma.auditLog.create({ data: { userId: user.id, userEmail: user.email, userRole: user.role, action: 'LOGIN_SUCCESS', resource: 'auth', resourceLabel: user.email } });
 
     return {
       token,

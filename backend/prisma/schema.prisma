@@ -868,24 +868,43 @@ model FluxInstitution {
 }
 
 // ============================================================================
-// AUDIT LOGS (optionnel mais recommandé pour SENUM)
+// AUDIT LOGS
 // ============================================================================
 
 model AuditLog {
-  id            String     @id @default(uuid())
-
-  userId        String?
-  action        String     // LOGIN, CREATE, UPDATE, DELETE, EXPORT, etc.
-  entity        String?    // Table concernée
-  entityId      String?
-
-  changes       Json?      // Détails des changements
-  ipAddress     String?
-  userAgent     String?
-
-  createdAt     DateTime   @default(now())
+  id              String      @id @default(uuid())
+  userId          String?
+  userEmail       String
+  userRole        String
+  ipAddress       String?
+  userAgent       String?
+  action          String
+  resource        String
+  resourceId      String?
+  resourceLabel   String?
+  details         Json?
+  createdAt       DateTime    @default(now())
 
   @@map("audit_logs")
-  @@index([userId, createdAt])
-  @@index([action, createdAt])
+  @@index([userId])
+  @@index([action])
+  @@index([resource])
+  @@index([createdAt])
+}
+
+model UserSession {
+  id              String      @id @default(uuid())
+  userId          String
+  tokenHash       String      @unique
+  ipAddress       String?
+  userAgent       String?
+  loginAt         DateTime    @default(now())
+  lastActivityAt  DateTime    @default(now())
+  expiresAt       DateTime
+  isActive        Boolean     @default(true)
+  logoutAt        DateTime?
+
+  @@map("user_sessions")
+  @@index([userId])
+  @@index([isActive])
 }
