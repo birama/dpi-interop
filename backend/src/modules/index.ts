@@ -818,16 +818,11 @@ async function auditRoutes(app: FastifyInstance) {
   // GET /api/audit/sessions/active — Active sessions with user info
   app.get('/sessions/active', { onRequest: [app.authenticateAdmin] }, async (_req: any, reply: any) => {
     const thirtyMinAgo = new Date(Date.now() - 30 * 60 * 1000);
-    const sessions = await app.prisma.$queryRaw`
-      SELECT s.id, s."userId", s."loginAt", s."lastActivityAt", s."ipAddress", s."userAgent", s."isActive",
-             u.email, u.role, u."institutionId",
-             i.code as "institutionCode", i.nom as "institutionNom"
-      FROM user_sessions s
-      JOIN users u ON s."userId" = u.id
-      LEFT JOIN institutions i ON u."institutionId" = i.id
-      WHERE s."isActive" = true AND s."lastActivityAt" >= ${thirtyMinAgo}
-      ORDER BY s."lastActivityAt" DESC
-    `;
+    const sessions = await app.prisma.userSession.findMany({
+      where: { isActive: true, lastActivityAt: { gte: thirtyMinAgo } },
+      include: { user: { select: { email: true, role: true, institution: { select: { code: true, nom: true } } } } },
+      orderBy: { lastActivityAt: 'desc' },
+    });
     return reply.send(sessions);
   });
 
