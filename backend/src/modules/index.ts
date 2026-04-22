@@ -861,6 +861,150 @@ async function auditRoutes(app: FastifyInstance) {
   });
 }
 
+// ============================================================================
+// RECHERCHE GLOBALE
+// ============================================================================
+async function searchRoutes(app: FastifyInstance) {
+  app.get('/', { onRequest: [app.authenticate] }, async (req: any, reply: any) => {
+    const { q, limit = '10' } = req.query as any;
+    if (!q || q.trim().length < 2) return reply.send({ casUsage: [], institutions: [], conventions: [], users: [] });
+
+    const term = q.trim();
+    const lim = Math.min(parseInt(limit), 20);
+
+    const [casUsage, institutions, conventions, users] = await Promise.all([
+      app.prisma.casUsageMVP.findMany({
+        where: { OR: [{ code: { contains: term, mode: 'insensitive' } }, { titre: { contains: term, mode: 'insensitive' } }, { institutionSourceCode: { contains: term, mode: 'insensitive' } }, { institutionCibleCode: { contains: term, mode: 'insensitive' } }] },
+        select: { id: true, code: true, titre: true, statutImpl: true, institutionSourceCode: true, institutionCibleCode: true },
+        take: lim, orderBy: { code: 'asc' },
+      }),
+      app.prisma.institution.findMany({
+        where: { OR: [{ code: { contains: term, mode: 'insensitive' } }, { nom: { contains: term, mode: 'insensitive' } }, { ministere: { contains: term, mode: 'insensitive' } }] },
+        select: { id: true, code: true, nom: true, ministere: true },
+        take: lim, orderBy: { code: 'asc' },
+      }),
+      app.prisma.convention.findMany({
+        where: { OR: [{ objet: { contains: term, mode: 'insensitive' } }] },
+        select: { id: true, objet: true, statut: true, institutionA: { select: { code: true, nom: true } }, institutionB: { select: { code: true, nom: true } } },
+        take: lim, orderBy: { updatedAt: 'desc' },
+      }),
+      req.user.role === 'ADMIN' ? app.prisma.user.findMany({
+        where: { OR: [{ email: { contains: term, mode: 'insensitive' } }] },
+        select: { id: true, email: true, role: true, institution: { select: { code: true, nom: true } } },
+        take: lim, orderBy: { email: 'asc' },
+      }) : [],
+    ]);
+
+    return reply.send({ casUsage, institutions, conventions, users });
+  });
+}
+
+// ============================================================================
+// CAS D'USAGE 360° — VUE DÉTAILLÉE
+// ============================================================================
+async function casUsageDetailRoutes(app: FastifyInstance) {
+  app.get('/:id', { onRequest: [app.authenticate] }, async (req: any, reply: any) => {
+    const cu = await app.prisma.casUsageMVP.findUnique({
+      where: { id: req.params.id },
+      include: {
+        phaseMVP: true,
+        financements: { include: { programme: { include: { ptf: true } } } },
+        fluxInstitutions: { include: { submission: { include: { institution: { select: { id: true, code: true, nom: true } } } } } },
+        declarationsInst: { include: { submission: { include: { institution: { select: { code: true, nom: true } } } } } },
+      },
+    });
+    if (!cu) return reply.status(404).send({ error: 'Cas d\'usage non trouvé' });
+
+    // Charger les institutions source et cible par code
+    const [instSource, instCible] = await Promise.all([
+      cu.institutionSourceCode ? app.prisma.institution.findUnique({ where: { code: cu.institutionSourceCode }, select: { id: true, code: true, nom: true, ministere: true } }) : null,
+      cu.institutionCibleCode ? app.prisma.institution.findUnique({ where: { code: cu.institutionCibleCode }, select: { id: true, code: true, nom: true, ministere: true } }) : null,
+    ]);
+
+    // Conventions entre source et cible
+    let conventions: any[] = [];
+    if (instSource && instCible) {
+      conventions = await app.prisma.convention.findMany({
+        where: {
+          OR: [
+            { institutionAId: instSource.id, institutionBId: instCible.id },
+            { institutionAId: instCible.id, institutionBId: instSource.id },
+          ],
+        },
+        include: { institutionA: { select: { code: true, nom: true } }, institutionB: { select: { code: true, nom: true } } },
+      });
+    }
+
+    // X-Road readiness des deux institutions
+    const [xroadSource, xroadCible] = await Promise.all([
+      instSource ? app.prisma.xRoadReadiness.findUnique({ where: { institutionId: instSource.id }, include: { institution: { select: { code: true, nom: true } } } }) : null,
+      instCible ? app.prisma.xRoadReadiness.findUnique({ where: { institutionId: instCible.id }, include: { institution: { select: { code: true, nom: true } } } }) : null,
+    ]);
+
+    // Audit logs pour timeline
+    const auditLogs = await app.prisma.auditLog.findMany({
+      where: { resourceId: cu.id, resource: 'cas-usage-mvp' },
+      orderBy: { createdAt: 'asc' },
+      take: 50,
+    });
+
+    return reply.send({
+      ...cu,
+      institutionSource: instSource,
+      institutionCible: instCible,
+      conventions,
+      xroadSource,
+      xroadCible,
+      auditLogs,
+    });
+  });
+
+  // Update notes
+  app.patch('/:id/notes', { onRequest: [app.authenticateAdmin] }, async (req: any, reply: any) => {
+    const { notes } = req.body as any;
+    const cu = await app.prisma.casUsageMVP.update({
+      where: { id: req.params.id },
+      data: { notes },
+    });
+    try { await app.prisma.auditLog.create({ data: { userId: req.user.id, userEmail: req.user.email, userRole: req.user.role, action: 'UPDATE', resource: 'cas-usage-mvp', resourceId: req.params.id, resourceLabel: `notes: ${cu.code}`, ipAddress: req.headers['x-forwarded-for']?.toString() || req.ip, userAgent: req.headers['user-agent'] } }); } catch {}
+    return reply.send(cu);
+  });
+}
+
+// ============================================================================
+// DOCUMENTS RÉFÉRENCE
+// ============================================================================
+async function documentsRoutes(app: FastifyInstance) {
+  // List (accessible à tous les utilisateurs connectés)
+  app.get('/', { onRequest: [app.authenticate] }, async (req: any, reply: any) => {
+    const where: any = {};
+    if (req.user.role !== 'ADMIN') where.actif = true;
+    const docs = await app.prisma.documentReference.findMany({ where, orderBy: [{ categorie: 'asc' }, { datePublication: 'desc' }] });
+    return reply.send(docs);
+  });
+
+  // Create (admin + upload)
+  app.post('/', { onRequest: [app.authenticateAdmin] }, async (req: any, reply: any) => {
+    const data = req.body;
+    const doc = await app.prisma.documentReference.create({ data: { ...data, uploadePar: req.user.id } });
+    try { await app.prisma.auditLog.create({ data: { userId: req.user.id, userEmail: req.user.email, userRole: req.user.role, action: 'CREATE', resource: 'document', resourceId: doc.id, resourceLabel: doc.titre, ipAddress: req.headers['x-forwarded-for']?.toString() || req.ip, userAgent: req.headers['user-agent'] } }); } catch {}
+    return reply.status(201).send(doc);
+  });
+
+  // Update
+  app.patch('/:id', { onRequest: [app.authenticateAdmin] }, async (req: any, reply: any) => {
+    const doc = await app.prisma.documentReference.update({ where: { id: req.params.id }, data: req.body });
+    return reply.send(doc);
+  });
+
+  // Delete
+  app.delete('/:id', { onRequest: [app.authenticateAdmin] }, async (req: any, reply: any) => {
+    await app.prisma.documentReference.delete({ where: { id: req.params.id } });
+    try { await app.prisma.auditLog.create({ data: { userId: req.user.id, userEmail: req.user.email, userRole: req.user.role, action: 'DELETE', resource: 'document', resourceId: req.params.id, ipAddress: req.headers['x-forwarded-for']?.toString() || req.ip, userAgent: req.headers['user-agent'] } }); } catch {}
+    return reply.send({ success: true });
+  });
+}
+
 export async function registerRoutes(app: FastifyInstance) {
   // Update session activity on every authenticated request
   app.addHook('onResponse', async (request: any, reply: any) => {
@@ -900,6 +1044,9 @@ export async function registerRoutes(app: FastifyInstance) {
       api.register(auditRoutes, { prefix: '/audit' });
       api.register(institutionDashboardRoutes, { prefix: '/institution' });
       api.register(demandesRoutes, { prefix: '/demandes' });
+      api.register(searchRoutes, { prefix: '/search' });
+      api.register(casUsageDetailRoutes, { prefix: '/cas-usage-detail' });
+      api.register(documentsRoutes, { prefix: '/documents' });
     },
     { prefix: '/api' }
   );

@@ -32,6 +32,8 @@ import { UtilisateursPage } from '@/pages/UtilisateursPage';
 import { ImportPage } from '@/pages/ImportPage';
 import { AuditPage } from '@/pages/AuditPage';
 import { DemandesPage } from '@/pages/DemandesPage';
+import { CasUsage360Page } from '@/pages/CasUsage360Page';
+import { DocumentsPage } from '@/pages/DocumentsPage';
 import { NotFoundPage } from '@/pages/NotFoundPage';
 
 // Protected Route wrapper
@@ -250,6 +252,30 @@ function App() {
             element={
               <ProtectedRoute>
                 <DemandesPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/cas-usage/:id"
+            element={
+              <ProtectedRoute adminOnly>
+                <CasUsage360Page />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/documents"
+            element={
+              <ProtectedRoute>
+                <DocumentsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/documents"
+            element={
+              <ProtectedRoute adminOnly>
+                <DocumentsPage />
               </ProtectedRoute>
             }
           />

@@ -741,6 +741,7 @@ enum PhaseStatus {
 model CasUsageMVP {
   id                    String              @id @default(uuid())
   code                  String              @unique
+  ancienCode            String?             // Ancien code avant harmonisation PINS-CU-XXX
   titre                 String
   description           String?             @db.Text
   institutionSourceCode String?
@@ -763,12 +764,15 @@ model CasUsageMVP {
   dateIdentification    DateTime?
   dateLancement         DateTime?
   dateMiseEnProd        DateTime?
+  notes                 String?             @db.Text  // Notes libres admin
+  timeline              Json?               // Historique événements [{date, event, auteur}]
   observations          String?             @db.Text
   createdAt             DateTime            @default(now())
   updatedAt             DateTime            @updatedAt
   @@map("cas_usage_mvp")
   @@index([phaseMVPId])
   @@index([axePrioritaire])
+  @@index([statutImpl])
 }
 
 enum ImpactLevel {
@@ -940,4 +944,26 @@ model DemandeInterop {
   @@map("demandes_interop")
   @@index([institutionId])
   @@index([statut])
+}
+
+// ============================================================================
+// DOCUMENTS DE RÉFÉRENCE (espace documentaire)
+// ============================================================================
+
+model DocumentReference {
+  id              String   @id @default(uuid())
+  titre           String
+  description     String?  @db.Text
+  categorie       String   // juridique, technique, guide, modele
+  fichierNom      String   // nom du fichier original
+  fichierPath     String   // chemin sur le serveur
+  tailleMo        Float?
+  datePublication DateTime @default(now())
+  actif           Boolean  @default(true)
+  uploadePar      String?  // User ID
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("documents_reference")
+  @@index([categorie])
 }

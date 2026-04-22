@@ -6,9 +6,10 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { api } from '@/services/api';
 import { useToast } from '@/components/ui/use-toast';
-import { Loader2, FileDown, Plus, X, Pencil, Trash2, ChevronDown, ChevronRight, UserPlus } from 'lucide-react';
+import { Loader2, FileDown, Plus, X, Pencil, Trash2, ChevronDown, ChevronRight, UserPlus, ExternalLink, Search } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 
 const TYPE_COLORS: Record<string, string> = { BILATERAL: 'bg-blue-100 text-blue-700', MULTILATERAL: 'bg-violet-100 text-violet-700', FONDATION: 'bg-emerald-100 text-emerald-700', ETAT: 'bg-gold-50 text-gold', PRIVE: 'bg-gray-100 text-gray-600' };
 const FIN_COLORS: Record<string, string> = { IDENTIFIE: 'bg-gray-100 text-gray-500', DEMANDE: 'bg-gold-50 text-gold', EN_NEGOCIATION: 'bg-orange-100 text-orange-600', ACCORDE: 'bg-teal-50 text-teal', EN_COURS: 'bg-emerald-50 text-emerald-700', CLOTURE: 'bg-navy/10 text-navy', REFUSE: 'bg-red-50 text-red-500' };
@@ -170,7 +171,7 @@ export function FinancementsPage() {
                                 <thead><tr className="border-b text-gray-500"><th className="p-1 text-left">Code</th><th className="p-1 text-left">Titre</th><th className="p-1 text-center">Statut impl.</th><th className="p-1 text-center">Financement</th><th className="p-1 text-right">Montant</th><th className="p-1 text-right">Actions</th></tr></thead>
                                 <tbody>{prog.financements.map((fin: any) => (
                                   <tr key={fin.id} className="border-b">
-                                    <td className="p-1 font-mono text-teal">{fin.casUsageMVP?.code || '—'}</td>
+                                    <td className="p-1"><Link to={`/admin/cas-usage/${fin.casUsageMVP?.id}`} className="font-mono text-teal hover:underline">{fin.casUsageMVP?.code || '—'}</Link></td>
                                     <td className="p-1 text-navy max-w-[200px] truncate">{fin.casUsageMVP?.titre || '—'}</td>
                                     <td className="p-1 text-center"><span className={cn('px-1 py-0.5 rounded text-[9px]', STATUT_IMPL[fin.casUsageMVP?.statutImpl] || 'bg-gray-100')}>{fin.casUsageMVP?.statutImpl || '—'}</span></td>
                                     <td className="p-1 text-center"><span className={cn('px-1 py-0.5 rounded text-[9px]', FIN_COLORS[fin.statut])}>{fin.statut}</span></td>
@@ -215,27 +216,45 @@ export function FinancementsPage() {
       })}
 
       {/* ===== TAB 2 : ORPHELINS ===== */}
-      {tab === 'orphelins' && (
-        <Card><CardContent className="pt-4">
-          {orphelins.length === 0 ? <p className="text-center py-8 text-gray-400 text-sm">Tous les cas d'usage sont financés</p> : (
-            <table className="w-full text-xs">
-              <thead><tr className="border-b bg-gray-50 text-gray-500"><th className="p-2 text-left">Code</th><th className="p-2 text-left">Titre</th><th className="p-2 text-left">Flux</th><th className="p-2 text-center">Impact</th><th className="p-2 text-center">Phase</th><th className="p-2 text-right">Actions</th></tr></thead>
-              <tbody>{orphelins.map((cu: any) => (
-                <tr key={cu.id} className="border-b hover:bg-gray-50">
-                  <td className="p-2 font-mono text-teal">{cu.code}</td>
-                  <td className="p-2 text-navy font-medium max-w-[200px] truncate">{cu.titre}</td>
-                  <td className="p-2 text-gray-500">{[cu.institutionSourceCode, cu.institutionCibleCode].filter(Boolean).join(' → ')}</td>
-                  <td className="p-2 text-center"><span className={cn('px-1.5 py-0.5 rounded text-[10px]', IMPACT_COLORS[cu.impact])}>{cu.impact}</span></td>
-                  <td className="p-2 text-center">{cu.phaseMVP?.code || '—'}</td>
-                  <td className="p-2 text-right">
-                    <Button size="sm" variant="outline" className="h-6 text-[10px]" onClick={() => openModal('propose-fin', cu)}><Plus className="w-3 h-3 mr-1" /> Proposer à un PTF</Button>
-                  </td>
-                </tr>
-              ))}</tbody>
-            </table>
-          )}
-        </CardContent></Card>
-      )}
+      {tab === 'orphelins' && (() => {
+        const [orphSearch, setOrphSearch] = useState('');
+        const filtered = orphelins.filter((cu: any) => {
+          if (!orphSearch) return true;
+          const t = orphSearch.toLowerCase();
+          return cu.code?.toLowerCase().includes(t) || cu.titre?.toLowerCase().includes(t) || cu.institutionSourceCode?.toLowerCase().includes(t) || cu.institutionCibleCode?.toLowerCase().includes(t);
+        });
+        return (
+          <Card><CardContent className="pt-4 space-y-3">
+            <div className="relative">
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <Input value={orphSearch} onChange={e => setOrphSearch(e.target.value)} placeholder="Rechercher un cas orphelin..." className="pl-8 h-8 text-xs" />
+            </div>
+            {filtered.length === 0 ? <p className="text-center py-8 text-gray-400 text-sm">Tous les cas d'usage sont finances</p> : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-xs">
+                  <thead><tr className="border-b bg-gray-50 text-gray-500"><th className="p-2 text-left">Code</th><th className="p-2 text-left">Titre</th><th className="p-2 text-left">Flux</th><th className="p-2 text-center">Impact</th><th className="p-2 text-center">Statut</th><th className="p-2 text-center">Phase</th><th className="p-2 text-right">Actions</th></tr></thead>
+                  <tbody>{filtered.map((cu: any) => (
+                    <tr key={cu.id} className="border-b hover:bg-gray-50">
+                      <td className="p-2"><Link to={`/admin/cas-usage/${cu.id}`} className="font-mono text-teal hover:underline">{cu.code}</Link></td>
+                      <td className="p-2 text-navy font-medium max-w-[200px] truncate">{cu.titre}</td>
+                      <td className="p-2 text-gray-500">{[cu.institutionSourceCode, cu.institutionCibleCode].filter(Boolean).join(' → ')}</td>
+                      <td className="p-2 text-center"><span className={cn('px-1.5 py-0.5 rounded text-[10px]', IMPACT_COLORS[cu.impact])}>{cu.impact}</span></td>
+                      <td className="p-2 text-center"><span className={cn('px-1.5 py-0.5 rounded text-[10px]', STATUT_IMPL[cu.statutImpl] || 'bg-gray-100')}>{cu.statutImpl}</span></td>
+                      <td className="p-2 text-center">{cu.phaseMVP?.code || '—'}</td>
+                      <td className="p-2 text-right">
+                        <div className="flex items-center justify-end gap-1">
+                          <Button size="sm" variant="outline" className="h-6 text-[10px]" onClick={() => openModal('propose-fin', cu)}><Plus className="w-3 h-3 mr-1" /> Proposer</Button>
+                          <Link to={`/admin/cas-usage/${cu.id}`}><Button variant="ghost" size="sm" className="h-6"><ExternalLink className="w-3 h-3 text-teal" /></Button></Link>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}</tbody>
+                </table>
+              </div>
+            )}
+          </CardContent></Card>
+        );
+      })()}
 
       {/* ===== TAB 3 : EXPERTS ===== */}
       {tab === 'experts' && (

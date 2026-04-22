@@ -297,6 +297,42 @@ export const dashboardApi = {
 };
 
 // ============================================================================
+// RECHERCHE GLOBALE
+// ============================================================================
+export const searchApi = {
+  search: (q: string, limit = 10) =>
+    api.get<{ casUsage: any[]; institutions: any[]; conventions: any[]; users: any[] }>('/search', { params: { q, limit } }),
+};
+
+// ============================================================================
+// CAS D'USAGE 360°
+// ============================================================================
+export const casUsageDetailApi = {
+  getOne: (id: string) => api.get(`/cas-usage-detail/${id}`),
+  updateNotes: (id: string, notes: string) => api.patch(`/cas-usage-detail/${id}/notes`, { notes }),
+};
+
+// ============================================================================
+// CAS D'USAGE MVP (CRUD étendu)
+// ============================================================================
+export const casUsageMvpApi = {
+  getAll: (params?: any) => api.get('/cas-usage-mvp', { params }),
+  getOrphelins: () => api.get('/cas-usage-mvp/orphelins'),
+  getStats: () => api.get('/cas-usage-mvp/overview/stats'),
+  update: (id: string, data: any) => api.patch(`/cas-usage-mvp/${id}`, data),
+};
+
+// ============================================================================
+// DOCUMENTS
+// ============================================================================
+export const documentsApi = {
+  getAll: () => api.get('/documents'),
+  create: (data: any) => api.post('/documents', data),
+  update: (id: string, data: any) => api.patch(`/documents/${id}`, data),
+  delete: (id: string) => api.delete(`/documents/${id}`),
+};
+
+// ============================================================================
 // EXPORT ALL
 // ============================================================================
 export default api;

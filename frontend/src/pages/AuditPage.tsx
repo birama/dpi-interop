@@ -128,7 +128,7 @@ export function AuditPage() {
                 <tbody>
                   {(sessions as any[])?.map((s: any) => (
                     <tr key={s.id} className="border-b hover:bg-gray-50">
-                      <td className="p-2 font-medium text-navy">{s.user?.email || s.userId?.substring(0, 8)}</td>
+                      <td className="p-2 font-medium text-navy">{s.user?.email || '—'}</td>
                       <td className="p-2"><span className={cn('px-1.5 py-0.5 rounded text-[10px] font-medium', s.user?.role === 'ADMIN' ? 'bg-navy/10 text-navy' : 'bg-teal-50 text-teal')}>{s.user?.role || '—'}</span></td>
                       <td className="p-2">{s.user?.institution?.code || '—'}</td>
                       <td className="p-2 text-gray-500">{formatTimeAgo(s.loginAt)}</td>
@@ -200,7 +200,7 @@ export function AuditPage() {
       {tab === 'stats' && (
         <div className="space-y-4">
           {loadingStats ? <div className="flex justify-center py-8"><Loader2 className="w-6 h-6 animate-spin text-teal" /></div> : (
-            <div className="grid grid-cols-4 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               <Card className="border-l-4 border-l-teal"><CardContent className="p-3"><p className="text-[10px] text-gray-500">Connexions 24h</p><p className="text-lg font-bold text-teal">{stats?.totalLogins24h ?? 0}</p></CardContent></Card>
               <Card className="border-l-4 border-l-success"><CardContent className="p-3"><p className="text-[10px] text-gray-500">Sessions actives</p><p className="text-lg font-bold text-success">{stats?.activeSessionsNow ?? 0}</p></CardContent></Card>
               <Card className="border-l-4 border-l-red-500"><CardContent className="p-3"><p className="text-[10px] text-gray-500">Échecs 24h</p><p className="text-lg font-bold text-red-500">{stats?.failedLogins24h ?? 0}</p></CardContent></Card>
