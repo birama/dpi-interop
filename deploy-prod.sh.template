@@ -1,4 +1,12 @@
 #!/bin/bash
+# Template de deploiement — COPIER vers deploy-prod.sh et renseigner les secrets.
+# Le fichier deploy-prod.sh reel est .gitignored (contient secrets).
+#
+# Generer un JWT_SECRET fort :
+#   openssl rand -hex 32
+#
+# Remplacer les placeholders CHANGEME_XXX avant la premiere execution.
+
 set -e
 cd /opt/dpi-interop
 
@@ -9,8 +17,8 @@ echo "=== 2. Create .env ==="
 echo 'NODE_ENV=production' > backend/.env
 echo 'HOST=0.0.0.0' >> backend/.env
 echo 'PORT=3000' >> backend/.env
-echo 'DATABASE_URL=postgresql://dpiuser:iE3Occp0n0CCSmY@172.17.0.1:5432/dpidb?schema=public' >> backend/.env
-echo 'JWT_SECRET=changeme64charsminimumforproductionsecuritykey1234567890abcdef' >> backend/.env
+echo 'DATABASE_URL=postgresql://dpiuser:CHANGEME_DB_PASSWORD@172.17.0.1:5432/dpidb?schema=public' >> backend/.env
+echo 'JWT_SECRET=CHANGEME_JWT_SECRET_64_CHARS_MINIMUM' >> backend/.env
 echo 'JWT_EXPIRES_IN=24h' >> backend/.env
 echo 'CORS_ORIGIN=https://dpi-interop.senum.sn' >> backend/.env
 echo 'RATE_LIMIT_MAX=200' >> backend/.env
@@ -24,7 +32,7 @@ else
   docker rm -f pins-db 2>/dev/null || true
   docker run -d --name pins-db \
     -e POSTGRES_USER=dpiuser \
-    -e POSTGRES_PASSWORD=iE3Occp0n0CCSmY \
+    -e POSTGRES_PASSWORD=CHANGEME_DB_PASSWORD \
     -e POSTGRES_DB=dpidb \
     -p 5432:5432 \
     --restart always \

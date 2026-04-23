@@ -10,3 +10,7 @@ tmpclaude-*
 
 # Test temp files
 backend/tests/_*.json
+
+# Deploy script — contient secrets JWT_SECRET et DB password, ne pas versioner
+deploy-prod.sh
+deploy-prod.sh.local
