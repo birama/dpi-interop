@@ -3,13 +3,9 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { api } from '@/services/api';
 import { useAuthStore } from '@/store/auth';
-import { Loader2, AlertTriangle } from 'lucide-react';
+import { Loader2, AlertTriangle, AlertCircle, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
-import { SollicitationsBlock } from '@/modules/vue360/SollicitationsBlock';
-import { MesCasUsageInitiesBlock } from '@/modules/vue360/MesCasUsageInitiesBlock';
-import { QuiMeConcernentBlock } from '@/modules/vue360/QuiMeConcernentBlock';
-import { RadarSectorielBlock } from '@/modules/vue360/RadarSectorielBlock';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const STATUT_CU: Record<string, string> = { IDENTIFIE: 'bg-gray-100 text-gray-600', PRIORISE: 'bg-gold-50 text-gold', EN_PREPARATION: 'bg-blue-100 text-blue-600', EN_TEST: 'bg-teal-50 text-teal', EN_PRODUCTION: 'bg-success/10 text-success' };
@@ -26,6 +22,15 @@ export function InstitutionDashboardPage() {
     queryFn: () => api.get('/institution/dashboard').then(r => r.data),
     enabled: !!user?.institutionId,
   });
+
+  // Vue 360° : compter les sollicitations en attente pour passerelle Actions requises
+  const { data: incomingData } = useQuery({
+    queryKey: ['vue360-incoming'],
+    queryFn: () => api.get('/me/use-cases/incoming').then(r => r.data),
+    enabled: !!user?.institutionId,
+    retry: 1,
+  });
+  const sollicitationsCount = Array.isArray(incomingData) ? incomingData.length : 0;
 
   if (isLoading) return <div className="flex items-center justify-center h-64"><Loader2 className="w-6 h-6 animate-spin text-teal" /></div>;
   if (!data) return <div className="text-center py-12 text-gray-400">Aucune institution liée à votre compte</div>;
@@ -66,12 +71,26 @@ export function InstitutionDashboardPage() {
       </div>
 
       {/* Actions requises */}
-      {actions?.length > 0 && (
+      {(actions?.length > 0 || sollicitationsCount > 0) && (
         <Card className="border-l-4 border-l-orange-400">
           <CardContent className="p-3">
             <h3 className="text-sm font-bold text-navy mb-2">Actions requises</h3>
             <div className="space-y-1">
-              {actions.map((a: any, i: number) => (
+              {/* Passerelle Vue 360° : sollicitations en attente */}
+              {sollicitationsCount > 0 && (
+                <button
+                  onClick={() => navigate('/mes-cas-usage')}
+                  className="w-full flex items-center space-x-2 text-xs p-1.5 rounded hover:bg-amber-50 text-left"
+                >
+                  <AlertCircle className="w-3.5 h-3.5 flex-shrink-0 text-amber-600" />
+                  <span className="text-gray-700 flex-1">
+                    {sollicitationsCount} sollicitation{sollicitationsCount > 1 ? 's' : ''} en attente de votre avis sur des cas d'usage
+                  </span>
+                  <ChevronRight className="w-3.5 h-3.5 text-teal flex-shrink-0" />
+                </button>
+              )}
+
+              {actions?.map((a: any, i: number) => (
                 <div key={i} className="flex items-center space-x-2 text-xs">
                   <AlertTriangle className={cn('w-3.5 h-3.5 flex-shrink-0', a.type === 'warning' ? 'text-orange-500' : a.type === 'action' ? 'text-red-500' : 'text-blue-500')} />
                   <span className="text-gray-700">{a.message}</span>
@@ -203,27 +222,6 @@ export function InstitutionDashboardPage() {
         </CardContent>
       </Card>
 
-      {/* ============================================================= */}
-      {/* VUE 360° — Cycle de vie des cas d'usage                      */}
-      {/* ============================================================= */}
-      <div className="pt-2 border-t-2 border-dashed border-teal/30">
-        <div className="flex items-center gap-2 mb-4">
-          <div className="w-1 h-6 bg-teal" />
-          <h2 className="text-sm font-bold tracking-wider uppercase text-teal">Vue 360° — Cycle de vie des cas d'usage</h2>
-        </div>
-      </div>
-
-      {/* Bloc 1 : Sollicitations (pleine largeur) */}
-      <SollicitationsBlock />
-
-      {/* Bloc 2 + Bloc 4 : Initiés + Radar (2 colonnes) */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <MesCasUsageInitiesBlock />
-        <RadarSectorielBlock />
-      </div>
-
-      {/* Bloc 3 : Qui me concernent (pleine largeur) */}
-      <QuiMeConcernentBlock />
     </div>
   );
 }

@@ -33,6 +33,7 @@ import { ImportPage } from '@/pages/ImportPage';
 import { AuditPage } from '@/pages/AuditPage';
 import { DemandesPage } from '@/pages/DemandesPage';
 import { UseCaseDetailPage } from '@/modules/vue360/UseCaseDetailPage';
+import { MesCasUsagePage } from '@/modules/vue360/MesCasUsagePage';
 import { DuArbitragePage } from '@/modules/vue360/du/DuArbitragePage';
 import { RegistresCouverturePage } from '@/modules/vue360/registres/RegistresCouverturePage';
 import { DocumentsPage } from '@/pages/DocumentsPage';
@@ -270,6 +271,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <DocumentsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/mes-cas-usage"
+            element={
+              <ProtectedRoute>
+                <MesCasUsagePage />
               </ProtectedRoute>
             }
           />
