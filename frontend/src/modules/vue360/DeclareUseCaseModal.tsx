@@ -104,7 +104,14 @@ export function DeclareUseCaseModal({ onClose }: Props) {
     },
   });
 
-  const isValid = form.titre.length >= 5 && form.resumeMetier.length >= 10;
+  // Validations
+  const titreOk = form.titre.length >= 5;
+  const resumeOk = form.resumeMetier.length >= 10;
+  const stakeholdersOk = stakeholders.some(
+    s => s.institutionId && (s.role === 'FOURNISSEUR' || s.role === 'CONSOMMATEUR')
+  );
+  const isValid = titreOk && resumeOk && stakeholdersOk;
+  const stakeholdersWithMissingInst = stakeholders.filter(s => !s.institutionId).length;
 
   const addStakeholder = () => setStakeholders([...stakeholders, { institutionId: '', role: 'FOURNISSEUR' }]);
   const removeStakeholder = (idx: number) => setStakeholders(stakeholders.filter((_, i) => i !== idx));
@@ -178,10 +185,15 @@ export function DeclareUseCaseModal({ onClose }: Props) {
             />
           </div>
 
-          {/* Stakeholders pressentis — CLEE METIER */}
-          <div className="border-2 border-dashed border-teal/30 rounded-lg p-3 bg-teal-50/20 space-y-2">
+          {/* Stakeholders pressentis — CLEE METIER (obligatoire : au moins 1 FOURNISSEUR ou CONSOMMATEUR renseigne) */}
+          <div className={cn(
+            'border-2 border-dashed rounded-lg p-3 space-y-2',
+            stakeholdersOk ? 'border-teal/30 bg-teal-50/20' : 'border-red-400 bg-red-50/30'
+          )}>
             <div className="flex items-center justify-between">
-              <Label className="text-xs font-semibold text-navy">Parties prenantes a solliciter</Label>
+              <Label className="text-xs font-semibold text-navy">
+                Parties prenantes a solliciter <span className="text-red-500">*</span>
+              </Label>
               <button
                 type="button"
                 onClick={addStakeholder}
@@ -190,14 +202,22 @@ export function DeclareUseCaseModal({ onClose }: Props) {
                 <Plus className="w-3 h-3" /> Ajouter
               </button>
             </div>
-            <p className="text-[10px] text-gray-500">Une consultation sera ouverte automatiquement pour chaque fournisseur et consommateur designe. Pas besoin d'ajouter votre institution : elle est deja inscrite comme initiatrice.</p>
+            <p className="text-[10px] text-gray-500">Au moins une institution FOURNISSEUR ou CONSOMMATEUR doit etre selectionnee. Une consultation sera ouverte automatiquement pour chacune (SLA 15 jours). Pas besoin d'ajouter votre institution : elle est deja inscrite comme initiatrice.</p>
+            {!stakeholdersOk && (
+              <p className="text-[11px] text-red-600 font-medium">
+                Selectionnez au moins une institution dans le dropdown ci-dessous.
+              </p>
+            )}
 
             {stakeholders.length === 0 && (
               <p className="text-xs text-gray-400 italic text-center py-2">Aucune partie prenante designee — le cas d'usage sera porte par votre seule institution</p>
             )}
 
             {stakeholders.map((sh, idx) => (
-              <div key={idx} className="flex items-center gap-2">
+              <div key={idx} className={cn(
+                'flex items-center gap-2 p-1 rounded',
+                !sh.institutionId && 'ring-1 ring-red-300 bg-red-50/40'
+              )}>
                 <div className="flex-1">
                   <SearchableSelect
                     options={instOptionsId}
@@ -333,21 +353,33 @@ export function DeclareUseCaseModal({ onClose }: Props) {
           </div>
 
           {/* Footer */}
-          <div className="flex justify-end gap-2 pt-2 border-t border-gray-200">
-            <button onClick={onClose} className="inline-flex items-center gap-1.5 text-xs font-semibold px-4 py-2 rounded-md text-gray-600 hover:bg-gray-100">
-              Annuler
-            </button>
-            <button
-              onClick={() => createMut.mutate()}
-              disabled={!isValid || createMut.isPending}
-              className={cn(
-                'inline-flex items-center gap-1.5 text-xs font-semibold px-4 py-2 rounded-md text-white',
-                isValid ? 'bg-teal hover:bg-teal/90' : 'bg-gray-300 cursor-not-allowed'
-              )}
-            >
-              {createMut.isPending && <Loader2 className="w-3 h-3 animate-spin" />}
-              Declarer le cas d'usage
-            </button>
+          <div className="pt-2 border-t border-gray-200 space-y-2">
+            {!isValid && (
+              <div className="text-[11px] text-red-600 text-right space-y-0.5">
+                {!titreOk && <div>• Titre : au moins 5 caracteres</div>}
+                {!resumeOk && <div>• Resume metier : au moins 10 caracteres</div>}
+                {!stakeholdersOk && <div>• Au moins un FOURNISSEUR ou CONSOMMATEUR avec institution selectionnee</div>}
+                {stakeholdersWithMissingInst > 0 && stakeholdersOk && (
+                  <div className="text-amber-700">⚠ {stakeholdersWithMissingInst} ligne(s) de partie prenante sans institution seront ignorees</div>
+                )}
+              </div>
+            )}
+            <div className="flex justify-end gap-2">
+              <button onClick={onClose} className="inline-flex items-center gap-1.5 text-xs font-semibold px-4 py-2 rounded-md text-gray-600 hover:bg-gray-100">
+                Annuler
+              </button>
+              <button
+                onClick={() => createMut.mutate()}
+                disabled={!isValid || createMut.isPending}
+                className={cn(
+                  'inline-flex items-center gap-1.5 text-xs font-semibold px-4 py-2 rounded-md text-white',
+                  isValid ? 'bg-teal hover:bg-teal/90' : 'bg-gray-300 cursor-not-allowed'
+                )}
+              >
+                {createMut.isPending && <Loader2 className="w-3 h-3 animate-spin" />}
+                Declarer le cas d'usage
+              </button>
+            </div>
           </div>
         </div>
       </div>
