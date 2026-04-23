@@ -36,7 +36,7 @@ export function ConventionsPage() {
   const { data: instsData } = useQuery({ queryKey: ['institutions-conv'], queryFn: () => institutionsApi.getAll({ limit: 500 }) });
 
   const institutions = instsData?.data?.data || [];
-  const instOptions = institutions.map((i: any) => ({ value: i.id, label: i.code, sublabel: i.nom }));
+  const instOptions = institutions.map((i: any) => ({ value: i.id, label: `${i.code} — ${i.nom}`, sublabel: i.ministere }));
 
   const createMut = useMutation({
     mutationFn: (data: any) => api.post('/conventions', data),

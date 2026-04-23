@@ -33,6 +33,14 @@ model User {
   // Sessions
   sessions      UserSession[]
 
+  // Vue 360° — relations inverses
+  stakeholdersAjoutes      UseCaseStakeholder[]    @relation("StakeholderAjoute")
+  consultationsOuvertes    UseCaseConsultation[]   @relation("ConsultationOuvertePar")
+  feedbacksAuteur          UseCaseFeedback[]       @relation("FeedbackAuteur")
+  statusHistoryAuteur      UseCaseStatusHistory[]  @relation("StatusHistoryAuteur")
+  notificationsVue360      Notification[]          @relation("UserNotifications")
+  registresUsageAjoutes    CasUsageRegistre[]      @relation("RegistreUsageAjoute")
+
   @@map("users")
   @@index([email])
 }
@@ -40,6 +48,56 @@ model User {
 enum Role {
   ADMIN       // SENUM/MCTN
   INSTITUTION // Administrations sectorielles
+}
+
+// ============================================================================
+// VUE 360° — ÉNUMÉRATIONS
+// ============================================================================
+
+/// Rôle joué par une institution dans un cas d'usage
+enum UseCaseRole {
+  INITIATEUR
+  FOURNISSEUR
+  CONSOMMATEUR
+  PARTIE_PRENANTE
+}
+
+/// Statut du cas d'usage dans le pipeline Vue 360°
+enum UseCaseStatus {
+  DECLARE
+  EN_CONSULTATION
+  VALIDATION_CONJOINTE
+  QUALIFIE
+  PRIORISE
+  FINANCEMENT_OK
+  CONVENTIONNE
+  EN_PRODUCTION_360  // suffixé pour éviter conflit avec StatutImplementation.EN_PRODUCTION
+  SUSPENDU_360       // suffixé pour éviter conflit avec StatutImplementation.SUSPENDU
+  RETIRE
+}
+
+/// Type d'avis formel donné par une partie prenante
+enum FeedbackType {
+  VALIDATION
+  RESERVE
+  REFUS_MOTIVE
+  QUESTION
+  CONTRE_PROPOSITION
+}
+
+/// Statut d'une consultation adressée à une partie prenante
+enum ConsultationStatus {
+  EN_ATTENTE
+  REPONDU
+  ECHU
+  ANNULE
+}
+
+/// Mode d'interaction cas d'usage ↔ référentiel national
+enum RegistreUsageMode {
+  CONSOMME
+  ALIMENTE
+  CREE
 }
 
 // ============================================================================
@@ -64,6 +122,10 @@ model Institution {
   conventionsA        Convention[] @relation("conventionPartieA")
   conventionsB        Convention[] @relation("conventionPartieB")
   xroadReadiness      XRoadReadiness?
+
+  // Vue 360° — relations inverses
+  stakeholders        UseCaseStakeholder[]
+  notificationsInst   Notification[]        @relation("InstitutionNotifications")
 
   // Audit
   createdAt           DateTime @default(now())
@@ -618,6 +680,9 @@ model RegistreNational {
   tauxCompletude      Int?
   tauxDoublons        Int?
 
+  // Vue 360° — relation inverse
+  casUsagesAssocies   CasUsageRegistre[]
+
   createdAt           DateTime  @default(now())
   updatedAt           DateTime  @updatedAt
 
@@ -767,12 +832,22 @@ model CasUsageMVP {
   notes                 String?             @db.Text  // Notes libres admin
   timeline              Json?               // Historique événements [{date, event, auteur}]
   observations          String?             @db.Text
+
+  // Vue 360° — champs et relations
+  statutVueSection      UseCaseStatus       @default(DECLARE)
+  resumeMetier          String?             @db.Text  // Résumé métier 2-3 lignes
+  baseLegale            String?             @db.Text  // Base légale invoquée
+  stakeholders360       UseCaseStakeholder[]
+  statusHistory         UseCaseStatusHistory[]
+  registresAssocies     CasUsageRegistre[]
+
   createdAt             DateTime            @default(now())
   updatedAt             DateTime            @updatedAt
   @@map("cas_usage_mvp")
   @@index([phaseMVPId])
   @@index([axePrioritaire])
   @@index([statutImpl])
+  @@index([statutVueSection])
 }
 
 enum ImpactLevel {
@@ -944,6 +1019,150 @@ model DemandeInterop {
   @@map("demandes_interop")
   @@index([institutionId])
   @@index([statut])
+}
+
+// ============================================================================
+// VUE 360° — NOUVEAUX MODÈLES
+// ============================================================================
+
+/// Partie prenante formellement désignée d'un cas d'usage
+model UseCaseStakeholder {
+  id             String         @id @default(cuid())
+  casUsageId     String
+  institutionId  String
+  role           UseCaseRole
+  autoSaisine    Boolean        @default(false)
+  dateAjout      DateTime       @default(now())
+  ajoutePar      String?
+  actif          Boolean        @default(true)
+  dateRetrait    DateTime?
+  motifRetrait   String?        @db.Text
+
+  casUsage       CasUsageMVP    @relation(fields: [casUsageId], references: [id], onDelete: Cascade)
+  institution    Institution    @relation(fields: [institutionId], references: [id])
+  ajouteParUser  User?          @relation("StakeholderAjoute", fields: [ajoutePar], references: [id])
+  consultations  UseCaseConsultation[]
+  feedbacks      UseCaseFeedback[]
+
+  @@unique([casUsageId, institutionId, role])
+  @@index([institutionId, role, actif])
+  @@index([casUsageId, actif])
+  @@map("use_case_stakeholder")
+}
+
+/// Consultation : demande d'avis adressée à une partie prenante
+model UseCaseConsultation {
+  id               String              @id @default(cuid())
+  stakeholderId    String
+  dateDemande      DateTime            @default(now())
+  dateEcheance     DateTime
+  status           ConsultationStatus  @default(EN_ATTENTE)
+  relances         Int                 @default(0)
+  derniereRelance  DateTime?
+  ouvertePar       String
+  motifSollicit    String?             @db.Text
+
+  stakeholder      UseCaseStakeholder  @relation(fields: [stakeholderId], references: [id], onDelete: Cascade)
+  ouvertParUser    User                @relation("ConsultationOuvertePar", fields: [ouvertePar], references: [id])
+  feedbacks        UseCaseFeedback[]
+
+  @@index([stakeholderId])
+  @@index([status, dateEcheance])
+  @@map("use_case_consultation")
+}
+
+/// Avis formel donné par une institution en réponse à une consultation
+model UseCaseFeedback {
+  id                    String              @id @default(cuid())
+  consultationId        String?
+  stakeholderId         String
+  type                  FeedbackType
+  motivation            String              @db.Text
+  piecesJointes         Json?
+  auteurUserId          String
+  auteurNom             String
+  auteurFonction        String?
+  auteurInstitutionNom  String
+  dateAvis              DateTime            @default(now())
+  amendeDe              String?
+
+  consultation          UseCaseConsultation? @relation(fields: [consultationId], references: [id])
+  stakeholder           UseCaseStakeholder   @relation(fields: [stakeholderId], references: [id], onDelete: Cascade)
+  auteur                User                 @relation("FeedbackAuteur", fields: [auteurUserId], references: [id])
+  amendements           UseCaseFeedback[]    @relation("FeedbackAmendement")
+  amendeDeFeedback      UseCaseFeedback?     @relation("FeedbackAmendement", fields: [amendeDe], references: [id])
+
+  @@index([stakeholderId, dateAvis])
+  @@index([auteurUserId])
+  @@index([consultationId])
+  @@map("use_case_feedback")
+}
+
+/// Journal inaltérable des transitions d'état d'un cas d'usage
+model UseCaseStatusHistory {
+  id                String         @id @default(cuid())
+  casUsageId        String
+  statusFrom        UseCaseStatus?
+  statusTo          UseCaseStatus
+  motif             String?        @db.Text
+  auteurUserId      String
+  auteurNom         String
+  auteurInstitution String
+  dateTransition    DateTime       @default(now())
+  pieceJustif       String?
+
+  casUsage          CasUsageMVP    @relation(fields: [casUsageId], references: [id], onDelete: Cascade)
+  auteur            User           @relation("StatusHistoryAuteur", fields: [auteurUserId], references: [id])
+
+  @@index([casUsageId, dateTransition])
+  @@index([auteurUserId])
+  @@map("use_case_status_history")
+}
+
+/// Notification in-app Vue 360°
+model Notification {
+  id            String        @id @default(cuid())
+  userId        String
+  institutionId String?
+  type          String        // CONSULTATION_OUVERTE | AVIS_RECU | RELANCE | ARBITRAGE | TRANSITION
+  titre         String
+  message       String        @db.Text
+  lienUrl       String?
+  refType       String?
+  refId         String?
+  lu            Boolean       @default(false)
+  dateLu        DateTime?
+  dateCreation  DateTime      @default(now())
+
+  user          User          @relation("UserNotifications", fields: [userId], references: [id])
+  institution   Institution?  @relation("InstitutionNotifications", fields: [institutionId], references: [id])
+
+  @@index([userId, lu, dateCreation])
+  @@index([institutionId, dateCreation])
+  @@map("notification")
+}
+
+/// Liaison enrichie entre un cas d'usage et un référentiel national
+model CasUsageRegistre {
+  id               String              @id @default(cuid())
+  casUsageId       String
+  registreId       String
+  mode             RegistreUsageMode
+  champsConcernes  Json?
+  commentaire      String?             @db.Text
+  volumetrieEst    String?
+  criticite        String?
+  dateAjout        DateTime            @default(now())
+  ajoutePar        String?
+
+  casUsage         CasUsageMVP         @relation(fields: [casUsageId], references: [id], onDelete: Cascade)
+  registre         RegistreNational    @relation(fields: [registreId], references: [id])
+  ajouteParUser    User?               @relation("RegistreUsageAjoute", fields: [ajoutePar], references: [id])
+
+  @@unique([casUsageId, registreId, mode])
+  @@index([registreId, mode])
+  @@index([casUsageId])
+  @@map("cas_usage_registre")
 }
 
 // ============================================================================

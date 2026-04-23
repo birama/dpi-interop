@@ -5,6 +5,10 @@ import { submissionsRoutes } from './submissions/index.js';
 import { reportsRoutes } from './reports/index.js';
 import { importRoutes } from './import/import.routes.js';
 import { institutionDashboardRoutes, demandesRoutes } from './institution-dashboard/routes.js';
+import { useCasesRoutes } from './vue360/useCases.routes.js';
+import { useCasesMeRoutes } from './vue360/useCasesMe.routes.js';
+import { useCasesWriteRoutes, consultationRoutes, feedbackRoutes, duArbitrageRoutes } from './vue360/useCasesWrite.routes.js';
+import { registresCouvertureRoutes, registresUseCaseRoutes } from './vue360/registres.routes.js';
 
 // Inline routes for conventions and xroad
 async function conventionsRoutes(app: FastifyInstance) {
@@ -1047,6 +1051,16 @@ export async function registerRoutes(app: FastifyInstance) {
       api.register(searchRoutes, { prefix: '/search' });
       api.register(casUsageDetailRoutes, { prefix: '/cas-usage-detail' });
       api.register(documentsRoutes, { prefix: '/documents' });
+
+      // Vue 360°
+      api.register(useCasesRoutes, { prefix: '/use-cases' });
+      api.register(useCasesWriteRoutes, { prefix: '/use-cases' });
+      api.register(useCasesMeRoutes, { prefix: '/me/use-cases' });
+      api.register(consultationRoutes, { prefix: '/consultations' });
+      api.register(feedbackRoutes, { prefix: '/feedback' });
+      api.register(duArbitrageRoutes, { prefix: '/du/arbitrage' });
+      api.register(registresCouvertureRoutes, { prefix: '/registres' });
+      api.register(registresUseCaseRoutes, { prefix: '/use-cases' });
     },
     { prefix: '/api' }
   );

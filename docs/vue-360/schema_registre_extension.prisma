@@ -1,0 +1,79 @@
+// =============================================================================
+//  EXTENSION SCHÉMA PRISMA — Lien Cas d'usage ↔ Référentiels nationaux
+//  Addendum v1.1 au document MCTN/DU/APP-DPI-INTEROP/CONC-2026-02
+//  Référence addendum : MCTN/DU/APP-DPI-INTEROP/CONC-2026-02-A1
+//  Version    : 1.1 — 22 avril 2026
+//
+//  Cette extension ajoute la table de liaison CasUsageRegistre, qui matérialise
+//  la relation N-N entre CasUsageMVP et RegistreNational (modèle existant),
+//  enrichie du mode d'usage (CONSOMME / ALIMENTE / CREE) et des champs concernés.
+//
+//  Elle vient en complément de l'extension Vue 360° initiale (stakeholders,
+//  consultations, feedbacks, status history, notifications).
+// =============================================================================
+
+/// Mode par lequel un cas d'usage interagit avec un référentiel national.
+/// - CONSOMME : lecture des données du référentiel
+/// - ALIMENTE : mise à jour d'attributs du référentiel (enrichissement contrôlé)
+/// - CREE     : création d'entrées dans le référentiel (service d'autorité)
+enum RegistreUsageMode {
+  CONSOMME
+  ALIMENTE
+  CREE
+}
+
+/// Liaison enrichie entre un cas d'usage et un référentiel national.
+/// Permet de savoir, pour chaque cas d'usage, quels référentiels il touche,
+/// avec quel mode d'interaction, et sur quels champs précis.
+///
+/// Objectifs :
+///   1. Anti-duplication : détecter les cas d'usage redondants touchant
+///      les mêmes attributs d'un même référentiel.
+///   2. Vue par référentiel : lister tous les cas d'usage consommant NINEA,
+///      alimentant RCCM, etc.
+///   3. Cartographie de couverture : identifier les référentiels
+///      sur-sollicités, sous-exposés ou absents du catalogue PINS.
+///   4. Articulation AEG → PINS : matérialiser au niveau opérationnel
+///      les référentiels sémantiques produits par l'AEG.
+model CasUsageRegistre {
+  id               String              @id @default(cuid())
+  casUsageId       String
+  registreId       String
+  mode             RegistreUsageMode
+  champsConcernes  Json?               // ex. ["ninea","raisonSociale","statutFiscal"]
+  commentaire      String?             @db.Text
+  volumetrieEst    String?             // estimation indicative (ex. "1.2 M/mois")
+  criticite        String?             // FAIBLE | MOYENNE | CRITIQUE (snapshot)
+  dateAjout        DateTime            @default(now())
+  ajoutePar        String?             // userId
+
+  // Relations
+  casUsage         CasUsageMVP         @relation(fields: [casUsageId], references: [id], onDelete: Cascade)
+  registre         RegistreNational    @relation(fields: [registreId], references: [id])
+  ajouteParUser    User?               @relation("RegistreUsageAjoute", fields: [ajoutePar], references: [id])
+
+  @@unique([casUsageId, registreId, mode])
+  @@index([registreId, mode])
+  @@index([casUsageId])
+  @@map("cas_usage_registre")
+}
+
+// -----------------------------------------------------------------------------
+//  RELATIONS INVERSES À AJOUTER AUX MODÈLES EXISTANTS
+// -----------------------------------------------------------------------------
+
+// --- Dans le modèle CasUsageMVP : ajouter
+//
+// registresAssocies    CasUsageRegistre[]
+
+// --- Dans le modèle RegistreNational : ajouter
+//
+// casUsagesAssocies    CasUsageRegistre[]
+
+// --- Dans le modèle User : ajouter
+//
+// registresUsageAjoutes CasUsageRegistre[]   @relation("RegistreUsageAjoute")
+
+// =============================================================================
+//  FIN DU FICHIER
+// =============================================================================

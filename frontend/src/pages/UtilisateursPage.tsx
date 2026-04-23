@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -40,9 +40,16 @@ export function UtilisateursPage() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Filters
+  // Filters — debounce search to avoid re-render on every keystroke
   const [roleFilter, setRoleFilter] = useState('');
+  const [searchInput, setSearchInput] = useState('');
   const [searchFilter, setSearchFilter] = useState('');
+  const debounceRef = useRef<NodeJS.Timeout>();
+  useEffect(() => {
+    clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => setSearchFilter(searchInput), 400);
+    return () => clearTimeout(debounceRef.current);
+  }, [searchInput]);
 
   // Modals
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -60,9 +67,10 @@ export function UtilisateursPage() {
   const [bulkEmailPattern, setBulkEmailPattern] = useState('{code}@interop.gouv.sn');
 
   // Queries
-  const { data: usersData, isLoading } = useQuery({
+  const { data: usersData, isLoading, isFetching } = useQuery({
     queryKey: ['admin-users', roleFilter, searchFilter],
     queryFn: () => api.get('/users', { params: { ...(roleFilter && { role: roleFilter }), ...(searchFilter && { search: searchFilter }) } }),
+    placeholderData: (prev: any) => prev, // keep previous data during refetch
   });
 
   const { data: institutionsData } = useQuery({
@@ -124,8 +132,8 @@ export function UtilisateursPage() {
 
   const users: UserItem[] = usersData?.data || [];
   const institutions = (institutionsData?.data?.data || institutionsData?.data || []) as any[];
-  const institutionOptions = institutions.map((i: any) => ({ value: i.id, label: i.nom, sublabel: `${i.code} — ${i.ministere}` }));
-  const institutionCodeOptions = institutions.map((i: any) => ({ value: i.code, label: i.nom, sublabel: `${i.code} — ${i.ministere}` }));
+  const institutionOptions = institutions.map((i: any) => ({ value: i.id, label: `${i.code} — ${i.nom}`, sublabel: i.ministere }));
+  const institutionCodeOptions = institutions.map((i: any) => ({ value: i.code, label: `${i.code} — ${i.nom}`, sublabel: i.ministere }));
 
   // Stats
   const totalUsers = users.length;
@@ -207,12 +215,15 @@ export function UtilisateursPage() {
           <option value="ADMIN">Admin</option>
           <option value="INSTITUTION">Institution</option>
         </select>
-        <Input
-          placeholder="Rechercher email, institution..."
-          value={searchFilter}
-          onChange={e => setSearchFilter(e.target.value)}
-          className="max-w-xs h-8 text-sm"
-        />
+        <div className="relative max-w-xs">
+          <Input
+            placeholder="Rechercher email, institution..."
+            value={searchInput}
+            onChange={e => setSearchInput(e.target.value)}
+            className="h-8 text-sm"
+          />
+          {isFetching && <Loader2 className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 animate-spin text-gray-400" />}
+        </div>
       </div>
 
       {/* Users Table */}

@@ -32,7 +32,7 @@ import { UtilisateursPage } from '@/pages/UtilisateursPage';
 import { ImportPage } from '@/pages/ImportPage';
 import { AuditPage } from '@/pages/AuditPage';
 import { DemandesPage } from '@/pages/DemandesPage';
-import { CasUsage360Page } from '@/pages/CasUsage360Page';
+import { UseCaseDetailPage } from '@/modules/vue360/UseCaseDetailPage';
 import { DocumentsPage } from '@/pages/DocumentsPage';
 import { NotFoundPage } from '@/pages/NotFoundPage';
 
@@ -258,8 +258,8 @@ function App() {
           <Route
             path="/admin/cas-usage/:id"
             element={
-              <ProtectedRoute adminOnly>
-                <CasUsage360Page />
+              <ProtectedRoute>
+                <UseCaseDetailPage />
               </ProtectedRoute>
             }
           />

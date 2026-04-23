@@ -40,7 +40,7 @@ export function DemandesPage() {
   const [newStatut, setNewStatut] = useState('');
 
   const { data: instsData } = useQuery({ queryKey: ['insts-demandes'], queryFn: () => institutionsApi.getAll({ limit: 500 }) });
-  const instOptions = (instsData?.data?.data || []).map((i: any) => ({ value: i.id, label: i.nom, sublabel: i.code }));
+  const instOptions = (instsData?.data?.data || []).map((i: any) => ({ value: i.id, label: `${i.code} — ${i.nom}`, sublabel: i.ministere }));
 
   const { data: demandesData, isLoading } = useQuery({
     queryKey: ['demandes', isAdmin ? 'all' : 'mine'],

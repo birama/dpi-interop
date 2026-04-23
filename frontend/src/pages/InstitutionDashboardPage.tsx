@@ -6,6 +6,10 @@ import { useAuthStore } from '@/store/auth';
 import { Loader2, AlertTriangle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
+import { SollicitationsBlock } from '@/modules/vue360/SollicitationsBlock';
+import { MesCasUsageInitiesBlock } from '@/modules/vue360/MesCasUsageInitiesBlock';
+import { QuiMeConcernentBlock } from '@/modules/vue360/QuiMeConcernentBlock';
+import { RadarSectorielBlock } from '@/modules/vue360/RadarSectorielBlock';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const STATUT_CU: Record<string, string> = { IDENTIFIE: 'bg-gray-100 text-gray-600', PRIORISE: 'bg-gold-50 text-gold', EN_PREPARATION: 'bg-blue-100 text-blue-600', EN_TEST: 'bg-teal-50 text-teal', EN_PRODUCTION: 'bg-success/10 text-success' };
@@ -198,6 +202,28 @@ export function InstitutionDashboardPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* ============================================================= */}
+      {/* VUE 360° — Cycle de vie des cas d'usage                      */}
+      {/* ============================================================= */}
+      <div className="pt-2 border-t-2 border-dashed border-teal/30">
+        <div className="flex items-center gap-2 mb-4">
+          <div className="w-1 h-6 bg-teal" />
+          <h2 className="text-sm font-bold tracking-wider uppercase text-teal">Vue 360° — Cycle de vie des cas d'usage</h2>
+        </div>
+      </div>
+
+      {/* Bloc 1 : Sollicitations (pleine largeur) */}
+      <SollicitationsBlock />
+
+      {/* Bloc 2 + Bloc 4 : Initiés + Radar (2 colonnes) */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <MesCasUsageInitiesBlock />
+        <RadarSectorielBlock />
+      </div>
+
+      {/* Bloc 3 : Qui me concernent (pleine largeur) */}
+      <QuiMeConcernentBlock />
     </div>
   );
 }

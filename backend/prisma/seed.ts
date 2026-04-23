@@ -8,16 +8,44 @@ const SALT_ROUNDS = 10;
 async function main() {
   console.log('🌱 Seeding database...');
 
-  // Clean existing data
+  // Clean existing data (Vue 360° tables first, then existing)
+  await prisma.notification.deleteMany();
+  await prisma.useCaseFeedback.deleteMany();
+  await prisma.useCaseConsultation.deleteMany();
+  await prisma.useCaseStakeholder.deleteMany();
+  await prisma.casUsageRegistre.deleteMany();
+  // StatusHistory has immutability trigger — disable temporarily
+  try { await prisma.$executeRawUnsafe('ALTER TABLE use_case_status_history DISABLE TRIGGER trg_prevent_statushistory_update'); } catch {}
+  await prisma.useCaseStatusHistory.deleteMany();
+  try { await prisma.$executeRawUnsafe('ALTER TABLE use_case_status_history ENABLE TRIGGER trg_prevent_statushistory_update'); } catch {}
   await prisma.auditLog.deleteMany();
+  await prisma.userSession.deleteMany();
   await prisma.report.deleteMany();
+  await prisma.financement.deleteMany();
+  await prisma.expertise.deleteMany();
   await prisma.casUsage.deleteMany();
   await prisma.fluxExistant.deleteMany();
   await prisma.donneeFournir.deleteMany();
   await prisma.donneeConsommer.deleteMany();
+  await prisma.fluxInstitution.deleteMany();
+  await prisma.casUsageMVP.deleteMany();
+  await prisma.phaseMVP.deleteMany();
+  await prisma.programme.deleteMany();
+  await prisma.pTF.deleteMany();
   await prisma.registre.deleteMany();
   await prisma.application.deleteMany();
+  await prisma.infrastructureItem.deleteMany();
+  await prisma.niveauInterop.deleteMany();
+  await prisma.conformitePrincipe.deleteMany();
+  await prisma.dictionnaireDonnee.deleteMany();
+  await prisma.preparationDecret.deleteMany();
   await prisma.submission.deleteMany();
+  await prisma.convention.deleteMany();
+  await prisma.xRoadReadiness.deleteMany();
+  await prisma.demandeInterop.deleteMany();
+  await prisma.documentReference.deleteMany();
+  await prisma.registreNational.deleteMany();
+  await prisma.buildingBlock.deleteMany();
   await prisma.user.deleteMany();
   await prisma.institution.deleteMany();
 
@@ -311,9 +339,12 @@ async function main() {
   await prisma.auditLog.create({
     data: {
       userId: admin.id,
+      userEmail: admin.email,
+      userRole: admin.role,
       action: 'SEED',
-      entity: 'database',
-      changes: {
+      resource: 'database',
+      resourceLabel: 'seed initial',
+      details: {
         institutions: institutions.length,
         users: users.length + 1,
         submissions: 1,
