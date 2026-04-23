@@ -9,8 +9,11 @@ import { api, institutionsApi } from '@/services/api';
 import { useToast } from '@/components/ui/use-toast';
 import { useAuthStore } from '@/store/auth';
 import { SearchableSelect } from '@/components/ui/searchable-select';
-import { Plus, X, Loader2 } from 'lucide-react';
+import { Plus, X, Loader2, Info } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Link } from 'react-router-dom';
+
+const INFO_DISMISSED_KEY = 'demandes-info-dismissed';
 
 const TYPE_LABELS: Record<string, { label: string; desc: string; color: string }> = {
   ACCES_DONNEES: { label: 'Accès données', desc: 'Consommer des données d\'une autre administration', color: 'bg-blue-100 text-blue-700' },
@@ -35,6 +38,8 @@ export function DemandesPage() {
   const isAdmin = user?.role === 'ADMIN';
   const [showForm, setShowForm] = useState(false);
   const [selected, setSelected] = useState<any>(null);
+  const [showInfo, setShowInfo] = useState(() => typeof window !== 'undefined' && localStorage.getItem(INFO_DISMISSED_KEY) !== 'true');
+  const dismissInfo = () => { setShowInfo(false); try { localStorage.setItem(INFO_DISMISSED_KEY, 'true'); } catch {} };
   const [form, setForm] = useState<any>({ type: 'ACCES_DONNEES', titre: '', description: '', demandeurNom: '', demandeurEmail: '', institutionCibleId: '', donneesVisees: '', justification: '', urgence: 'NORMALE' });
   const [reponse, setReponse] = useState('');
   const [newStatut, setNewStatut] = useState('');
@@ -66,6 +71,21 @@ export function DemandesPage() {
         <div><h1 className="text-xl font-bold text-navy">{isAdmin ? 'Demandes d\'interopérabilité' : 'Mes demandes'}</h1><p className="text-xs text-gray-500">{isAdmin ? 'Traitement des demandes des institutions' : 'Formuler une demande à la Delivery Unit'}</p></div>
         {!isAdmin && <Button size="sm" onClick={() => setShowForm(true)} className="bg-teal hover:bg-teal-dark"><Plus className="w-3.5 h-3.5 mr-1" /> Nouvelle demande</Button>}
       </div>
+
+      {/* Encart pedagogique — distinction Mes demandes vs Mes cas d'usage */}
+      {!isAdmin && showInfo && (
+        <div className="bg-teal-50 border border-teal/20 rounded-lg p-3 flex items-start gap-3">
+          <Info className="w-4 h-4 text-teal flex-shrink-0 mt-0.5" />
+          <div className="flex-1 text-xs text-navy">
+            Ce formulaire sert aux demandes ponctuelles à la Delivery Unit (questions, accompagnement, incidents).
+            Pour déclarer un échange de données récurrent entre administrations, créez plutôt un cas d'usage dans{' '}
+            <Link to="/mes-cas-usage" className="text-teal font-semibold hover:underline">Mes cas d'usage →</Link>
+          </div>
+          <button onClick={dismissInfo} className="text-gray-400 hover:text-gray-600 flex-shrink-0" aria-label="Masquer cet avertissement">
+            <X className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      )}
 
       {/* Compteurs admin */}
       {isAdmin && (

@@ -1,6 +1,10 @@
 import { cn } from '@/lib/utils';
 import { Link } from 'react-router-dom';
 import { useAuthStore } from '@/store/auth';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { api } from '@/services/api';
+import { useToast } from '@/components/ui/use-toast';
+import { Loader2 } from 'lucide-react';
 import { VUE360_STATUT_COLORS, ROLE_BADGE_STYLES, ROLE_LABELS, daysUntil } from './constants';
 
 interface Props {
@@ -12,7 +16,25 @@ interface Props {
 
 export function UseCaseHeader({ cu, visibility, myConsultationId, onGiveFeedback }: Props) {
   const { user } = useAuthStore();
+  const { toast } = useToast();
+  const qc = useQueryClient();
   const sc = VUE360_STATUT_COLORS[cu.statutVueSection] || VUE360_STATUT_COLORS.DECLARE;
+
+  const autoSaisineMut = useMutation({
+    mutationFn: () => api.post(`/use-cases/${cu.id}/stakeholders`, {
+      institutionId: user?.institutionId,
+      role: 'PARTIE_PRENANTE',
+    }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['vue360-use-case-detail', cu.id] });
+      qc.invalidateQueries({ queryKey: ['vue360-involved'] });
+      qc.invalidateQueries({ queryKey: ['vue360-radar'] });
+      toast({ title: 'Auto-saisine enregistree', description: 'Vous etes maintenant partie prenante de ce cas d\'usage.' });
+    },
+    onError: (e: any) => {
+      toast({ variant: 'destructive', title: 'Erreur', description: e?.response?.data?.error || 'Echec de l\'auto-saisine' });
+    },
+  });
 
   // Trouver le role de mon institution
   const myStakeholders = cu.stakeholders360?.filter(
@@ -72,12 +94,20 @@ export function UseCaseHeader({ cu, visibility, myConsultationId, onGiveFeedback
 
       {/* Bandeau METADATA */}
       {visibility === 'METADATA' && (
-        <div className="mt-4 p-3 bg-amber-50 rounded-lg border border-amber-200 text-xs text-amber-700">
-          Informations detaillees reservees aux parties prenantes formellement designees.
+        <div className="mt-4 p-3 bg-amber-50 rounded-lg border border-amber-200 text-xs text-amber-700 flex flex-wrap items-center gap-2">
+          <span className="flex-1 min-w-0">
+            Informations detaillees reservees aux parties prenantes formellement designees.
+            {user?.institutionId && <span className="ml-1">Vos donnees ou processus sont concernes ?</span>}
+          </span>
           {user?.institutionId && (
-            <span className="ml-1">
-              Vous pouvez <Link to="#" className="text-teal font-semibold underline">vous porter partie prenante</Link> si vos donnees ou processus sont concernes.
-            </span>
+            <button
+              onClick={() => autoSaisineMut.mutate()}
+              disabled={autoSaisineMut.isPending}
+              className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-md bg-teal text-white hover:bg-teal/90 disabled:opacity-50"
+            >
+              {autoSaisineMut.isPending && <Loader2 className="w-3 h-3 animate-spin" />}
+              Me porter partie prenante
+            </button>
           )}
         </div>
       )}
