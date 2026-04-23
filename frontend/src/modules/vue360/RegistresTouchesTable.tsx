@@ -16,7 +16,7 @@ export function RegistresTouchesTable({ registres }: Props) {
       <div className="p-4 border-b border-gray-100 flex items-center justify-between">
         <div>
           <div className="font-bold text-navy flex items-center gap-2">Referentiels nationaux touches</div>
-          <div className="text-xs text-gray-500">Tracabilite vers les registres fondateurs — mecanisme anti-duplication</div>
+          <div className="text-xs text-gray-500">Registres nationaux rattaches a ce cas d'usage</div>
         </div>
       </div>
       <div className="overflow-x-auto">

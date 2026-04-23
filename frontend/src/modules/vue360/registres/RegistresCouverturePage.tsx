@@ -1,5 +1,5 @@
 /**
- * Vue couverture par referentiel — Addendum v1.1
+ * Vue couverture par referentiel
  * Route : /registres/couverture (accessible a toutes les institutions)
  */
 
@@ -44,12 +44,9 @@ export function RegistresCouverturePage() {
   return (
     <div className="space-y-5 max-w-6xl mx-auto">
       {/* Bandeau */}
-      <div className="bg-gradient-to-r from-navy to-teal text-white rounded-lg p-4 flex items-center gap-3">
-        <div className="bg-gold text-navy px-2 py-1 rounded text-[10px] font-bold">ADDENDUM v1.1</div>
-        <div className="text-sm">
-          <b>Couverture par referentiel</b> — cartographie des cas d'usage touchant chaque registre fondateur.
-          Mecanisme anti-duplication et articulation AEG → PINS.
-        </div>
+      <div className="bg-gradient-to-r from-navy to-teal text-white rounded-lg p-4">
+        <div className="font-bold text-base mb-0.5">Couverture par referentiel</div>
+        <div className="text-sm text-white/80">Cartographie des cas d'usage rattaches a chaque registre national.</div>
       </div>
 
       {/* Bandeau triptyque Doing Business */}
@@ -59,10 +56,9 @@ export function RegistresCouverturePage() {
             <div className="flex items-center gap-2 mb-1">
               <Layers className="w-4 h-4 text-gold" />
               <div className="font-bold text-navy">Triptyque Doing Business</div>
-              <span className="text-xs text-gray-500">— socle fondateur consacre par la Matinee de la DPI (21 avril 2026)</span>
             </div>
             <div className="text-xs text-gray-600">
-              {doingBusinessItems.map((r: any) => `${r.code} (${r.detenteurCode})`).join(' · ')} — a exposer comme services PINS partages
+              {doingBusinessItems.map((r: any) => `${r.code} (${r.detenteurCode})`).join(' · ')}
             </div>
           </CardContent>
         </Card>
