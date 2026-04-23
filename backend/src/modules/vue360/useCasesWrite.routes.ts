@@ -88,24 +88,85 @@ export async function useCasesWriteRoutes(app: FastifyInstance) {
       });
     }
 
-    // Stakeholders additionnels
-    if (stakeholders && Array.isArray(stakeholders)) {
-      for (const sh of stakeholders) {
-        if (sh.institutionId && sh.role) {
-          await app.prisma.useCaseStakeholder.upsert({
-            where: { casUsageId_institutionId_role: { casUsageId: cu.id, institutionId: sh.institutionId, role: sh.role } },
-            update: {},
-            create: { casUsageId: cu.id, institutionId: sh.institutionId, role: sh.role, ajoutePar: user.id },
-          });
-        }
-      }
-    }
-
-    // Status history : null → DECLARE
+    // Resolution de l'institution user (partagee ensuite pour statusHistory)
     const userInst = user.institutionId
       ? await app.prisma.institution.findUnique({ where: { id: user.institutionId }, select: { nom: true } })
       : null;
 
+    // Stakeholders additionnels + consultations automatiques (SLA 15j)
+    const SLA_DAYS = 15;
+    const dateEcheance = new Date(Date.now() + SLA_DAYS * 86400000);
+    if (stakeholders && Array.isArray(stakeholders)) {
+      for (const sh of stakeholders) {
+        if (sh.institutionId && sh.role) {
+          const createdSh = await app.prisma.useCaseStakeholder.upsert({
+            where: { casUsageId_institutionId_role: { casUsageId: cu.id, institutionId: sh.institutionId, role: sh.role } },
+            update: {},
+            create: { casUsageId: cu.id, institutionId: sh.institutionId, role: sh.role, ajoutePar: user.id },
+          });
+
+          // Ouvrir une consultation automatiquement pour FOURNISSEUR et CONSOMMATEUR
+          if (['FOURNISSEUR', 'CONSOMMATEUR'].includes(sh.role)) {
+            try {
+              await app.prisma.useCaseConsultation.create({
+                data: {
+                  stakeholderId: createdSh.id,
+                  dateEcheance,
+                  status: 'EN_ATTENTE',
+                  ouvertePar: user.id,
+                  motifSollicit: 'Consultation ouverte automatiquement a la declaration du cas d\'usage (SLA ' + SLA_DAYS + ' jours).',
+                },
+              });
+            } catch {}
+          }
+
+          // Notification CONSULTATION_OUVERTE aux users de l'institution
+          try {
+            const instUsers = await app.prisma.user.findMany({
+              where: { institutionId: sh.institutionId },
+              select: { id: true },
+            });
+            for (const u of instUsers) {
+              await app.prisma.notification.create({
+                data: {
+                  userId: u.id,
+                  institutionId: sh.institutionId,
+                  type: 'CONSULTATION_OUVERTE',
+                  titre: `Sollicitation sur "${cu.titre}"`,
+                  message: `Votre institution est sollicitee comme ${sh.role.replace('_', ' ').toLowerCase()} sur un cas d'usage. Echeance ${SLA_DAYS} jours.`,
+                  lienUrl: '/mes-cas-usage',
+                  refType: 'CAS_USAGE',
+                  refId: cu.id,
+                },
+              });
+            }
+          } catch {}
+        }
+      }
+
+      // Si on a des stakeholders FOURNISSEUR/CONSOMMATEUR, passer en EN_CONSULTATION
+      const hasConsultableStakeholders = stakeholders.some((s: any) => ['FOURNISSEUR', 'CONSOMMATEUR'].includes(s.role));
+      if (hasConsultableStakeholders) {
+        await app.prisma.casUsageMVP.update({
+          where: { id: cu.id },
+          data: { statutVueSection: 'EN_CONSULTATION' },
+        });
+        // Transition supplementaire dans statusHistory
+        await app.prisma.useCaseStatusHistory.create({
+          data: {
+            casUsageId: cu.id,
+            statusFrom: 'DECLARE',
+            statusTo: 'EN_CONSULTATION',
+            auteurUserId: user.id,
+            auteurNom: user.email,
+            auteurInstitution: userInst?.nom || 'SENUM SA',
+            motif: `Ouverture de consultation aupres de ${stakeholders.filter((s: any) => ['FOURNISSEUR', 'CONSOMMATEUR'].includes(s.role)).length} partie(s) prenante(s).`,
+          },
+        });
+      }
+    }
+
+    // Status history : null → DECLARE
     await app.prisma.useCaseStatusHistory.create({
       data: {
         casUsageId: cu.id,
