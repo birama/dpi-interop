@@ -19,8 +19,10 @@ import { ROLE_BADGE_STYLES, ROLE_LABELS } from './constants';
 interface Props { onClose: () => void }
 
 type StakeholderRow = { institutionId: string; role: 'FOURNISSEUR' | 'CONSOMMATEUR' | 'PARTIE_PRENANTE' };
+type RegistreRow = { registreId: string; mode: 'CONSOMME' | 'ALIMENTE' | 'CREE'; champsConcernes: string };
 
 const STAKEHOLDER_ROLES: StakeholderRow['role'][] = ['FOURNISSEUR', 'CONSOMMATEUR', 'PARTIE_PRENANTE'];
+const REGISTRE_MODES: RegistreRow['mode'][] = ['CONSOMME', 'ALIMENTE', 'CREE'];
 
 export function DeclareUseCaseModal({ onClose }: Props) {
   const { toast } = useToast();
@@ -42,10 +44,23 @@ export function DeclareUseCaseModal({ onClose }: Props) {
     { institutionId: '', role: 'FOURNISSEUR' },
   ]);
 
+  // Registres nationaux rattaches (facultatif)
+  const [registres, setRegistres] = useState<RegistreRow[]>([]);
+
   const { data: instsData } = useQuery({
     queryKey: ['insts-declare-cu'],
     queryFn: () => institutionsApi.getAll({ limit: 500 }),
   });
+
+  const { data: registresData } = useQuery({
+    queryKey: ['registres-declare-cu'],
+    queryFn: () => api.get('/registres-nationaux').then(r => r.data),
+  });
+  const registresOptions = (registresData || []).map((r: any) => ({
+    value: r.id,
+    label: `${r.code} — ${r.nom}`,
+    sublabel: r.institutionNom,
+  }));
   const institutions = (instsData?.data?.data || []) as any[];
   const instOptionsCode = institutions.map((i: any) => ({
     value: i.code,
@@ -61,7 +76,20 @@ export function DeclareUseCaseModal({ onClose }: Props) {
   const createMut = useMutation({
     mutationFn: () => {
       const validStakeholders = stakeholders.filter(s => s.institutionId && s.role);
-      return api.post('/use-cases', { ...form, stakeholders: validStakeholders });
+      const validRegistres = registres
+        .filter(r => r.registreId && r.mode)
+        .map(r => ({
+          registreId: r.registreId,
+          mode: r.mode,
+          champsConcernes: r.champsConcernes
+            ? r.champsConcernes.split(',').map(c => c.trim()).filter(Boolean)
+            : null,
+        }));
+      return api.post('/use-cases', {
+        ...form,
+        stakeholders: validStakeholders,
+        registresAssocies: validRegistres,
+      });
     },
     onSuccess: (r: any) => {
       qc.invalidateQueries({ queryKey: ['vue360-outgoing'] });
@@ -82,6 +110,12 @@ export function DeclareUseCaseModal({ onClose }: Props) {
   const removeStakeholder = (idx: number) => setStakeholders(stakeholders.filter((_, i) => i !== idx));
   const updateStakeholder = (idx: number, patch: Partial<StakeholderRow>) => {
     setStakeholders(stakeholders.map((s, i) => i === idx ? { ...s, ...patch } : s));
+  };
+
+  const addRegistre = () => setRegistres([...registres, { registreId: '', mode: 'CONSOMME', champsConcernes: '' }]);
+  const removeRegistre = (idx: number) => setRegistres(registres.filter((_, i) => i !== idx));
+  const updateRegistre = (idx: number, patch: Partial<RegistreRow>) => {
+    setRegistres(registres.map((r, i) => i === idx ? { ...r, ...patch } : r));
   };
 
   return (
@@ -192,6 +226,61 @@ export function DeclareUseCaseModal({ onClose }: Props) {
                 >
                   <Trash2 className="w-3.5 h-3.5" />
                 </button>
+              </div>
+            ))}
+          </div>
+
+          {/* Registres nationaux rattaches (facultatif) */}
+          <div className="border-2 border-dashed border-gold/30 rounded-lg p-3 bg-gold-50/20 space-y-2">
+            <div className="flex items-center justify-between">
+              <Label className="text-xs font-semibold text-navy">Referentiels nationaux touches <span className="text-gray-400 font-normal">(facultatif)</span></Label>
+              <button
+                type="button"
+                onClick={addRegistre}
+                className="inline-flex items-center gap-1 text-[11px] text-gold-dark font-semibold hover:bg-gold/10 px-2 py-1 rounded"
+              >
+                <Plus className="w-3 h-3" /> Ajouter
+              </button>
+            </div>
+            <p className="text-[10px] text-gray-500">Les registres rattaches permettent la detection de doublons et alimentent le radar sectoriel des autres institutions.</p>
+
+            {registres.length === 0 && (
+              <p className="text-xs text-gray-400 italic text-center py-1">Aucun registre rattache</p>
+            )}
+
+            {registres.map((reg, idx) => (
+              <div key={idx} className="space-y-1.5 border-b last:border-0 pb-2 last:pb-0">
+                <div className="flex items-center gap-2">
+                  <div className="flex-1">
+                    <SearchableSelect
+                      options={registresOptions}
+                      value={reg.registreId}
+                      onChange={v => updateRegistre(idx, { registreId: v })}
+                      placeholder="Selectionner un referentiel national..."
+                    />
+                  </div>
+                  <select
+                    value={reg.mode}
+                    onChange={e => updateRegistre(idx, { mode: e.target.value as RegistreRow['mode'] })}
+                    className="h-9 px-2 text-xs border rounded-md bg-white"
+                  >
+                    {REGISTRE_MODES.map(m => <option key={m} value={m}>{m}</option>)}
+                  </select>
+                  <button
+                    type="button"
+                    onClick={() => removeRegistre(idx)}
+                    className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded"
+                    aria-label="Retirer ce referentiel"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+                <Input
+                  value={reg.champsConcernes}
+                  onChange={e => updateRegistre(idx, { champsConcernes: e.target.value })}
+                  placeholder="Champs concernes (virgules) ex: ninea, raisonSociale, statutFiscal"
+                  className="h-8 text-xs"
+                />
               </div>
             ))}
           </div>
