@@ -7,3 +7,6 @@ dist/
 .DS_Store
 Thumbs.db
 tmpclaude-*
+
+# Test temp files
+backend/tests/_*.json

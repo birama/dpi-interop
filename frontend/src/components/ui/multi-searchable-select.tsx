@@ -40,7 +40,6 @@ export function MultiSearchableSelect({
   const filteredOptions = options.filter((opt) => {
     const searchLower = search.toLowerCase();
     return (
-      opt.value.toLowerCase().includes(searchLower) ||
       opt.label.toLowerCase().includes(searchLower) ||
       (opt.sublabel && opt.sublabel.toLowerCase().includes(searchLower))
     );
@@ -114,7 +113,7 @@ export function MultiSearchableSelect({
                 key={opt.value}
                 className="inline-flex items-center px-2 py-0.5 rounded bg-teal-100 text-teal-dark text-xs"
               >
-                {opt.value}
+                {opt.label}
                 {!disabled && (
                   <X
                     className="w-3 h-3 ml-1 cursor-pointer hover:text-teal"
@@ -195,7 +194,7 @@ export function MultiSearchableSelect({
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="font-medium">{option.value}</div>
+                      <div className="font-medium">{option.label}</div>
                       {option.sublabel && (
                         <div className="text-xs text-gray-500 truncate">{option.sublabel}</div>
                       )}

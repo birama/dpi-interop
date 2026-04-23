@@ -30,10 +30,14 @@ import {
   Shield,
   MessageSquare,
   Search,
+  Scale,
+  Layers,
+  ListChecks,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { CommandPalette } from '@/components/CommandPalette';
 import { Breadcrumb } from '@/components/Breadcrumb';
+import { NotificationsBell } from '@/modules/vue360/notifications/NotificationsBell';
 
 type NavGroup = {
   label: string;
@@ -63,6 +67,7 @@ const navGroups: NavGroup[] = [
     items: [
       { name: 'Conventions', href: '/admin/conventions', icon: FileCheck, adminOnly: true },
       { name: 'Registres', href: '/admin/registres-nationaux', icon: Database, adminOnly: true },
+      { name: 'Couverture referentiels', href: '/registres/couverture', icon: Layers },
       { name: 'Catalogue DPI', href: '/catalogue', icon: BookOpen },
       { name: 'Documents', href: '/documents', icon: FileText },
     ],
@@ -73,6 +78,12 @@ const navGroups: NavGroup[] = [
       { name: 'Institutions', href: '/institutions', icon: Building2, adminOnly: true },
       { name: 'Utilisateurs', href: '/admin/utilisateurs', icon: Users, adminOnly: true },
       { name: 'Financements', href: '/admin/financements', icon: Wallet, adminOnly: true },
+    ],
+  },
+  {
+    label: 'Arbitrage DU',
+    items: [
+      { name: 'File d\'arbitrage', href: '/du/arbitrage', icon: Scale, adminOnly: true },
     ],
   },
   {
@@ -88,6 +99,7 @@ const navGroups: NavGroup[] = [
   {
     label: 'Mon espace',
     items: [
+      { name: 'Mes cas d\'usage', href: '/mes-cas-usage', icon: ListChecks },
       { name: 'Questionnaire', href: '/questionnaire', icon: FileText, institutionOnly: true },
       { name: 'Soumissions', href: '/submissions', icon: ClipboardList, institutionOnly: true },
       { name: 'Mes demandes', href: '/institution/demandes', icon: MessageSquare, institutionOnly: true },
@@ -265,6 +277,10 @@ export function DashboardLayout() {
             </button>
           </div>
 
+          {/* Right side: notifications + user */}
+          <div className="flex items-center gap-1">
+            <NotificationsBell />
+
           {/* User menu */}
           <div className="relative">
             <button
@@ -300,6 +316,7 @@ export function DashboardLayout() {
                 </div>
               </>
             )}
+          </div>
           </div>
         </header>
 

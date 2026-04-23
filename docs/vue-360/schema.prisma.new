@@ -1,0 +1,241 @@
+// =============================================================================
+//  SCHÉMA PRISMA — DPI-INTEROP
+//  Évolution pour la Vue 360° des cas d'usage PINS
+//  Référence : MCTN/DU/APP-DPI-INTEROP/CONC-2026-02
+//  Version   : 1.0 - 22 avril 2026
+//
+//  Ce fichier présente UNIQUEMENT les extensions à ajouter au schéma existant.
+//  Les modèles existants (User, Institution, CasUsageMVP, FluxInstitution,
+//  PTF, Financement, RegistreNational, etc.) ne sont pas modifiés structurellement.
+//
+//  Les modèles existants reçoivent uniquement des relations inverses déclarées
+//  en fin de fichier (section "RELATIONS INVERSES À AJOUTER").
+// =============================================================================
+
+// -----------------------------------------------------------------------------
+//  ÉNUMÉRATIONS
+// -----------------------------------------------------------------------------
+
+/// Rôle joué par une institution dans un cas d'usage.
+/// Une même institution peut détenir plusieurs rôles sur un cas d'usage donné
+/// (par exemple INITIATEUR et CONSOMMATEUR simultanément).
+enum UseCaseRole {
+  INITIATEUR        // déclare la demande et la porte dans le pipeline
+  FOURNISSEUR       // détient les données sollicitées
+  CONSOMMATEUR      // destinataire et utilisateur effectif
+  PARTIE_PRENANTE   // impact indirect (processus, conformité, aval)
+}
+
+/// Statut du cas d'usage dans le pipeline de qualification PINS.
+enum UseCaseStatus {
+  DECLARE                // étape 1 — fiche initiale créée
+  EN_CONSULTATION        // étape 2 — avis demandés aux parties prenantes
+  VALIDATION_CONJOINTE   // étape 4 — avis consolidés, arbitrage éventuel
+  QUALIFIE               // étape 5 — qualifié par la DU
+  PRIORISE               // étape 6 — inscrit à la matrice de priorisation
+  FINANCEMENT_OK         // étape 7 — source de financement identifiée
+  CONVENTIONNE           // étape 8 — convention bilatérale/multilatérale signée
+  EN_PRODUCTION          // étape 9 — déployé et opérationnel
+  SUSPENDU               // gel temporaire sur décision DU
+  RETIRE                 // retiré définitivement du catalogue
+}
+
+/// Type d'avis formel donné par une partie prenante sur un cas d'usage.
+enum FeedbackType {
+  VALIDATION             // accord sans réserve
+  RESERVE                // accord conditionné à une levée de points
+  REFUS_MOTIVE           // opposition argumentée
+  QUESTION               // demande de précisions (suspend le délai)
+  CONTRE_PROPOSITION     // propose une modification de la spécification
+}
+
+/// Statut d'une consultation (demande d'avis) adressée à une partie prenante.
+enum ConsultationStatus {
+  EN_ATTENTE             // en attente de réponse, délai non expiré
+  REPONDU                // un avis a été donné
+  ECHU                   // délai dépassé sans réponse
+  ANNULE                 // consultation retirée (ex. retrait du cas d'usage)
+}
+
+/// Niveau de visibilité accordé à un utilisateur sur un cas d'usage.
+/// Utilisé par le middleware d'autorisation backend.
+enum VisibilityLevel {
+  NONE                   // aucun accès
+  METADATA               // titre, statut, initiateur, stakeholders (rôles seulement)
+  DETAILED               // métadonnées + spécifications + fil d'avis
+  FULL                   // détaillé + logs d'audit (DU / SENUM_ADMIN)
+}
+
+// -----------------------------------------------------------------------------
+//  NOUVEAUX MODÈLES
+// -----------------------------------------------------------------------------
+
+/// Partie prenante formellement désignée d'un cas d'usage.
+/// Étend la sémantique de FluxInstitution en introduisant la notion de rôle
+/// explicite et le mécanisme d'auto-saisine.
+model UseCaseStakeholder {
+  id             String         @id @default(cuid())
+  casUsageId     String
+  institutionId  String
+  role           UseCaseRole
+  autoSaisine    Boolean        @default(false)   // true si ajoutée par auto-saisine
+  dateAjout      DateTime       @default(now())
+  ajoutePar      String?        // userId de l'ajoutant (null si auto-migration)
+  actif          Boolean        @default(true)
+  dateRetrait    DateTime?
+  motifRetrait   String?        @db.Text
+
+  // Relations
+  casUsage       CasUsageMVP    @relation(fields: [casUsageId], references: [id], onDelete: Cascade)
+  institution    Institution    @relation(fields: [institutionId], references: [id])
+  ajouteParUser  User?          @relation("StakeholderAjoute", fields: [ajoutePar], references: [id])
+  consultations  UseCaseConsultation[]
+  feedbacks      UseCaseFeedback[]
+
+  // Contraintes
+  @@unique([casUsageId, institutionId, role])
+  @@index([institutionId, role, actif])
+  @@index([casUsageId, actif])
+  @@map("use_case_stakeholder")
+}
+
+/// Consultation : demande d'avis adressée à une partie prenante,
+/// avec délai de réponse et mécanisme de relance.
+model UseCaseConsultation {
+  id               String              @id @default(cuid())
+  stakeholderId    String
+  dateDemande      DateTime            @default(now())
+  dateEcheance     DateTime
+  status           ConsultationStatus  @default(EN_ATTENTE)
+  relances         Int                 @default(0)
+  derniereRelance  DateTime?
+  ouvertePar       String              // userId de l'ouvrant (initiateur ou DU)
+  motifSollicit    String?             @db.Text
+
+  // Relations
+  stakeholder      UseCaseStakeholder  @relation(fields: [stakeholderId], references: [id], onDelete: Cascade)
+  ouvertParUser    User                @relation("ConsultationOuvertePar", fields: [ouvertePar], references: [id])
+  feedbacks        UseCaseFeedback[]
+
+  @@index([stakeholderId])
+  @@index([status, dateEcheance])
+  @@map("use_case_consultation")
+}
+
+/// Avis formel donné par une institution en réponse à une consultation.
+/// Chaque avis est horodaté, signé par un utilisateur identifié,
+/// et conserve un snapshot des informations de l'auteur au moment de l'avis.
+/// Un amendement crée un nouvel enregistrement lié au précédent (amendeDe),
+/// sans effacer l'historique.
+model UseCaseFeedback {
+  id               String              @id @default(cuid())
+  consultationId   String?             // null si feedback spontané (rare)
+  stakeholderId    String
+  type             FeedbackType
+  motivation       String              @db.Text
+  piecesJointes    Json?               // [{ filename, url, size, mimeType }]
+  auteurUserId     String
+  auteurNom        String              // snapshot figé au moment de l'avis
+  auteurFonction   String?             // snapshot figé
+  auteurInstitutionNom String          // snapshot figé
+  dateAvis         DateTime            @default(now())
+  amendeDe         String?             // id de l'avis précédent si amendement
+
+  // Relations
+  consultation     UseCaseConsultation? @relation(fields: [consultationId], references: [id])
+  stakeholder      UseCaseStakeholder   @relation(fields: [stakeholderId], references: [id], onDelete: Cascade)
+  auteur           User                 @relation("FeedbackAuteur", fields: [auteurUserId], references: [id])
+  amendements      UseCaseFeedback[]    @relation("FeedbackAmendement")
+  amendeDeFeedback UseCaseFeedback?     @relation("FeedbackAmendement", fields: [amendeDe], references: [id])
+
+  @@index([stakeholderId, dateAvis])
+  @@index([auteurUserId])
+  @@index([consultationId])
+  @@map("use_case_feedback")
+}
+
+/// Journal inaltérable des transitions d'état d'un cas d'usage.
+/// Aucune modification ni suppression n'est autorisée après insertion
+/// (à appliquer via trigger SQL — voir migration.sql).
+model UseCaseStatusHistory {
+  id               String         @id @default(cuid())
+  casUsageId       String
+  statusFrom       UseCaseStatus?                 // null lors de la création
+  statusTo         UseCaseStatus
+  motif            String?        @db.Text
+  auteurUserId     String
+  auteurNom        String                         // snapshot
+  auteurInstitution String                        // snapshot
+  dateTransition   DateTime       @default(now())
+  pieceJustif      String?                        // URL de pièce justificative
+
+  // Relations
+  casUsage         CasUsageMVP    @relation(fields: [casUsageId], references: [id], onDelete: Cascade)
+  auteur           User           @relation("StatusHistoryAuteur", fields: [auteurUserId], references: [id])
+
+  @@index([casUsageId, dateTransition])
+  @@index([auteurUserId])
+  @@map("use_case_status_history")
+}
+
+/// Notification in-app destinée à un utilisateur.
+/// Les notifications sont créées par le système lors de chaque événement
+/// pertinent : ouverture d'une consultation, réception d'un avis, relance,
+/// arbitrage, transition d'état.
+model Notification {
+  id            String        @id @default(cuid())
+  userId        String
+  institutionId String?
+  type          String        // CONSULTATION_OUVERTE | AVIS_RECU | RELANCE | ARBITRAGE | TRANSITION
+  titre         String
+  message       String        @db.Text
+  lienUrl       String?       // deep link vers la page détail
+  refType       String?       // type de ressource (CAS_USAGE, CONSULTATION, etc.)
+  refId         String?       // id de la ressource référencée
+  lu            Boolean       @default(false)
+  dateLu        DateTime?
+  dateCreation  DateTime      @default(now())
+
+  // Relations
+  user          User          @relation("UserNotifications", fields: [userId], references: [id])
+  institution   Institution?  @relation("InstitutionNotifications", fields: [institutionId], references: [id])
+
+  @@index([userId, lu, dateCreation])
+  @@index([institutionId, dateCreation])
+  @@map("notification")
+}
+
+// -----------------------------------------------------------------------------
+//  RELATIONS INVERSES À AJOUTER AUX MODÈLES EXISTANTS
+// -----------------------------------------------------------------------------
+//  Ces lignes sont à INSÉRER dans les modèles existants du schema.prisma actuel.
+//  Elles n'altèrent ni la structure ni les tables existantes, elles déclarent
+//  simplement les relations inverses au niveau ORM.
+// -----------------------------------------------------------------------------
+
+// --- Dans le modèle CasUsageMVP : ajouter
+//
+// stakeholders        UseCaseStakeholder[]
+// statusHistory       UseCaseStatusHistory[]
+// statutVueSection    UseCaseStatus          @default(DECLARE)
+//
+// L'ajout du champ statutVueSection permet de distinguer le statut "pipeline
+// vue 360°" du statut MVP existant. Alternativement, on peut réutiliser le
+// champ statut existant s'il couvre déjà la sémantique requise.
+
+// --- Dans le modèle Institution : ajouter
+//
+// stakeholders        UseCaseStakeholder[]
+// notifications       Notification[]        @relation("InstitutionNotifications")
+
+// --- Dans le modèle User : ajouter
+//
+// stakeholdersAjoutes      UseCaseStakeholder[]    @relation("StakeholderAjoute")
+// consultationsOuvertes    UseCaseConsultation[]   @relation("ConsultationOuvertePar")
+// feedbacksAuteur          UseCaseFeedback[]       @relation("FeedbackAuteur")
+// statusHistoryAuteur      UseCaseStatusHistory[]  @relation("StatusHistoryAuteur")
+// notifications            Notification[]          @relation("UserNotifications")
+
+// =============================================================================
+//  FIN DU FICHIER
+// =============================================================================

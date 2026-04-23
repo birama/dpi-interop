@@ -39,7 +39,7 @@ export function RegistresNationauxPage() {
   const { data, isLoading } = useQuery({ queryKey: ['registres-nat'], queryFn: () => api.get('/registres-nationaux').then(r => r.data) });
   const { data: instsData } = useQuery({ queryKey: ['institutions-reg'], queryFn: () => institutionsApi.getAll({ limit: 500 }) });
   const institutions = instsData?.data?.data || [];
-  const instOptions = institutions.map((i: any) => ({ value: i.code, label: i.nom, sublabel: `${i.code} — ${i.ministere}` }));
+  const instOptions = institutions.map((i: any) => ({ value: i.code, label: `${i.code} — ${i.nom}`, sublabel: i.ministere }));
 
   const updateMut = useMutation({
     mutationFn: ({ id, d }: { id: string; d: any }) => api.patch(`/registres-nationaux/${id}`, d),

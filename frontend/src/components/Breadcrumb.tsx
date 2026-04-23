@@ -26,6 +26,9 @@ const ROUTE_LABELS: Record<string, string> = {
   '/reports': 'Rapports',
   '/maturite': 'Radar maturité',
   '/institution/demandes': 'Mes demandes',
+  '/du/arbitrage': 'File d\'arbitrage DU',
+  '/registres/couverture': 'Couverture referentiels',
+  '/mes-cas-usage': 'Mes cas d\'usage',
 };
 
 export function Breadcrumb() {

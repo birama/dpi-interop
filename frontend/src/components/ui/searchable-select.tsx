@@ -37,7 +37,6 @@ export function SearchableSelect({
   const filteredOptions = options.filter((opt) => {
     const searchLower = search.toLowerCase();
     return (
-      opt.value.toLowerCase().includes(searchLower) ||
       opt.label.toLowerCase().includes(searchLower) ||
       (opt.sublabel && opt.sublabel.toLowerCase().includes(searchLower))
     );
@@ -93,9 +92,9 @@ export function SearchableSelect({
         <span className={cn('truncate', !selectedOption && 'text-gray-400')}>
           {selectedOption ? (
             <span>
-              <span className="font-medium">{selectedOption.value}</span>
+              <span className="font-medium">{selectedOption.label}</span>
               {selectedOption.sublabel && (
-                <span className="text-gray-500"> - {selectedOption.sublabel}</span>
+                <span className="text-xs text-gray-500 ml-1">{selectedOption.sublabel}</span>
               )}
             </span>
           ) : (
@@ -154,7 +153,7 @@ export function SearchableSelect({
                     value === option.value && 'bg-teal-100 text-teal-dark'
                   )}
                 >
-                  <div className="font-medium">{option.value}</div>
+                  <div className="font-medium">{option.label}</div>
                   {option.sublabel && (
                     <div className="text-xs text-gray-500 truncate">{option.sublabel}</div>
                   )}

@@ -32,7 +32,10 @@ import { UtilisateursPage } from '@/pages/UtilisateursPage';
 import { ImportPage } from '@/pages/ImportPage';
 import { AuditPage } from '@/pages/AuditPage';
 import { DemandesPage } from '@/pages/DemandesPage';
-import { CasUsage360Page } from '@/pages/CasUsage360Page';
+import { UseCaseDetailPage } from '@/modules/vue360/UseCaseDetailPage';
+import { MesCasUsagePage } from '@/modules/vue360/MesCasUsagePage';
+import { DuArbitragePage } from '@/modules/vue360/du/DuArbitragePage';
+import { RegistresCouverturePage } from '@/modules/vue360/registres/RegistresCouverturePage';
 import { DocumentsPage } from '@/pages/DocumentsPage';
 import { NotFoundPage } from '@/pages/NotFoundPage';
 
@@ -258,8 +261,8 @@ function App() {
           <Route
             path="/admin/cas-usage/:id"
             element={
-              <ProtectedRoute adminOnly>
-                <CasUsage360Page />
+              <ProtectedRoute>
+                <UseCaseDetailPage />
               </ProtectedRoute>
             }
           />
@@ -268,6 +271,30 @@ function App() {
             element={
               <ProtectedRoute>
                 <DocumentsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/mes-cas-usage"
+            element={
+              <ProtectedRoute>
+                <MesCasUsagePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/du/arbitrage"
+            element={
+              <ProtectedRoute adminOnly>
+                <DuArbitragePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/registres/couverture"
+            element={
+              <ProtectedRoute>
+                <RegistresCouverturePage />
               </ProtectedRoute>
             }
           />

@@ -3,7 +3,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { api } from '@/services/api';
 import { useAuthStore } from '@/store/auth';
-import { Loader2, AlertTriangle } from 'lucide-react';
+import { Loader2, AlertTriangle, AlertCircle, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
 
@@ -22,6 +22,15 @@ export function InstitutionDashboardPage() {
     queryFn: () => api.get('/institution/dashboard').then(r => r.data),
     enabled: !!user?.institutionId,
   });
+
+  // Vue 360° : compter les sollicitations en attente pour passerelle Actions requises
+  const { data: incomingData } = useQuery({
+    queryKey: ['vue360-incoming'],
+    queryFn: () => api.get('/me/use-cases/incoming').then(r => r.data),
+    enabled: !!user?.institutionId,
+    retry: 1,
+  });
+  const sollicitationsCount = Array.isArray(incomingData) ? incomingData.length : 0;
 
   if (isLoading) return <div className="flex items-center justify-center h-64"><Loader2 className="w-6 h-6 animate-spin text-teal" /></div>;
   if (!data) return <div className="text-center py-12 text-gray-400">Aucune institution liée à votre compte</div>;
@@ -62,12 +71,26 @@ export function InstitutionDashboardPage() {
       </div>
 
       {/* Actions requises */}
-      {actions?.length > 0 && (
+      {(actions?.length > 0 || sollicitationsCount > 0) && (
         <Card className="border-l-4 border-l-orange-400">
           <CardContent className="p-3">
             <h3 className="text-sm font-bold text-navy mb-2">Actions requises</h3>
             <div className="space-y-1">
-              {actions.map((a: any, i: number) => (
+              {/* Passerelle Vue 360° : sollicitations en attente */}
+              {sollicitationsCount > 0 && (
+                <button
+                  onClick={() => navigate('/mes-cas-usage')}
+                  className="w-full flex items-center space-x-2 text-xs p-1.5 rounded hover:bg-amber-50 text-left"
+                >
+                  <AlertCircle className="w-3.5 h-3.5 flex-shrink-0 text-amber-600" />
+                  <span className="text-gray-700 flex-1">
+                    {sollicitationsCount} sollicitation{sollicitationsCount > 1 ? 's' : ''} en attente de votre avis sur des cas d'usage
+                  </span>
+                  <ChevronRight className="w-3.5 h-3.5 text-teal flex-shrink-0" />
+                </button>
+              )}
+
+              {actions?.map((a: any, i: number) => (
                 <div key={i} className="flex items-center space-x-2 text-xs">
                   <AlertTriangle className={cn('w-3.5 h-3.5 flex-shrink-0', a.type === 'warning' ? 'text-orange-500' : a.type === 'action' ? 'text-red-500' : 'text-blue-500')} />
                   <span className="text-gray-700">{a.message}</span>
@@ -198,6 +221,7 @@ export function InstitutionDashboardPage() {
           )}
         </CardContent>
       </Card>
+
     </div>
   );
 }

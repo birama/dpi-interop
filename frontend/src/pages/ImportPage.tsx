@@ -20,7 +20,7 @@ export function ImportPage() {
   const { data: instsData } = useQuery({ queryKey: ['institutions-import'], queryFn: () => institutionsApi.getAll({ limit: 500 }) });
   const { data: filesData, refetch: refetchFiles } = useQuery({ queryKey: ['import-files'], queryFn: () => api.get('/import/files') });
   const institutions = instsData?.data?.data || [];
-  const instOptions = institutions.map((i: any) => ({ value: i.id, label: i.nom, sublabel: `${i.code} — ${i.ministere}` }));
+  const instOptions = institutions.map((i: any) => ({ value: i.id, label: `${i.code} — ${i.nom}`, sublabel: i.ministere }));
 
   const uploadMut = useMutation({
     mutationFn: async (file: File) => {

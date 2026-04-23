@@ -100,8 +100,8 @@ export function QuestionnairePage() {
   // Transform institutions to options format for SearchableSelect
   const institutionOptions = institutions.map((inst: any) => ({
     value: inst.code,
-    label: inst.code,
-    sublabel: inst.nom,
+    label: `${inst.code} — ${inst.nom}`,
+    sublabel: inst.ministere,
   }));
 
   // Create submission mutation
