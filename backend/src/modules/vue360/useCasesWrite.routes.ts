@@ -225,8 +225,8 @@ export async function useCasesWriteRoutes(app: FastifyInstance) {
               userId: u.id,
               institutionId: sh.institutionId,
               type: 'TRANSITION',
-              titre: `Transition — ${cu.code}`,
-              message: `Le cas d'usage ${cu.code} "${cu.titre}" est passé de ${currentStatus} à ${statusTo}.`,
+              titre: `Changement de statut — ${cu.titre}`,
+              message: `Le cas d'usage est passé en "${statusTo.replace('_360', '').replace('_', ' ').toLowerCase()}".`,
               lienUrl: `/admin/cas-usage/${id}`,
               refType: 'CAS_USAGE',
               refId: id,
@@ -279,6 +279,31 @@ export async function useCasesWriteRoutes(app: FastifyInstance) {
     });
 
     try { await app.prisma.auditLog.create({ data: { userId: user.id, userEmail: user.email, userRole: user.role, action: 'CREATE', resource: 'stakeholder', resourceId: stakeholder.id, resourceLabel: `${cu.code}: ${stakeholder.institution.code} (${role})${autoSaisine ? ' [auto-saisine]' : ''}`, ipAddress: req.headers['x-forwarded-for']?.toString() || req.ip, userAgent: req.headers['user-agent'] } }); } catch {}
+
+    // Notification CONSULTATION_OUVERTE aux users de l'institution ajoutee
+    // (sauf auto-saisine : l'utilisateur n'a pas besoin de se notifier lui-meme)
+    if (!autoSaisine && role !== 'INITIATEUR') {
+      const instUsers = await app.prisma.user.findMany({
+        where: { institutionId },
+        select: { id: true },
+      });
+      for (const u of instUsers) {
+        try {
+          await app.prisma.notification.create({
+            data: {
+              userId: u.id,
+              institutionId,
+              type: 'CONSULTATION_OUVERTE',
+              titre: `Sollicitation sur "${cu.titre}"`,
+              message: `Votre institution est sollicitee comme ${role.replace('_', ' ').toLowerCase()} sur un cas d'usage. Donnez votre avis depuis l'espace "Mes cas d'usage".`,
+              lienUrl: '/mes-cas-usage',
+              refType: 'CAS_USAGE',
+              refId: cu.id,
+            },
+          });
+        } catch {}
+      }
+    }
 
     return reply.status(201).send(stakeholder);
   });
@@ -358,8 +383,8 @@ export async function consultationRoutes(app: FastifyInstance) {
                 userId: u.id,
                 institutionId: initInst.id,
                 type: 'AVIS_RECU',
-                titre: `Avis reçu — ${cu.code}`,
-                message: `${consultation.stakeholder.institution.code} a donné un avis ${type} sur "${cu.titre}".`,
+                titre: `Avis reçu — ${cu.titre}`,
+                message: `${consultation.stakeholder.institution.code} a rendu un avis de type ${type.replace('_', ' ').toLowerCase()}.`,
                 lienUrl: `/admin/cas-usage/${cu.id}`,
                 refType: 'CAS_USAGE',
                 refId: cu.id,
@@ -408,8 +433,8 @@ export async function consultationRoutes(app: FastifyInstance) {
             userId: u.id,
             institutionId: consultation.stakeholder.institutionId,
             type: 'RELANCE',
-            titre: `Relance — ${consultation.stakeholder.casUsage.code}`,
-            message: `Vous êtes relancé pour donner votre avis sur "${consultation.stakeholder.casUsage.titre}". Relance n°${updated.relances}.`,
+            titre: `Relance — ${consultation.stakeholder.casUsage.titre}`,
+            message: `Vous êtes relancé pour donner votre avis (${updated.relances} relance${updated.relances > 1 ? 's' : ''}).`,
             lienUrl: `/admin/cas-usage/${consultation.stakeholder.casUsage.id}`,
             refType: 'CAS_USAGE',
             refId: consultation.stakeholder.casUsage.id,

@@ -307,7 +307,7 @@ async function main() {
         type: 'CONSULTATION_OUVERTE',
         titre: 'Avis requis — Réconciliation fiscale DGID ↔ DGCPT',
         message: 'Votre institution est sollicitée comme FOURNISSEUR sur le cas d\'usage PINS-CU-008 "Réconciliation fiscale DGID ↔ DGCPT". Échéance de réponse : 3 jours.',
-        lienUrl: `/admin/cas-usage/${cu008.id}`,
+        lienUrl: '/mes-cas-usage',
         refType: 'CAS_USAGE',
         refId: cu008.id,
         lu: false,

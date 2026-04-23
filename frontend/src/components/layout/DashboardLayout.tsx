@@ -37,6 +37,7 @@ import {
 import { cn } from '@/lib/utils';
 import { CommandPalette } from '@/components/CommandPalette';
 import { Breadcrumb } from '@/components/Breadcrumb';
+import { NotificationsBell } from '@/modules/vue360/notifications/NotificationsBell';
 
 type NavGroup = {
   label: string;
@@ -276,6 +277,10 @@ export function DashboardLayout() {
             </button>
           </div>
 
+          {/* Right side: notifications + user */}
+          <div className="flex items-center gap-1">
+            <NotificationsBell />
+
           {/* User menu */}
           <div className="relative">
             <button
@@ -311,6 +316,7 @@ export function DashboardLayout() {
                 </div>
               </>
             )}
+          </div>
           </div>
         </header>
 
