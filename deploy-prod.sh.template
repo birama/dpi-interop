@@ -77,7 +77,6 @@ echo "=== 8. Frontend (HTTPS) ==="
 docker rm -f pins-frontend 2>/dev/null || true
 docker run -d --name pins-frontend \
   --network pins-net \
-  --add-host=host.docker.internal:host-gateway \
   -p 80:80 \
   -p 443:443 \
   -v /etc/letsencrypt/live/dpi-interop.senum.sn:/etc/letsencrypt/live/dpi-interop.senum.sn:ro \
