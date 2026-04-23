@@ -30,6 +30,8 @@ import {
   Shield,
   MessageSquare,
   Search,
+  Scale,
+  Layers,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { CommandPalette } from '@/components/CommandPalette';
@@ -63,6 +65,7 @@ const navGroups: NavGroup[] = [
     items: [
       { name: 'Conventions', href: '/admin/conventions', icon: FileCheck, adminOnly: true },
       { name: 'Registres', href: '/admin/registres-nationaux', icon: Database, adminOnly: true },
+      { name: 'Couverture referentiels', href: '/registres/couverture', icon: Layers },
       { name: 'Catalogue DPI', href: '/catalogue', icon: BookOpen },
       { name: 'Documents', href: '/documents', icon: FileText },
     ],
@@ -73,6 +76,12 @@ const navGroups: NavGroup[] = [
       { name: 'Institutions', href: '/institutions', icon: Building2, adminOnly: true },
       { name: 'Utilisateurs', href: '/admin/utilisateurs', icon: Users, adminOnly: true },
       { name: 'Financements', href: '/admin/financements', icon: Wallet, adminOnly: true },
+    ],
+  },
+  {
+    label: 'Arbitrage DU',
+    items: [
+      { name: 'File d\'arbitrage', href: '/du/arbitrage', icon: Scale, adminOnly: true },
     ],
   },
   {

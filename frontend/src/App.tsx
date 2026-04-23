@@ -33,6 +33,8 @@ import { ImportPage } from '@/pages/ImportPage';
 import { AuditPage } from '@/pages/AuditPage';
 import { DemandesPage } from '@/pages/DemandesPage';
 import { UseCaseDetailPage } from '@/modules/vue360/UseCaseDetailPage';
+import { DuArbitragePage } from '@/modules/vue360/du/DuArbitragePage';
+import { RegistresCouverturePage } from '@/modules/vue360/registres/RegistresCouverturePage';
 import { DocumentsPage } from '@/pages/DocumentsPage';
 import { NotFoundPage } from '@/pages/NotFoundPage';
 
@@ -268,6 +270,22 @@ function App() {
             element={
               <ProtectedRoute>
                 <DocumentsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/du/arbitrage"
+            element={
+              <ProtectedRoute adminOnly>
+                <DuArbitragePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/registres/couverture"
+            element={
+              <ProtectedRoute>
+                <RegistresCouverturePage />
               </ProtectedRoute>
             }
           />
