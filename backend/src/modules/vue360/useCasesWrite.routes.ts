@@ -523,8 +523,20 @@ export async function duArbitrageRoutes(app: FastifyInstance) {
     }
 
     // KPIs
+    // declares = tous les CU en statut DECLARE (inclut le stock pre-existant seed)
+    // declaresPipelineActif = CU en DECLARE ayant au moins une entree dans statusHistory
+    // (= CU reellement touches par le pipeline applicatif Vue 360°, cree via POST /use-cases
+    //  ou deja transites). Les CU du seed principal n'ont pas de statusHistory.
+    const declaresPipelineActif = await app.prisma.casUsageMVP.count({
+      where: {
+        statutVueSection: 'DECLARE',
+        statusHistory: { some: {} },
+      },
+    });
+
     const kpi = {
       declares: await app.prisma.casUsageMVP.count({ where: { statutVueSection: 'DECLARE' } }),
+      declaresPipelineActif,
       enConsultation: await app.prisma.casUsageMVP.count({ where: { statutVueSection: 'EN_CONSULTATION' } }),
       desaccords: desaccords.length,
       qualifies: await app.prisma.casUsageMVP.count({ where: { statutVueSection: 'QUALIFIE' } }),

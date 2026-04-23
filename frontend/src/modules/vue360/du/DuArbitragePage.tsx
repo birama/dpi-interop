@@ -41,6 +41,11 @@ export function DuArbitragePage() {
         <Card><CardContent className="p-3">
           <div className="text-[10px] uppercase text-gray-500 font-semibold">Declares</div>
           <div className="text-2xl font-bold text-navy mt-1">{kpi.declares ?? 0}</div>
+          {typeof kpi.declaresPipelineActif === 'number' && (
+            <div className="text-[10px] text-gray-500">
+              dont {kpi.declaresPipelineActif} issus du pipeline Vue 360°
+            </div>
+          )}
         </CardContent></Card>
 
         <Card className="border-l-4 border-amber"><CardContent className="p-3">
