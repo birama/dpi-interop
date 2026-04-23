@@ -76,11 +76,6 @@ export function MesCasUsageInitiesBlock() {
           })
         )}
       </div>
-      <div className="p-3 text-center border-t border-gray-100">
-        <Link to="/admin/roadmap" className="inline-flex items-center gap-1 text-teal text-xs font-semibold hover:underline">
-          + Declarer un nouveau cas d'usage
-        </Link>
-      </div>
     </Card>
   );
 }
