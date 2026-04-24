@@ -47,6 +47,19 @@ Un input de filtre/recherche qui fait partie d'une `queryKey` React Query doit �
 - [x] **Références documentaires sur `/registres/couverture`** : retrait du badge ADDENDUM v1.1, de la mention Matinée DPI, des formulations jargon (R2).
 - [x] **Bandeau METADATA sans action** : le lien "vous porter partie prenante" sur la fiche 360° d'un cas d'usage en METADATA est devenu un vrai bouton `POST /use-cases/:id/stakeholders` avec auto-saisine.
 - [x] **Distinction Mes demandes / Mes cas d'usage** : encart pédagogique discret en tête de `/institution/demandes` (fond teal-50, icône Info, lien cliquable vers `/mes-cas-usage`, dismissible avec persistance localStorage `demandes-info-dismissed`).
+- [x] **[HOTFIX] Régression visibilité INITIATEUR après chantier P7** — 24/04/2026.
+  L'initiateur d'un cas d'usage voyait la fiche en METADATA au lieu de DETAILED suite
+  à la migration P7 (ajout `dateRetrait`, `evictionParDU`, etc.). Bandeau orange
+  "Me porter partie prenante" s'affichait pour l'initiateur lui-même, incohérent.
+  Cause probable : désalignement de `actif` sur certains stakeholders préexistants,
+  ou cache frontend obsolète. Correctif défensif multi-couches :
+  (1) `computeVisibility` reconnaît l'initiateur via `casUsage.institutionSourceCode`
+  (comparaison de code institution) en plus du fallback stakeholder — indépendant de
+  l'état `actif` ;
+  (2) migration `20260424140000_backfill_stakeholder_actif` qui force `actif=true` sur
+  tout INITIATEUR et backfille toute ligne `actif IS NULL` ;
+  (3) `UseCaseHeader` masque le bandeau et le bouton si `alreadyRegistered` (stakeholder
+  actif ou initiateur reconnu par code institution), défense en profondeur côté UI.
 
 ## À traiter
 

@@ -3,6 +3,7 @@
  *
  * Règles (section 4.3 du document de conception v1.0) :
  * - DU / ADMIN → FULL (toutes les données + logs audit)
+ * - Initiateur du cas d'usage → DETAILED (robuste : reconnu via institutionSourceCode)
  * - Stakeholder actif → DETAILED (métadonnées + spécifications + fil d'avis)
  * - Institution connectée PINS → METADATA (titre, statut, initiateur, rôles)
  * - Sinon → NONE (aucun accès, retourne 404)
@@ -24,12 +25,13 @@ export interface UserContext {
   email: string;
   role: 'ADMIN' | 'INSTITUTION';
   institutionId?: string;
+  institutionCode?: string;  // Code resolu (ex: "DGID")
 }
 
 export interface StakeholderInfo {
   institutionId: string;
   role: string;
-  actif: boolean;
+  actif: boolean | null;
 }
 
 // Champs visibles en mode METADATA (toute admin connectée PINS)
@@ -49,13 +51,11 @@ export const PUBLIC_METADATA_FIELDS = [
   'dateIdentification',
   'createdAt',
   'updatedAt',
-  // Stakeholders : seulement institutionId + role (pas les détails)
   'stakeholders360.institutionId',
   'stakeholders360.role',
   'stakeholders360.actif',
 ];
 
-// Champs supplémentaires en mode DETAILED (parties prenantes formelles)
 export const DETAILED_ADDITIONAL_FIELDS = [
   'description',
   'donneesEchangees',
@@ -66,17 +66,14 @@ export const DETAILED_ADDITIONAL_FIELDS = [
   'conventionSignee',
   'observations',
   'notes',
-  // Relations détaillées
   'stakeholders360.*',
   'financements',
   'registresAssocies',
   'statusHistory',
-  // Consultations et feedbacks
   'stakeholders360.consultations',
   'stakeholders360.feedbacks',
 ];
 
-// FULL = tout + audit logs
 export const FULL_ADDITIONAL_FIELDS = [
   'timeline',
   'auditLogs',
@@ -84,10 +81,15 @@ export const FULL_ADDITIONAL_FIELDS = [
 
 /**
  * Calcule le niveau de visibilité d'un utilisateur sur un cas d'usage.
+ *
+ * @param user               Contexte utilisateur (role, institutionId, institutionCode optionnel)
+ * @param stakeholders       Liste complete des stakeholders du CU (actifs et inactifs)
+ * @param institutionSourceCode  Code institution initiatrice du CU (pour reconnaissance robuste)
  */
 export function computeVisibility(
   user: UserContext,
-  stakeholders: StakeholderInfo[]
+  stakeholders: StakeholderInfo[],
+  institutionSourceCode?: string | null
 ): VisibilityResult {
   // DU / SENUM_ADMIN : visibilité totale
   if (user.role === 'ADMIN') {
@@ -97,27 +99,43 @@ export function computeVisibility(
     };
   }
 
-  // Partie prenante formelle : visibilité détaillée
   if (user.institutionId) {
-    const isStakeholder = stakeholders.some(
-      s => s.institutionId === user.institutionId && s.actif
-    );
-    if (isStakeholder) {
+    // Initiateur via institutionSourceCode : reconnu quel que soit l'etat du stakeholder
+    // (protection contre tout desalignement stakeholder.actif sur le role INITIATEUR)
+    if (user.institutionCode && institutionSourceCode && user.institutionCode === institutionSourceCode) {
       return {
         level: 'DETAILED',
         fields: [...PUBLIC_METADATA_FIELDS, ...DETAILED_ADDITIONAL_FIELDS],
       };
     }
-  }
 
-  // Toute institution connectée PINS (a un institutionId = est connectée)
-  if (user.institutionId) {
+    // Stakeholder INITIATEUR (meme critere, fallback si institutionCode non resolu cote appelant)
+    const isInitiateurStakeholder = stakeholders.some(
+      s => s.institutionId === user.institutionId && s.role === 'INITIATEUR'
+    );
+    if (isInitiateurStakeholder) {
+      return {
+        level: 'DETAILED',
+        fields: [...PUBLIC_METADATA_FIELDS, ...DETAILED_ADDITIONAL_FIELDS],
+      };
+    }
+
+    // Partie prenante active (non initiateur)
+    const isActiveStakeholder = stakeholders.some(
+      s => s.institutionId === user.institutionId && s.actif === true
+    );
+    if (isActiveStakeholder) {
+      return {
+        level: 'DETAILED',
+        fields: [...PUBLIC_METADATA_FIELDS, ...DETAILED_ADDITIONAL_FIELDS],
+      };
+    }
+
     return {
       level: 'METADATA',
       fields: [...PUBLIC_METADATA_FIELDS],
     };
   }
 
-  // Par défaut : aucun accès
   return { level: 'NONE', fields: [] };
 }

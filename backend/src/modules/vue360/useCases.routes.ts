@@ -67,11 +67,22 @@ export async function useCasesRoutes(app: FastifyInstance) {
     const { limit = '20', cursor, status, search } = req.query as any;
     const take = Math.min(parseInt(limit) || 20, 100);
 
+    // Resoudre le code de l'institution de l'utilisateur (pour reconnaissance initiateur robuste)
+    let userInstitutionCode: string | undefined;
+    if (req.user.institutionId) {
+      const inst = await app.prisma.institution.findUnique({
+        where: { id: req.user.institutionId },
+        select: { code: true },
+      });
+      userInstitutionCode = inst?.code;
+    }
+
     const user: UserContext = {
       id: req.user.id,
       email: req.user.email,
       role: req.user.role,
       institutionId: req.user.institutionId,
+      institutionCode: userInstitutionCode,
     };
 
     // Build where clause
@@ -114,7 +125,7 @@ export async function useCasesRoutes(app: FastifyInstance) {
 
     // Appliquer la projection de visibilité
     const projected = items.map((cu: any) => {
-      const visibility = computeVisibility(user, cu.stakeholders360 || []);
+      const visibility = computeVisibility(user, cu.stakeholders360 || [], cu.institutionSourceCode);
       if (visibility.level === 'NONE') return null;
       return projectUseCase(cu, visibility.level);
     }).filter(Boolean);
@@ -133,11 +144,22 @@ export async function useCasesRoutes(app: FastifyInstance) {
   app.get('/:id', { onRequest: [app.authenticate] }, async (req: any, reply: any) => {
     const { id } = req.params;
 
+    // Resoudre le code institution de l'utilisateur (pour reconnaissance initiateur robuste)
+    let userInstitutionCode: string | undefined;
+    if (req.user.institutionId) {
+      const inst = await app.prisma.institution.findUnique({
+        where: { id: req.user.institutionId },
+        select: { code: true },
+      });
+      userInstitutionCode = inst?.code;
+    }
+
     const user: UserContext = {
       id: req.user.id,
       email: req.user.email,
       role: req.user.role,
       institutionId: req.user.institutionId,
+      institutionCode: userInstitutionCode,
     };
 
     const casUsage = await app.prisma.casUsageMVP.findUnique({
@@ -149,8 +171,8 @@ export async function useCasesRoutes(app: FastifyInstance) {
       return reply.status(404).send({ error: 'Cas d\'usage non trouvé' });
     }
 
-    // Calculer la visibilité
-    const visibility = computeVisibility(user, casUsage.stakeholders360 || []);
+    // Calculer la visibilité (robuste : reconnaît l'initiateur via institutionSourceCode)
+    const visibility = computeVisibility(user, casUsage.stakeholders360 || [], casUsage.institutionSourceCode);
 
     // NONE → 404 (pas 403, pour ne pas révéler l'existence)
     if (visibility.level === 'NONE') {

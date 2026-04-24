@@ -17,16 +17,24 @@ export function UseCaseHeader({ cu, visibility, myConsultationId, onGiveFeedback
   const [showAutoSaisine, setShowAutoSaisine] = useState(false);
   const sc = VUE360_STATUT_COLORS[cu.statutVueSection] || VUE360_STATUT_COLORS.DECLARE;
 
-  // Trouver le role de mon institution
+  // Trouver le role de mon institution (stakeholder actif)
   const myStakeholders = cu.stakeholders360?.filter(
     (s: any) => s.institutionId === user?.institutionId && s.actif
   ) || [];
   const myRoles = myStakeholders.map((s: any) => s.role);
 
+  // Reconnaissance robuste : initiateur via institutionSourceCode (independant de l'etat stakeholder)
+  const isInitiator = !!user?.institution?.code
+    && !!cu.institutionSourceCode
+    && user.institution.code === cu.institutionSourceCode;
+
+  // Mon institution est-elle deja enregistree (actif ou non) sur ce CU ?
+  const alreadyRegistered = myStakeholders.length > 0 || isInitiator;
+
   // A-t-on deja ete evince (anti-reinscription) ?
   const myEvicted = cu.stakeholders360?.some(
     (s: any) => s.institutionId === user?.institutionId && !s.actif && s.evictionParDU
-  );
+  ) && !isInitiator;
 
   // Trouver l'echeance de ma consultation en attente
   let myEcheance: string | null = null;
@@ -80,7 +88,7 @@ export function UseCaseHeader({ cu, visibility, myConsultationId, onGiveFeedback
         </div>
 
         {/* Bandeau METADATA */}
-        {visibility === 'METADATA' && !myEvicted && (
+        {visibility === 'METADATA' && !myEvicted && !alreadyRegistered && (
           <div className="mt-4 p-3 bg-amber-50 rounded-lg border border-amber-200 text-xs text-amber-700 flex flex-wrap items-center gap-2">
             <span className="flex-1 min-w-0">
               Informations detaillees reservees aux parties prenantes formellement designees.
