@@ -18,6 +18,7 @@ import { FastifyInstance } from 'fastify';
 
 // Matrice de transitions autorisées : from → [to...]
 const TRANSITION_MATRIX: Record<string, string[]> = {
+  PROPOSE:              ['DECLARE', 'ARCHIVE', 'FUSIONNE'], // P8 : adoption -> DECLARE, sortie catalogue -> ARCHIVE/FUSIONNE
   DECLARE:              ['EN_CONSULTATION', 'SUSPENDU_360', 'RETIRE'],
   EN_CONSULTATION:      ['VALIDATION_CONJOINTE', 'SUSPENDU_360', 'RETIRE'],
   VALIDATION_CONJOINTE: ['QUALIFIE', 'EN_CONSULTATION', 'SUSPENDU_360', 'RETIRE'], // retour en consultation si besoin
@@ -28,10 +29,12 @@ const TRANSITION_MATRIX: Record<string, string[]> = {
   EN_PRODUCTION_360:    ['SUSPENDU_360', 'RETIRE'],
   SUSPENDU_360:         ['EN_CONSULTATION', 'QUALIFIE', 'RETIRE'], // reprise possible
   RETIRE:               [], // état final
+  ARCHIVE:              ['PROPOSE'],  // P8 : DU peut desarchiver (reconsiderer)
+  FUSIONNE:             [],           // P8 : etat final, le CU cible prend le relais
 };
 
 // Transitions réservées à la DU (ADMIN)
-const DU_ONLY_TARGETS = ['QUALIFIE', 'PRIORISE', 'FINANCEMENT_OK', 'SUSPENDU_360', 'RETIRE'];
+const DU_ONLY_TARGETS = ['QUALIFIE', 'PRIORISE', 'FINANCEMENT_OK', 'SUSPENDU_360', 'RETIRE', 'ARCHIVE', 'FUSIONNE', 'PROPOSE'];
 
 export async function useCasesWriteRoutes(app: FastifyInstance) {
 

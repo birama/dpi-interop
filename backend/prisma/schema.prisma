@@ -15,39 +15,45 @@ datasource db {
 // ============================================================================
 
 model User {
-  id                 String      @id @default(uuid())
-  email              String      @unique
-  password           String      // bcrypt hashed
-  role               Role        @default(INSTITUTION)
-  mustChangePassword Boolean     @default(true)
+  id                 String  @id @default(uuid())
+  email              String  @unique
+  password           String // bcrypt hashed
+  role               Role    @default(INSTITUTION)
+  mustChangePassword Boolean @default(true)
 
   // Relations
   institutionId String?
   institution   Institution? @relation(fields: [institutionId], references: [id])
 
   // Audit
-  lastLoginAt   DateTime?
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
+  lastLoginAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
   // Sessions
-  sessions      UserSession[]
+  sessions UserSession[]
 
   // Vue 360° — relations inverses
-  stakeholdersAjoutes      UseCaseStakeholder[]    @relation("StakeholderAjoute")
-  stakeholdersRetires      UseCaseStakeholder[]    @relation("StakeholderRetire")
-  consultationsOuvertes    UseCaseConsultation[]   @relation("ConsultationOuvertePar")
-  feedbacksAuteur          UseCaseFeedback[]       @relation("FeedbackAuteur")
-  statusHistoryAuteur      UseCaseStatusHistory[]  @relation("StatusHistoryAuteur")
-  notificationsVue360      Notification[]          @relation("UserNotifications")
-  registresUsageAjoutes    CasUsageRegistre[]      @relation("RegistreUsageAjoute")
+  stakeholdersAjoutes   UseCaseStakeholder[]   @relation("StakeholderAjoute")
+  stakeholdersRetires   UseCaseStakeholder[]   @relation("StakeholderRetire")
+  consultationsOuvertes UseCaseConsultation[]  @relation("ConsultationOuvertePar")
+  feedbacksAuteur       UseCaseFeedback[]      @relation("FeedbackAuteur")
+  statusHistoryAuteur   UseCaseStatusHistory[] @relation("StatusHistoryAuteur")
+  notificationsVue360   Notification[]         @relation("UserNotifications")
+  registresUsageAjoutes CasUsageRegistre[]     @relation("RegistreUsageAjoute")
 
-  @@map("users")
+  // Catalogue propositions (P8)
+  adoptionsEffectuees     CasUsageMVP[]      @relation("CasUsageAdoptePar")
+  adoptionRequestsDemande AdoptionRequest[]  @relation("AdoptionRequestDemandeur")
+  adoptionRequestsTraite  AdoptionRequest[]  @relation("AdoptionRequestValideur")
+  relationsCasUsageCrees  RelationCasUsage[] @relation("RelationCasUsageCree")
+
   @@index([email])
+  @@map("users")
 }
 
 enum Role {
-  ADMIN       // SENUM/MCTN
+  ADMIN // SENUM/MCTN
   INSTITUTION // Administrations sectorielles
 }
 
@@ -64,7 +70,10 @@ enum UseCaseRole {
 }
 
 /// Statut du cas d'usage dans le pipeline Vue 360°
+/// PROPOSE : amont du pipeline (catalogue des propositions P8)
+/// ARCHIVE / FUSIONNE : sortie de catalogue par decision DU (P8)
 enum UseCaseStatus {
+  PROPOSE // P8 : inscrit au catalogue, pas encore adopte par une institution
   DECLARE
   EN_CONSULTATION
   VALIDATION_CONJOINTE
@@ -72,9 +81,43 @@ enum UseCaseStatus {
   PRIORISE
   FINANCEMENT_OK
   CONVENTIONNE
-  EN_PRODUCTION_360  // suffixé pour éviter conflit avec StatutImplementation.EN_PRODUCTION
-  SUSPENDU_360       // suffixé pour éviter conflit avec StatutImplementation.SUSPENDU
+  EN_PRODUCTION_360 // suffixé pour éviter conflit avec StatutImplementation.EN_PRODUCTION
+  SUSPENDU_360 // suffixé pour éviter conflit avec StatutImplementation.SUSPENDU
   RETIRE
+  ARCHIVE // P8 : proposition archivee par la DU (non adoptee, non pertinente)
+  FUSIONNE // P8 : proposition fusionnee avec un autre cas d'usage
+}
+
+/// Typologie du cas d'usage (P9)
+/// METIER   : parcours multi-administrations oriente beneficiaire, porte par un coordonnateur
+/// TECHNIQUE : echange bilateral oriente systeme, porte par le detenteur de donnee
+enum TypologieCasUsage {
+  METIER
+  TECHNIQUE
+}
+
+/// Source d'une proposition (P8) — origine institutionnelle de la proposition
+enum SourceProposition {
+  ATELIER_CADRAGE // Atelier dedie (ateliers de conception, matinees)
+  ETUDE_SENUM // Etude interne SENUM SA
+  RECOMMANDATION // Recommandation d'une autorite (CDP, ARTP, etc.)
+  CADRAGE_STRATEGIQUE // Cadrage PRES, Vision Senegal 2050, etc.
+  PROPOSITION_INSTITUTIONNELLE // Proposition soumise par une administration
+}
+
+/// Niveau de maturite d'une proposition (P8)
+enum NiveauMaturite {
+  ESQUISSE // Idee formulee, pas de specification technique
+  PRE_CADREE // Institutions pressenties + registres listes
+  PRETE_A_ADOPTER // Travail preparatoire complet
+}
+
+/// Role pressenti d'une institution sur une proposition (P8)
+enum RolePressenti {
+  INITIATEUR_PRESSENTI
+  FOURNISSEUR_PRESSENTI
+  CONSOMMATEUR_PRESSENTI
+  PARTIE_PRENANTE_PRESSENTIE
 }
 
 /// Type d'avis formel donné par une partie prenante
@@ -106,34 +149,39 @@ enum RegistreUsageMode {
 // ============================================================================
 
 model Institution {
-  id                  String   @id @default(uuid())
-  code                String   @unique // Ex: DGID, DGD, ANSD
-  nom                 String
-  ministere           String
+  id        String @id @default(uuid())
+  code      String @unique // Ex: DGID, DGD, ANSD
+  nom       String
+  ministere String
 
   // Contact principal
   responsableNom      String
   responsableFonction String
-  responsableEmail    String   @unique
+  responsableEmail    String @unique
   responsableTel      String
 
   // Relations
-  users               User[]
-  submissions         Submission[]
-  conventionsA        Convention[] @relation("conventionPartieA")
-  conventionsB        Convention[] @relation("conventionPartieB")
-  xroadReadiness      XRoadReadiness?
+  users          User[]
+  submissions    Submission[]
+  conventionsA   Convention[]    @relation("conventionPartieA")
+  conventionsB   Convention[]    @relation("conventionPartieB")
+  xroadReadiness XRoadReadiness?
 
   // Vue 360° — relations inverses
-  stakeholders        UseCaseStakeholder[]
-  notificationsInst   Notification[]        @relation("InstitutionNotifications")
+  stakeholders      UseCaseStakeholder[]
+  notificationsInst Notification[]       @relation("InstitutionNotifications")
+
+  // Catalogue propositions (P8)
+  casUsagesAdoptes CasUsageMVP[]           @relation("CasUsageAdopte")
+  pressentieSur    InstitutionPressentie[]
+  adoptionRequests AdoptionRequest[]
 
   // Audit
-  createdAt           DateTime @default(now())
-  updatedAt           DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  @@map("institutions")
   @@index([code])
+  @@map("institutions")
 }
 
 // ============================================================================
@@ -141,15 +189,15 @@ model Institution {
 // ============================================================================
 
 model Submission {
-  id            String           @id @default(uuid())
+  id String @id @default(uuid())
 
   // Institution
   institutionId String
-  institution   Institution      @relation(fields: [institutionId], references: [id], onDelete: Cascade)
+  institution   Institution @relation(fields: [institutionId], references: [id], onDelete: Cascade)
 
   // Workflow
-  status        SubmissionStatus @default(DRAFT)
-  currentStep   Int              @default(0) // 0-5
+  status      SubmissionStatus @default(DRAFT)
+  currentStep Int              @default(0) // 0-5
 
   // Section A - Gouvernance des données
   dataOwnerNom         String?
@@ -163,8 +211,8 @@ model Submission {
   dataStewardTelephone String?
 
   // Section B - Systèmes d'information
-  applications       Application[]
-  registres          Registre[]
+  applications        Application[]
+  registres           Registre[]
   infrastructureItems InfrastructureItem[]
 
   // Infrastructure (JSON flexible - legacy)
@@ -173,58 +221,58 @@ model Submission {
   // Section C - Besoins échanges
   donneesConsommer DonneeConsommer[]
   donneesFournir   DonneeFournir[]
-  fluxExistants    FluxExistant[]     // Legacy — conservé pour rétrocompatibilité
+  fluxExistants    FluxExistant[] // Legacy — conservé pour rétrocompatibilité
   casUsage         CasUsage[]
-  fluxInstitutions FluxInstitution[]  // Nouveau : liens vers registre CasUsageMVP
+  fluxInstitutions FluxInstitution[] // Nouveau : liens vers registre CasUsageMVP
 
   // Framework interopérabilité
-  niveauxInterop       NiveauInterop[]
-  dictionnaireDonnees  DictionnaireDonnee[]
-  conformitePrincipes  ConformitePrincipe[]
-  preparationDecret    PreparationDecret[]
+  niveauxInterop      NiveauInterop[]
+  dictionnaireDonnees DictionnaireDonnee[]
+  conformitePrincipes ConformitePrincipe[]
+  preparationDecret   PreparationDecret[]
 
   // Section D - Contraintes et maturité
   contraintesJuridiques String? @db.Text
   contraintesTechniques String? @db.Text
 
-  maturiteInfra        Int @default(3) @db.SmallInt // 1-5
-  maturiteDonnees      Int @default(3) @db.SmallInt
-  maturiteCompetences  Int @default(3) @db.SmallInt
-  maturiteGouvernance  Int @default(3) @db.SmallInt
+  maturiteInfra       Int @default(3) @db.SmallInt // 1-5
+  maturiteDonnees     Int @default(3) @db.SmallInt
+  maturiteCompetences Int @default(3) @db.SmallInt
+  maturiteGouvernance Int @default(3) @db.SmallInt
 
   // Section E - Auto-diagnostic
-  forces        String? @db.Text
-  faiblesses    String? @db.Text
+  forces     String? @db.Text
+  faiblesses String? @db.Text
 
   // Section F - Attentes
   attentes      String? @db.Text
   contributions String? @db.Text
 
   // Métadonnées
-  submittedAt   DateTime?
-  reviewedAt    DateTime?
-  reviewedBy    String? // User ID
+  submittedAt DateTime?
+  reviewedAt  DateTime?
+  reviewedBy  String? // User ID
 
   // Import tracking
-  importHash      String?   // MD5 hash du fichier Word importé
-  importFilename  String?   // Nom du fichier importé
-  importedAt      DateTime? // Date d'import
+  importHash     String? // MD5 hash du fichier Word importé
+  importFilename String? // Nom du fichier importé
+  importedAt     DateTime? // Date d'import
 
   // Audit
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  @@map("submissions")
   @@index([institutionId, status])
   @@index([submittedAt])
+  @@map("submissions")
 }
 
 enum SubmissionStatus {
-  DRAFT      // En cours de remplissage
-  SUBMITTED  // Soumis par l'institution
-  REVIEWED   // Relu par SENUM
-  VALIDATED  // Validé final
-  ARCHIVED   // Archivé
+  DRAFT // En cours de remplissage
+  SUBMITTED // Soumis par l'institution
+  REVIEWED // Relu par SENUM
+  VALIDATED // Validé final
+  ARCHIVED // Archivé
 }
 
 // ============================================================================
@@ -232,21 +280,21 @@ enum SubmissionStatus {
 // ============================================================================
 
 model Application {
-  id            String     @id @default(uuid())
-  submissionId  String
-  submission    Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  id           String     @id @default(uuid())
+  submissionId String
+  submission   Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
 
-  nom           String
-  description   String?    @db.Text
-  editeur       String?    // Éditeur/fournisseur
+  nom               String
+  description       String? @db.Text
+  editeur           String? // Éditeur/fournisseur
   anneeInstallation Int?
 
-  ordre         Int        @default(0) // Pour tri
+  ordre Int @default(0) // Pour tri
 
-  createdAt     DateTime   @default(now())
+  createdAt DateTime @default(now())
 
-  @@map("applications")
   @@index([submissionId])
+  @@map("applications")
 }
 
 // ============================================================================
@@ -254,28 +302,28 @@ model Application {
 // ============================================================================
 
 model Registre {
-  id            String     @id @default(uuid())
-  submissionId  String
-  submission    Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  id           String     @id @default(uuid())
+  submissionId String
+  submission   Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
 
-  nom           String
-  description   String?    @db.Text
-  volumetrie    String?    // Ex: "5M entités", "250K entreprises"
+  nom         String
+  description String? @db.Text
+  volumetrie  String? // Ex: "5M entités", "250K entreprises"
 
   // E.6 — Indicateurs de qualité
-  tauxCompletude      Int?       // 0-100
-  tauxDoublons        Int?       // 0-100
+  tauxCompletude      Int? // 0-100
+  tauxDoublons        Int? // 0-100
   dernierNettoyage    DateTime?
-  planQualiteExiste   Boolean    @default(false)
-  processusCorrection String?    @db.Text
-  frequenceAudit      String?    // Jamais, Annuel, Semestriel, Trimestriel, Mensuel
+  planQualiteExiste   Boolean   @default(false)
+  processusCorrection String?   @db.Text
+  frequenceAudit      String? // Jamais, Annuel, Semestriel, Trimestriel, Mensuel
 
-  ordre         Int        @default(0)
+  ordre Int @default(0)
 
-  createdAt     DateTime   @default(now())
+  createdAt DateTime @default(now())
 
-  @@map("registres")
   @@index([submissionId])
+  @@map("registres")
 }
 
 // ============================================================================
@@ -284,83 +332,83 @@ model Registre {
 
 // C.1 - Données à CONSOMMER
 model DonneeConsommer {
-  id            String     @id @default(uuid())
-  submissionId  String
-  submission    Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  id           String     @id @default(uuid())
+  submissionId String
+  submission   Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
 
-  donnee        String     // Type de donnée recherchée
-  source        String     // Administration source
-  usage         String?    @db.Text // Usage prévu
-  priorite      Int        @default(3) @db.SmallInt // 1-5
+  donnee   String // Type de donnée recherchée
+  source   String // Administration source
+  usage    String? @db.Text // Usage prévu
+  priorite Int     @default(3) @db.SmallInt // 1-5
 
-  ordre         Int        @default(0)
+  ordre Int @default(0)
 
-  createdAt     DateTime   @default(now())
+  createdAt DateTime @default(now())
 
-  @@map("donnees_consommer")
   @@index([submissionId])
+  @@map("donnees_consommer")
 }
 
 // C.2 - Données à FOURNIR
 model DonneeFournir {
-  id            String     @id @default(uuid())
-  submissionId  String
-  submission    Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  id           String     @id @default(uuid())
+  submissionId String
+  submission   Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
 
-  donnee        String     // Type de donnée
-  destinataires String?    // Qui pourrait consommer
-  frequence     String?    // Fréquence de MAJ
-  format        String?    // Format disponible (API, fichier, etc.)
+  donnee        String // Type de donnée
+  destinataires String? // Qui pourrait consommer
+  frequence     String? // Fréquence de MAJ
+  format        String? // Format disponible (API, fichier, etc.)
 
-  ordre         Int        @default(0)
+  ordre Int @default(0)
 
-  createdAt     DateTime   @default(now())
+  createdAt DateTime @default(now())
 
-  @@map("donnees_fournir")
   @@index([submissionId])
+  @@map("donnees_fournir")
 }
 
 // C.3 - Flux existants
 model FluxExistant {
-  id            String     @id @default(uuid())
-  submissionId  String
-  submission    Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  id           String     @id @default(uuid())
+  submissionId String
+  submission   Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
 
-  source        String
-  destination   String
-  donnee        String?
-  mode          String?    // API REST, fichier, email, etc.
-  frequence     String?
+  source      String
+  destination String
+  donnee      String?
+  mode        String? // API REST, fichier, email, etc.
+  frequence   String?
 
-  ordre         Int        @default(0)
+  ordre Int @default(0)
 
-  createdAt     DateTime   @default(now())
+  createdAt DateTime @default(now())
 
-  @@map("flux_existants")
   @@index([submissionId])
+  @@map("flux_existants")
 }
 
 // C.4 - Cas d'usage prioritaires
 model CasUsage {
-  id            String     @id @default(uuid())
-  submissionId  String
-  submission    Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  id           String     @id @default(uuid())
+  submissionId String
+  submission   Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
 
-  titre         String
-  description   String     @db.Text
-  acteurs       String?    @db.Text
-  priorite      Int        @default(3) @db.SmallInt
+  titre       String
+  description String  @db.Text
+  acteurs     String? @db.Text
+  priorite    Int     @default(3) @db.SmallInt
 
   // P.6 — Lien avec cas d'usage MVP
   casUsageMVPId String?
   casUsageMVP   CasUsageMVP? @relation(fields: [casUsageMVPId], references: [id])
 
-  ordre         Int        @default(0)
+  ordre Int @default(0)
 
-  createdAt     DateTime   @default(now())
+  createdAt DateTime @default(now())
 
-  @@map("cas_usage")
   @@index([submissionId, priorite])
+  @@map("cas_usage")
 }
 
 // ============================================================================
@@ -368,21 +416,21 @@ model CasUsage {
 // ============================================================================
 
 model NiveauInterop {
-  id            String     @id @default(uuid())
-  submissionId  String
-  submission    Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  id           String     @id @default(uuid())
+  submissionId String
+  submission   Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
 
-  niveau        String     // POLITIQUE, JURIDIQUE, ORGANISATIONNEL, SEMANTIQUE, TECHNIQUE
-  question      String
-  reponse       String     // Oui, Non, En cours, Partiellement, etc.
-  details       String?    @db.Text
+  niveau   String // POLITIQUE, JURIDIQUE, ORGANISATIONNEL, SEMANTIQUE, TECHNIQUE
+  question String
+  reponse  String // Oui, Non, En cours, Partiellement, etc.
+  details  String? @db.Text
 
-  createdAt     DateTime   @default(now())
-  updatedAt     DateTime   @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  @@map("niveaux_interop")
   @@unique([submissionId, niveau, question])
   @@index([submissionId])
+  @@map("niveaux_interop")
 }
 
 // ============================================================================
@@ -390,21 +438,21 @@ model NiveauInterop {
 // ============================================================================
 
 model ConformitePrincipe {
-  id            String     @id @default(uuid())
-  submissionId  String
-  submission    Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  id           String     @id @default(uuid())
+  submissionId String
+  submission   Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
 
-  principeNumero Int       // 1-13
-  categorie     String     // A, B, C, D
-  score         Int        @default(1) @db.SmallInt // 1-5
-  commentaire   String?    @db.Text
+  principeNumero Int // 1-13
+  categorie      String // A, B, C, D
+  score          Int     @default(1) @db.SmallInt // 1-5
+  commentaire    String? @db.Text
 
-  createdAt     DateTime   @default(now())
-  updatedAt     DateTime   @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  @@map("conformite_principes")
   @@unique([submissionId, principeNumero])
   @@index([submissionId])
+  @@map("conformite_principes")
 }
 
 // ============================================================================
@@ -412,26 +460,26 @@ model ConformitePrincipe {
 // ============================================================================
 
 model DictionnaireDonnee {
-  id                 String     @id @default(uuid())
-  submissionId       String
-  submission         Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  id           String     @id @default(uuid())
+  submissionId String
+  submission   Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
 
   nomChamp           String
-  definition         String?    @db.Text
-  formatTechnique    String?    // Texte, Numérique, Date, Booléen, Code, Montant, Autre
+  definition         String? @db.Text
+  formatTechnique    String? // Texte, Numérique, Date, Booléen, Code, Montant, Autre
   taille             String?
-  referentielOrigine String?    // Institution source de vérité
+  referentielOrigine String? // Institution source de vérité
   nomenclature       String?
-  identifiantPivot   Boolean    @default(false)
+  identifiantPivot   Boolean @default(false)
   frequenceMAJ       String?
-  sensibilite        String?    // Public, Usage interne, Confidentiel, Secret
-  observations       String?    @db.Text
+  sensibilite        String? // Public, Usage interne, Confidentiel, Secret
+  observations       String? @db.Text
 
-  createdAt          DateTime   @default(now())
-  updatedAt          DateTime   @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  @@map("dictionnaire_donnees")
   @@index([submissionId])
+  @@map("dictionnaire_donnees")
 }
 
 // ============================================================================
@@ -439,21 +487,21 @@ model DictionnaireDonnee {
 // ============================================================================
 
 model PreparationDecret {
-  id            String     @id @default(uuid())
-  submissionId  String
-  submission    Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  id           String     @id @default(uuid())
+  submissionId String
+  submission   Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
 
-  chapitre      String     // CHAPITRE_2, CHAPITRE_3, CHAPITRE_4
-  question      String
-  reponse       String
-  details       String?    @db.Text
+  chapitre String // CHAPITRE_2, CHAPITRE_3, CHAPITRE_4
+  question String
+  reponse  String
+  details  String? @db.Text
 
-  createdAt     DateTime   @default(now())
-  updatedAt     DateTime   @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  @@map("preparation_decret")
   @@unique([submissionId, chapitre, question])
   @@index([submissionId])
+  @@map("preparation_decret")
 }
 
 // ============================================================================
@@ -461,22 +509,22 @@ model PreparationDecret {
 // ============================================================================
 
 model InfrastructureItem {
-  id              String     @id @default(uuid())
-  submissionId    String
-  submission      Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  id           String     @id @default(uuid())
+  submissionId String
+  submission   Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
 
-  domain          String     // EQUIPEMENTS_SYSTEME, RESEAU_CONNECTIVITE, API_SERVICES, SECURITE_CERTIFICATS, ENERGIE_CONTINUITE, RESSOURCES_HUMAINES, LICENCES_LOGICIELS
-  element         String     // Ex: "Datacenter", "Serveurs en production"
-  disponibilite   Boolean?   // Oui/Non/null
-  qualifications  String?    // Détails texte libre
-  observations    String?    // Spécifications / observations
+  domain         String // EQUIPEMENTS_SYSTEME, RESEAU_CONNECTIVITE, API_SERVICES, SECURITE_CERTIFICATS, ENERGIE_CONTINUITE, RESSOURCES_HUMAINES, LICENCES_LOGICIELS
+  element        String // Ex: "Datacenter", "Serveurs en production"
+  disponibilite  Boolean? // Oui/Non/null
+  qualifications String? // Détails texte libre
+  observations   String? // Spécifications / observations
 
-  createdAt       DateTime   @default(now())
-  updatedAt       DateTime   @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  @@map("infrastructure_items")
-  @@index([submissionId])
   @@unique([submissionId, domain, element])
+  @@index([submissionId])
+  @@map("infrastructure_items")
 }
 
 // ============================================================================
@@ -484,34 +532,37 @@ model InfrastructureItem {
 // ============================================================================
 
 model Convention {
-  id              String           @id @default(uuid())
-  institutionAId  String
-  institutionA    Institution      @relation("conventionPartieA", fields: [institutionAId], references: [id])
-  institutionBId  String
-  institutionB    Institution      @relation("conventionPartieB", fields: [institutionBId], references: [id])
+  id             String      @id @default(uuid())
+  institutionAId String
+  institutionA   Institution @relation("conventionPartieA", fields: [institutionAId], references: [id])
+  institutionBId String
+  institutionB   Institution @relation("conventionPartieB", fields: [institutionBId], references: [id])
 
-  objet           String
-  donneesVisees   String?          @db.Text
-  statut          ConventionStatus @default(NON_INITIEE)
+  objet         String
+  donneesVisees String?          @db.Text
+  statut        ConventionStatus @default(NON_INITIEE)
 
-  dateInitiation  DateTime?
-  dateRedaction   DateTime?
-  dateSignatureA  DateTime?
-  dateSignatureB  DateTime?
-  dateActivation  DateTime?
-  dateExpiration  DateTime?
+  dateInitiation DateTime?
+  dateRedaction  DateTime?
+  dateSignatureA DateTime?
+  dateSignatureB DateTime?
+  dateActivation DateTime?
+  dateExpiration DateTime?
 
   referenceDocument String?
-  lienDocument      String?        // URL vers le document partagé (SharePoint, Drive, etc.)
-  observations      String?        @db.Text
+  lienDocument      String? // URL vers le document partagé (SharePoint, Drive, etc.)
+  observations      String? @db.Text
 
-  createdAt       DateTime         @default(now())
-  updatedAt       DateTime         @updatedAt
-  createdBy       String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdBy String?
 
-  @@map("conventions")
+  // Cas d'usage lies (P9) — un cas d'usage technique peut referencer une convention
+  casUsagesLies CasUsageMVP[] @relation("CasUsageConvention")
+
   @@index([institutionAId])
   @@index([institutionBId])
+  @@map("conventions")
 }
 
 enum ConventionStatus {
@@ -530,9 +581,9 @@ enum ConventionStatus {
 // ============================================================================
 
 model XRoadReadiness {
-  id                    String      @id @default(uuid())
-  institutionId         String      @unique
-  institution           Institution @relation(fields: [institutionId], references: [id])
+  id            String      @id @default(uuid())
+  institutionId String      @unique
+  institution   Institution @relation(fields: [institutionId], references: [id])
 
   serveurDedie          JalonStatus @default(NON_DEMARRE)
   serveurDedieDate      DateTime?
@@ -547,25 +598,25 @@ model XRoadReadiness {
   premierEchangeReussi  JalonStatus @default(NON_DEMARRE)
   premierEchangeDate    DateTime?
 
-  observations          String?     @db.Text
-  blocage               String?
-  prochainJalon         String?
+  observations  String? @db.Text
+  blocage       String?
+  prochainJalon String?
 
   // Hébergement du Security Server
-  hebergement           HebergementType @default(SENUM_CENTRALISE)
-  hebergementCible      HebergementType?
-  dateMigrationPrevue   DateTime?
-  prerequisMigration    String?     @db.Text
+  hebergement         HebergementType  @default(SENUM_CENTRALISE)
+  hebergementCible    HebergementType?
+  dateMigrationPrevue DateTime?
+  prerequisMigration  String?          @db.Text
 
   // Maturité API
-  disposeAPI            Boolean     @default(false)
-  maturiteAPI           String?
-  systemeSource         String?
-  protocoleAPI          String?
-  observationsAPI       String?     @db.Text
+  disposeAPI      Boolean @default(false)
+  maturiteAPI     String?
+  systemeSource   String?
+  protocoleAPI    String?
+  observationsAPI String? @db.Text
 
-  updatedAt             DateTime    @updatedAt
-  updatedBy             String?
+  updatedAt DateTime @updatedAt
+  updatedBy String?
 
   @@map("xroad_readiness")
 }
@@ -588,23 +639,23 @@ enum JalonStatus {
 // ============================================================================
 
 model Report {
-  id            String     @id @default(uuid())
-  type          ReportType
-  format        String     // PDF, CSV, XLSX, JSON
+  id     String     @id @default(uuid())
+  type   ReportType
+  format String // PDF, CSV, XLSX, JSON
 
   // Fichier généré
-  filename      String
-  filepath      String?
-  filesize      Int?       // bytes
+  filename String
+  filepath String?
+  filesize Int? // bytes
 
   // Métadonnées
-  generatedBy   String?    // User ID
-  parameters    Json?      // Paramètres du rapport
+  generatedBy String? // User ID
+  parameters  Json? // Paramètres du rapport
 
-  createdAt     DateTime   @default(now())
+  createdAt DateTime @default(now())
 
-  @@map("reports")
   @@index([type, createdAt])
+  @@map("reports")
 }
 
 // ============================================================================
@@ -612,28 +663,28 @@ model Report {
 // ============================================================================
 
 model BuildingBlock {
-  id               String    @id @default(uuid())
-  code             String    @unique
-  nom              String
-  description      String    @db.Text
-  couche           CoucheDPI
+  id          String    @id @default(uuid())
+  code        String    @unique
+  nom         String
+  description String    @db.Text
+  couche      CoucheDPI
 
-  statut           StatutBB  @default(NON_DEMARRE)
-  operateur        String?
-  compatibleXRoad  Boolean   @default(false)
+  statut          StatutBB @default(NON_DEMARRE)
+  operateur       String?
+  compatibleXRoad Boolean  @default(false)
 
   urlDocumentation String?
   technologie      String?
   dateDeploiement  DateTime?
   observations     String?   @db.Text
 
-  ordre            Int       @default(0)
+  ordre Int @default(0)
 
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  @@map("building_blocks")
   @@index([couche])
+  @@map("building_blocks")
 }
 
 enum CoucheDPI {
@@ -655,48 +706,48 @@ enum StatutBB {
 // ============================================================================
 
 model RegistreNational {
-  id                  String    @id @default(uuid())
-  code                String    @unique
-  nom                 String
-  description         String?   @db.Text
-  domaine             String
+  id          String  @id @default(uuid())
+  code        String  @unique
+  nom         String
+  description String? @db.Text
+  domaine     String
 
-  institutionCode     String
-  institutionNom      String
+  institutionCode String
+  institutionNom  String
 
-  systemeSource       String?
-  identifiantPivot    String?
-  formatIdentifiant   String?
-  volumeEstime        String?
+  systemeSource     String?
+  identifiantPivot  String?
+  formatIdentifiant String?
+  volumeEstime      String?
 
-  statutNumerisation  String?
-  statutEjokkoo       String?
-  disposeAPI          Boolean   @default(false)
-  protocoleAPI        String?
+  statutNumerisation String?
+  statutEjokkoo      String?
+  disposeAPI         Boolean @default(false)
+  protocoleAPI       String?
 
-  baseLegale          String?   @db.Text
-  consommateurs       String?   @db.Text
-  observations        String?   @db.Text
+  baseLegale    String? @db.Text
+  consommateurs String? @db.Text
+  observations  String? @db.Text
 
-  tauxCompletude      Int?
-  tauxDoublons        Int?
+  tauxCompletude Int?
+  tauxDoublons   Int?
 
   // Vue 360° — relation inverse
-  casUsagesAssocies   CasUsageRegistre[]
+  casUsagesAssocies CasUsageRegistre[]
 
-  createdAt           DateTime  @default(now())
-  updatedAt           DateTime  @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  @@map("registres_nationaux")
   @@index([domaine])
+  @@map("registres_nationaux")
 }
 
 enum ReportType {
-  COMPILATION          // Compilation globale
-  MATRICE_FLUX         // Matrice fournisseur/consommateur
-  STATISTIQUES         // Stats générales
-  EXPORT_INSTITUTION   // Export données d'une institution
-  EXPORT_COMPLET       // Export toutes données
+  COMPILATION // Compilation globale
+  MATRICE_FLUX // Matrice fournisseur/consommateur
+  STATISTIQUES // Stats générales
+  EXPORT_INSTITUTION // Export données d'une institution
+  EXPORT_COMPLET // Export toutes données
 }
 
 // ============================================================================
@@ -704,18 +755,19 @@ enum ReportType {
 // ============================================================================
 
 model PTF {
-  id            String    @id @default(uuid())
-  code          String    @unique
-  nom           String
-  acronyme      String
-  type          PTFType
-  pays          String?
-  contactNom    String?
-  contactEmail  String?
-  contactTel    String?
-  programmes    Programme[]
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  id           String      @id @default(uuid())
+  code         String      @unique
+  nom          String
+  acronyme     String
+  type         PTFType
+  pays         String?
+  contactNom   String?
+  contactEmail String?
+  contactTel   String?
+  programmes   Programme[]
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
   @@map("ptf")
 }
 
@@ -747,8 +799,9 @@ model Programme {
   expertises          Expertise[]
   createdAt           DateTime        @default(now())
   updatedAt           DateTime        @updatedAt
-  @@map("programmes")
+
   @@index([ptfId])
+  @@map("programmes")
 }
 
 enum ProgrammeStatus {
@@ -760,20 +813,21 @@ enum ProgrammeStatus {
 }
 
 model Expertise {
-  id            String    @id @default(uuid())
-  programmeId   String
-  programme     Programme @relation(fields: [programmeId], references: [id])
-  nom           String
-  profil        String
-  role          String?
-  dateDebut     DateTime?
-  dateFin       DateTime?
-  actif         Boolean   @default(true)
-  prestataire   String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  @@map("expertises")
+  id          String    @id @default(uuid())
+  programmeId String
+  programme   Programme @relation(fields: [programmeId], references: [id])
+  nom         String
+  profil      String
+  role        String?
+  dateDebut   DateTime?
+  dateFin     DateTime?
+  actif       Boolean   @default(true)
+  prestataire String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
   @@index([programmeId])
+  @@map("expertises")
 }
 
 // ============================================================================
@@ -781,19 +835,20 @@ model Expertise {
 // ============================================================================
 
 model PhaseMVP {
-  id                  String      @id @default(uuid())
-  code                String      @unique
-  nom                 String
-  description         String?     @db.Text
-  dateDebutPrevue     DateTime?
-  dateFinPrevue       DateTime?
-  dateDebutEffective  DateTime?
-  dateFinEffective    DateTime?
-  statut              PhaseStatus @default(PLANIFIE)
-  livrablesCles       String?     @db.Text
-  casUsageMVP         CasUsageMVP[]
-  createdAt           DateTime    @default(now())
-  updatedAt           DateTime    @updatedAt
+  id                 String        @id @default(uuid())
+  code               String        @unique
+  nom                String
+  description        String?       @db.Text
+  dateDebutPrevue    DateTime?
+  dateFinPrevue      DateTime?
+  dateDebutEffective DateTime?
+  dateFinEffective   DateTime?
+  statut             PhaseStatus   @default(PLANIFIE)
+  livrablesCles      String?       @db.Text
+  casUsageMVP        CasUsageMVP[]
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+
   @@map("phases_mvp")
 }
 
@@ -805,50 +860,80 @@ enum PhaseStatus {
 }
 
 model CasUsageMVP {
-  id                    String              @id @default(uuid())
-  code                  String              @unique
-  ancienCode            String?             // Ancien code avant harmonisation PINS-CU-XXX
+  id                    String               @id @default(uuid())
+  code                  String               @unique
+  ancienCode            String? // Ancien code avant harmonisation PINS-CU-XXX
   titre                 String
-  description           String?             @db.Text
+  description           String?              @db.Text
   institutionSourceCode String?
   institutionCibleCode  String?
   autresInstitutions    String?
   donneesEchangees      String?
   registresConcernes    String?
   axePrioritaire        String?
-  impact                ImpactLevel         @default(MOYEN)
-  complexite            ImpactLevel         @default(MOYEN)
+  impact                ImpactLevel          @default(MOYEN)
+  complexite            ImpactLevel          @default(MOYEN)
   phaseMVPId            String?
-  phaseMVP              PhaseMVP?           @relation(fields: [phaseMVPId], references: [id])
+  phaseMVP              PhaseMVP?            @relation(fields: [phaseMVPId], references: [id])
   statutImpl            StatutImplementation @default(IDENTIFIE)
-  prerequis             String?             @db.Text
-  conventionRequise     Boolean             @default(true)
-  conventionSignee      Boolean             @default(false)
+  prerequis             String?              @db.Text
+  conventionRequise     Boolean              @default(true)
+  conventionSignee      Boolean              @default(false)
   financements          Financement[]
   declarationsInst      CasUsage[]
   fluxInstitutions      FluxInstitution[]
   dateIdentification    DateTime?
   dateLancement         DateTime?
   dateMiseEnProd        DateTime?
-  notes                 String?             @db.Text  // Notes libres admin
-  timeline              Json?               // Historique événements [{date, event, auteur}]
-  observations          String?             @db.Text
+  notes                 String?              @db.Text // Notes libres admin
+  timeline              Json? // Historique événements [{date, event, auteur}]
+  observations          String?              @db.Text
 
   // Vue 360° — champs et relations
-  statutVueSection      UseCaseStatus       @default(DECLARE)
-  resumeMetier          String?             @db.Text  // Résumé métier 2-3 lignes
-  baseLegale            String?             @db.Text  // Base légale invoquée
-  stakeholders360       UseCaseStakeholder[]
-  statusHistory         UseCaseStatusHistory[]
-  registresAssocies     CasUsageRegistre[]
+  statutVueSection  UseCaseStatus          @default(DECLARE)
+  resumeMetier      String?                @db.Text // Résumé métier 2-3 lignes
+  baseLegale        String?                @db.Text // Base légale invoquée
+  stakeholders360   UseCaseStakeholder[]
+  statusHistory     UseCaseStatusHistory[]
+  registresAssocies CasUsageRegistre[]
 
-  createdAt             DateTime            @default(now())
-  updatedAt             DateTime            @updatedAt
-  @@map("cas_usage_mvp")
+  // Catalogue des propositions (P8)
+  sourceProposition       SourceProposition?
+  sourceDetail            String?                 @db.Text // Details de la source, visible DETAILED/FULL uniquement
+  niveauMaturite          NiveauMaturite? // null pour CU deja adoptes (statut != PROPOSE)
+  dateAdoption            DateTime?
+  adopteParInstitutionId  String?
+  adopteParInstitution    Institution?            @relation("CasUsageAdopte", fields: [adopteParInstitutionId], references: [id])
+  adopteParUserId         String?
+  adopteParUser           User?                   @relation("CasUsageAdoptePar", fields: [adopteParUserId], references: [id])
+  institutionsPressenties InstitutionPressentie[]
+  fusionneVersId          String? // Si statut=FUSIONNE : pointeur vers CU cible
+  fusionneVers            CasUsageMVP?            @relation("FusionCU", fields: [fusionneVersId], references: [id])
+  fusionnesDepuis         CasUsageMVP[]           @relation("FusionCU")
+  adoptionRequests        AdoptionRequest[]
+
+  // Typologie (P9)
+  typologie              TypologieCasUsage @default(TECHNIQUE)
+  reclassementsTypologie Json? // [{from, to, motif, auteurUserId, auteurNom, date}]
+
+  // Liaison conventions (P9)
+  conventionLieeId String?
+  conventionLiee   Convention? @relation("CasUsageConvention", fields: [conventionLieeId], references: [id])
+
+  // Relations de service metier <-> technique (P9)
+  relationsMetier    RelationCasUsage[] @relation("RelationMetier")
+  relationsTechnique RelationCasUsage[] @relation("RelationTechnique")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   @@index([phaseMVPId])
   @@index([axePrioritaire])
   @@index([statutImpl])
   @@index([statutVueSection])
+  @@index([typologie])
+  @@index([adopteParInstitutionId])
+  @@map("cas_usage_mvp")
 }
 
 enum ImpactLevel {
@@ -868,6 +953,82 @@ enum StatutImplementation {
   SUSPENDU
 }
 
+// ============================================================================
+// CATALOGUE DES PROPOSITIONS (P8) ET TYPOLOGIE (P9)
+// ============================================================================
+
+/// Institution pressentie pour une proposition (indicative, pas engagee).
+/// Distincte de UseCaseStakeholder (qui represente un stakeholder designe
+/// apres adoption, avec engagement institutionnel formel).
+model InstitutionPressentie {
+  id            String        @id @default(cuid())
+  casUsageId    String
+  casUsage      CasUsageMVP   @relation(fields: [casUsageId], references: [id], onDelete: Cascade)
+  institutionId String
+  institution   Institution   @relation(fields: [institutionId], references: [id])
+  rolePressenti RolePressenti
+  commentaire   String?       @db.Text
+  createdAt     DateTime      @default(now())
+
+  @@unique([casUsageId, institutionId])
+  @@index([institutionId])
+  @@map("institution_pressentie")
+}
+
+/// Relation N-N entre un cas d'usage METIER et les cas d'usage TECHNIQUES
+/// qu'il mobilise. Contrainte metier verifiee en backend :
+/// - casUsageMetier.typologie DOIT etre METIER
+/// - casUsageTechnique.typologie DOIT etre TECHNIQUE
+model RelationCasUsage {
+  id                  String      @id @default(cuid())
+  casUsageMetierId    String
+  casUsageMetier      CasUsageMVP @relation("RelationMetier", fields: [casUsageMetierId], references: [id], onDelete: Cascade)
+  casUsageTechniqueId String
+  casUsageTechnique   CasUsageMVP @relation("RelationTechnique", fields: [casUsageTechniqueId], references: [id], onDelete: Cascade)
+  ordre               Int? // Position dans le parcours si sequence
+  obligatoire         Boolean     @default(true)
+  commentaire         String?     @db.Text
+  createdAt           DateTime    @default(now())
+  createdBy           String
+  createdByUser       User        @relation("RelationCasUsageCree", fields: [createdBy], references: [id])
+
+  @@unique([casUsageMetierId, casUsageTechniqueId])
+  @@index([casUsageMetierId])
+  @@index([casUsageTechniqueId])
+  @@map("relation_cas_usage")
+}
+
+/// Demande d'adoption par une institution non pressentie, necessitant une
+/// validation explicite de la DU (principe de gouvernance P8).
+enum AdoptionRequestStatus {
+  EN_ATTENTE
+  VALIDEE
+  REFUSEE
+}
+
+model AdoptionRequest {
+  id                      String                @id @default(cuid())
+  casUsageId              String
+  casUsage                CasUsageMVP           @relation(fields: [casUsageId], references: [id], onDelete: Cascade)
+  institutionDemandeuseId String
+  institutionDemandeuse   Institution           @relation(fields: [institutionDemandeuseId], references: [id])
+  userDemandeurId         String
+  userDemandeur           User                  @relation("AdoptionRequestDemandeur", fields: [userDemandeurId], references: [id])
+  motif                   String                @db.Text // min 50 car cote applicatif
+  status                  AdoptionRequestStatus @default(EN_ATTENTE)
+  ajustements             Json? // ajustements proposes sur pressenties/registres
+  dateDemande             DateTime              @default(now())
+  dateTraitement          DateTime?
+  userValideurId          String?
+  userValideur            User?                 @relation("AdoptionRequestValideur", fields: [userValideurId], references: [id])
+  motifTraitement         String?               @db.Text
+
+  @@index([casUsageId])
+  @@index([institutionDemandeuseId])
+  @@index([status])
+  @@map("adoption_request")
+}
+
 model Financement {
   id              String            @id @default(uuid())
   casUsageMVPId   String
@@ -882,10 +1043,11 @@ model Financement {
   observations    String?
   createdAt       DateTime          @default(now())
   updatedAt       DateTime          @updatedAt
-  @@map("financements")
+
+  @@unique([casUsageMVPId, programmeId])
   @@index([casUsageMVPId])
   @@index([programmeId])
-  @@unique([casUsageMVPId, programmeId])
+  @@map("financements")
 }
 
 enum FinancementStatus {
@@ -903,51 +1065,51 @@ enum FinancementStatus {
 // ============================================================================
 
 model FluxInstitution {
-  id               String      @id @default(uuid())
-  submissionId     String
-  submission       Submission  @relation(fields: [submissionId], references: [id], onDelete: Cascade)
-  casUsageMVPId    String
-  casUsageMVP      CasUsageMVP @relation(fields: [casUsageMVPId], references: [id])
+  id            String      @id @default(uuid())
+  submissionId  String
+  submission    Submission  @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  casUsageMVPId String
+  casUsageMVP   CasUsageMVP @relation(fields: [casUsageMVPId], references: [id])
 
-  roleInstitution  String      // FOURNISSEUR, CONSOMMATEUR, BIDIRECTIONNEL
+  roleInstitution  String // FOURNISSEUR, CONSOMMATEUR, BIDIRECTIONNEL
   modeActuel       String?
   frequence        String?
-  conventionSignee Boolean     @default(false)
+  conventionSignee Boolean @default(false)
   volumeEstime     String?
-  observations     String?     @db.Text
-  priorite         Int         @default(3) @db.SmallInt
+  observations     String? @db.Text
+  priorite         Int     @default(3) @db.SmallInt
 
   // Qualification par l'institution
-  justificationMetier  String?      @db.Text
-  problemeActuel       String?      @db.Text
-  beneficeAttendu      String?      @db.Text
-  impactEstime         ImpactLevel?
-  urgence              Int?         @db.SmallInt // 1-5
-  pretTechniquement    String?      // Oui API existante, Oui API à développer, Partiellement, Non
+  justificationMetier String?      @db.Text
+  problemeActuel      String?      @db.Text
+  beneficeAttendu     String?      @db.Text
+  impactEstime        ImpactLevel?
+  urgence             Int?         @db.SmallInt // 1-5
+  pretTechniquement   String? // Oui API existante, Oui API à développer, Partiellement, Non
 
   // Qualification par le SENUM
-  qualifie             Boolean      @default(false)
-  dateQualification    DateTime?
-  qualifiePar          String?
-  noteQualification    String?      @db.Text
-  impactValide         ImpactLevel?
-  complexiteTechnique  ImpactLevel?
-  scoreTotal           Int?
+  qualifie            Boolean      @default(false)
+  dateQualification   DateTime?
+  qualifiePar         String?
+  noteQualification   String?      @db.Text
+  impactValide        ImpactLevel?
+  complexiteTechnique ImpactLevel?
+  scoreTotal          Int?
 
   // Prérequis identifiés
-  prerequisConvention       Boolean @default(false)
-  prerequisSecurityServer   Boolean @default(false)
-  prerequisAPI              Boolean @default(false)
-  prerequisNettoyage        Boolean @default(false)
-  prerequisAutre            String? @db.Text
+  prerequisConvention     Boolean @default(false)
+  prerequisSecurityServer Boolean @default(false)
+  prerequisAPI            Boolean @default(false)
+  prerequisNettoyage      Boolean @default(false)
+  prerequisAutre          String? @db.Text
 
-  createdAt        DateTime    @default(now())
-  updatedAt        DateTime    @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  @@map("flux_institutions")
   @@unique([submissionId, casUsageMVPId])
   @@index([casUsageMVPId])
   @@index([qualifie])
+  @@map("flux_institutions")
 }
 
 // ============================================================================
@@ -955,42 +1117,42 @@ model FluxInstitution {
 // ============================================================================
 
 model AuditLog {
-  id              String      @id @default(uuid())
-  userId          String?
-  userEmail       String
-  userRole        String
-  ipAddress       String?
-  userAgent       String?
-  action          String
-  resource        String
-  resourceId      String?
-  resourceLabel   String?
-  details         Json?
-  createdAt       DateTime    @default(now())
+  id            String   @id @default(uuid())
+  userId        String?
+  userEmail     String
+  userRole      String
+  ipAddress     String?
+  userAgent     String?
+  action        String
+  resource      String
+  resourceId    String?
+  resourceLabel String?
+  details       Json?
+  createdAt     DateTime @default(now())
 
-  @@map("audit_logs")
   @@index([userId])
   @@index([action])
   @@index([resource])
   @@index([createdAt])
+  @@map("audit_logs")
 }
 
 model UserSession {
-  id              String      @id @default(uuid())
-  userId          String
-  user            User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  tokenHash       String      @unique
-  ipAddress       String?
-  userAgent       String?
-  loginAt         DateTime    @default(now())
-  lastActivityAt  DateTime    @default(now())
-  expiresAt       DateTime
-  isActive        Boolean     @default(true)
-  logoutAt        DateTime?
+  id             String    @id @default(uuid())
+  userId         String
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash      String    @unique
+  ipAddress      String?
+  userAgent      String?
+  loginAt        DateTime  @default(now())
+  lastActivityAt DateTime  @default(now())
+  expiresAt      DateTime
+  isActive       Boolean   @default(true)
+  logoutAt       DateTime?
 
-  @@map("user_sessions")
   @@index([userId])
   @@index([isActive])
+  @@map("user_sessions")
 }
 
 // ============================================================================
@@ -998,28 +1160,28 @@ model UserSession {
 // ============================================================================
 
 model DemandeInterop {
-  id                 String         @id @default(uuid())
+  id                 String    @id @default(uuid())
   institutionId      String
   demandeurNom       String
   demandeurEmail     String
-  type               String         // ACCES_DONNEES, CONVENTION, CONNEXION_PINS, ACCOMPAGNEMENT, SIGNALEMENT
+  type               String // ACCES_DONNEES, CONVENTION, CONNEXION_PINS, ACCOMPAGNEMENT, SIGNALEMENT
   titre              String
-  description        String         @db.Text
+  description        String    @db.Text
   institutionCibleId String?
-  donneesVisees      String?        @db.Text
-  justification      String?        @db.Text
+  donneesVisees      String?   @db.Text
+  justification      String?   @db.Text
   frequenceSouhaitee String?
-  urgence            String         @default("NORMALE") // FAIBLE, NORMALE, HAUTE, CRITIQUE
-  statut             String         @default("SOUMISE")  // SOUMISE, EN_COURS_TRAITEMENT, EN_ATTENTE_PARTENAIRE, RESOLUE, REJETEE
-  reponse            String?        @db.Text
+  urgence            String    @default("NORMALE") // FAIBLE, NORMALE, HAUTE, CRITIQUE
+  statut             String    @default("SOUMISE") // SOUMISE, EN_COURS_TRAITEMENT, EN_ATTENTE_PARTENAIRE, RESOLUE, REJETEE
+  reponse            String?   @db.Text
   respondantNom      String?
-  createdAt          DateTime       @default(now())
-  updatedAt          DateTime       @updatedAt
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
   traiteeAt          DateTime?
 
-  @@map("demandes_interop")
   @@index([institutionId])
   @@index([statut])
+  @@map("demandes_interop")
 }
 
 // ============================================================================
@@ -1028,28 +1190,28 @@ model DemandeInterop {
 
 /// Partie prenante formellement désignée d'un cas d'usage
 model UseCaseStakeholder {
-  id                 String         @id @default(cuid())
-  casUsageId         String
-  institutionId      String
-  role               UseCaseRole
-  autoSaisine        Boolean        @default(false)
-  motifAutoSaisine   String?        @db.Text
-  typeConcernement   TypeConcernement?
-  dateAjout          DateTime       @default(now())
-  ajoutePar          String?
-  actif              Boolean        @default(true)
-  dateRetrait        DateTime?
-  motifRetrait       String?        @db.Text
-  retireParUserId    String?
-  evictionParDU      Boolean        @default(false)
-  evictionMotif      String?        @db.Text
+  id               String            @id @default(cuid())
+  casUsageId       String
+  institutionId    String
+  role             UseCaseRole
+  autoSaisine      Boolean           @default(false)
+  motifAutoSaisine String?           @db.Text
+  typeConcernement TypeConcernement?
+  dateAjout        DateTime          @default(now())
+  ajoutePar        String?
+  actif            Boolean           @default(true)
+  dateRetrait      DateTime?
+  motifRetrait     String?           @db.Text
+  retireParUserId  String?
+  evictionParDU    Boolean           @default(false)
+  evictionMotif    String?           @db.Text
 
-  casUsage           CasUsageMVP    @relation(fields: [casUsageId], references: [id], onDelete: Cascade)
-  institution        Institution    @relation(fields: [institutionId], references: [id])
-  ajouteParUser      User?          @relation("StakeholderAjoute", fields: [ajoutePar], references: [id])
-  retireParUser      User?          @relation("StakeholderRetire", fields: [retireParUserId], references: [id])
-  consultations      UseCaseConsultation[]
-  feedbacks          UseCaseFeedback[]
+  casUsage      CasUsageMVP           @relation(fields: [casUsageId], references: [id], onDelete: Cascade)
+  institution   Institution           @relation(fields: [institutionId], references: [id])
+  ajouteParUser User?                 @relation("StakeholderAjoute", fields: [ajoutePar], references: [id])
+  retireParUser User?                 @relation("StakeholderRetire", fields: [retireParUserId], references: [id])
+  consultations UseCaseConsultation[]
+  feedbacks     UseCaseFeedback[]
 
   @@unique([casUsageId, institutionId, role])
   @@index([institutionId, role, actif])
@@ -1066,19 +1228,19 @@ enum TypeConcernement {
 
 /// Consultation : demande d'avis adressée à une partie prenante
 model UseCaseConsultation {
-  id               String              @id @default(cuid())
-  stakeholderId    String
-  dateDemande      DateTime            @default(now())
-  dateEcheance     DateTime
-  status           ConsultationStatus  @default(EN_ATTENTE)
-  relances         Int                 @default(0)
-  derniereRelance  DateTime?
-  ouvertePar       String
-  motifSollicit    String?             @db.Text
+  id              String             @id @default(cuid())
+  stakeholderId   String
+  dateDemande     DateTime           @default(now())
+  dateEcheance    DateTime
+  status          ConsultationStatus @default(EN_ATTENTE)
+  relances        Int                @default(0)
+  derniereRelance DateTime?
+  ouvertePar      String
+  motifSollicit   String?            @db.Text
 
-  stakeholder      UseCaseStakeholder  @relation(fields: [stakeholderId], references: [id], onDelete: Cascade)
-  ouvertParUser    User                @relation("ConsultationOuvertePar", fields: [ouvertePar], references: [id])
-  feedbacks        UseCaseFeedback[]
+  stakeholder   UseCaseStakeholder @relation(fields: [stakeholderId], references: [id], onDelete: Cascade)
+  ouvertParUser User               @relation("ConsultationOuvertePar", fields: [ouvertePar], references: [id])
+  feedbacks     UseCaseFeedback[]
 
   @@index([stakeholderId])
   @@index([status, dateEcheance])
@@ -1087,24 +1249,24 @@ model UseCaseConsultation {
 
 /// Avis formel donné par une institution en réponse à une consultation
 model UseCaseFeedback {
-  id                    String              @id @default(cuid())
-  consultationId        String?
-  stakeholderId         String
-  type                  FeedbackType
-  motivation            String              @db.Text
-  piecesJointes         Json?
-  auteurUserId          String
-  auteurNom             String
-  auteurFonction        String?
-  auteurInstitutionNom  String
-  dateAvis              DateTime            @default(now())
-  amendeDe              String?
+  id                   String       @id @default(cuid())
+  consultationId       String?
+  stakeholderId        String
+  type                 FeedbackType
+  motivation           String       @db.Text
+  piecesJointes        Json?
+  auteurUserId         String
+  auteurNom            String
+  auteurFonction       String?
+  auteurInstitutionNom String
+  dateAvis             DateTime     @default(now())
+  amendeDe             String?
 
-  consultation          UseCaseConsultation? @relation(fields: [consultationId], references: [id])
-  stakeholder           UseCaseStakeholder   @relation(fields: [stakeholderId], references: [id], onDelete: Cascade)
-  auteur                User                 @relation("FeedbackAuteur", fields: [auteurUserId], references: [id])
-  amendements           UseCaseFeedback[]    @relation("FeedbackAmendement")
-  amendeDeFeedback      UseCaseFeedback?     @relation("FeedbackAmendement", fields: [amendeDe], references: [id])
+  consultation     UseCaseConsultation? @relation(fields: [consultationId], references: [id])
+  stakeholder      UseCaseStakeholder   @relation(fields: [stakeholderId], references: [id], onDelete: Cascade)
+  auteur           User                 @relation("FeedbackAuteur", fields: [auteurUserId], references: [id])
+  amendements      UseCaseFeedback[]    @relation("FeedbackAmendement")
+  amendeDeFeedback UseCaseFeedback?     @relation("FeedbackAmendement", fields: [amendeDe], references: [id])
 
   @@index([stakeholderId, dateAvis])
   @@index([auteurUserId])
@@ -1125,8 +1287,8 @@ model UseCaseStatusHistory {
   dateTransition    DateTime       @default(now())
   pieceJustif       String?
 
-  casUsage          CasUsageMVP    @relation(fields: [casUsageId], references: [id], onDelete: Cascade)
-  auteur            User           @relation("StatusHistoryAuteur", fields: [auteurUserId], references: [id])
+  casUsage CasUsageMVP @relation(fields: [casUsageId], references: [id], onDelete: Cascade)
+  auteur   User        @relation("StatusHistoryAuteur", fields: [auteurUserId], references: [id])
 
   @@index([casUsageId, dateTransition])
   @@index([auteurUserId])
@@ -1135,21 +1297,21 @@ model UseCaseStatusHistory {
 
 /// Notification in-app Vue 360°
 model Notification {
-  id            String        @id @default(cuid())
+  id            String    @id @default(cuid())
   userId        String
   institutionId String?
-  type          String        // CONSULTATION_OUVERTE | AVIS_RECU | RELANCE | ARBITRAGE | TRANSITION
+  type          String // CONSULTATION_OUVERTE | AVIS_RECU | RELANCE | ARBITRAGE | TRANSITION
   titre         String
-  message       String        @db.Text
+  message       String    @db.Text
   lienUrl       String?
   refType       String?
   refId         String?
-  lu            Boolean       @default(false)
+  lu            Boolean   @default(false)
   dateLu        DateTime?
-  dateCreation  DateTime      @default(now())
+  dateCreation  DateTime  @default(now())
 
-  user          User          @relation("UserNotifications", fields: [userId], references: [id])
-  institution   Institution?  @relation("InstitutionNotifications", fields: [institutionId], references: [id])
+  user        User         @relation("UserNotifications", fields: [userId], references: [id])
+  institution Institution? @relation("InstitutionNotifications", fields: [institutionId], references: [id])
 
   @@index([userId, lu, dateCreation])
   @@index([institutionId, dateCreation])
@@ -1158,20 +1320,20 @@ model Notification {
 
 /// Liaison enrichie entre un cas d'usage et un référentiel national
 model CasUsageRegistre {
-  id               String              @id @default(cuid())
-  casUsageId       String
-  registreId       String
-  mode             RegistreUsageMode
-  champsConcernes  Json?
-  commentaire      String?             @db.Text
-  volumetrieEst    String?
-  criticite        String?
-  dateAjout        DateTime            @default(now())
-  ajoutePar        String?
+  id              String            @id @default(cuid())
+  casUsageId      String
+  registreId      String
+  mode            RegistreUsageMode
+  champsConcernes Json?
+  commentaire     String?           @db.Text
+  volumetrieEst   String?
+  criticite       String?
+  dateAjout       DateTime          @default(now())
+  ajoutePar       String?
 
-  casUsage         CasUsageMVP         @relation(fields: [casUsageId], references: [id], onDelete: Cascade)
-  registre         RegistreNational    @relation(fields: [registreId], references: [id])
-  ajouteParUser    User?               @relation("RegistreUsageAjoute", fields: [ajoutePar], references: [id])
+  casUsage      CasUsageMVP      @relation(fields: [casUsageId], references: [id], onDelete: Cascade)
+  registre      RegistreNational @relation(fields: [registreId], references: [id])
+  ajouteParUser User?            @relation("RegistreUsageAjoute", fields: [ajoutePar], references: [id])
 
   @@unique([casUsageId, registreId, mode])
   @@index([registreId, mode])
@@ -1187,16 +1349,16 @@ model DocumentReference {
   id              String   @id @default(uuid())
   titre           String
   description     String?  @db.Text
-  categorie       String   // juridique, technique, guide, modele
-  fichierNom      String   // nom du fichier original
-  fichierPath     String   // chemin sur le serveur
+  categorie       String // juridique, technique, guide, modele
+  fichierNom      String // nom du fichier original
+  fichierPath     String // chemin sur le serveur
   tailleMo        Float?
   datePublication DateTime @default(now())
   actif           Boolean  @default(true)
-  uploadePar      String?  // User ID
+  uploadePar      String? // User ID
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
-  @@map("documents_reference")
   @@index([categorie])
+  @@map("documents_reference")
 }
