@@ -100,29 +100,27 @@ export function computeVisibility(
   }
 
   if (user.institutionId) {
-    // Initiateur via institutionSourceCode : reconnu quel que soit l'etat du stakeholder
-    // (protection contre tout desalignement stakeholder.actif sur le role INITIATEUR)
-    if (user.institutionCode && institutionSourceCode && user.institutionCode === institutionSourceCode) {
-      return {
-        level: 'DETAILED',
-        fields: [...PUBLIC_METADATA_FIELDS, ...DETAILED_ADDITIONAL_FIELDS],
-      };
-    }
-
-    // Stakeholder INITIATEUR (meme critere, fallback si institutionCode non resolu cote appelant)
-    const isInitiateurStakeholder = stakeholders.some(
+    // 1. Initiateur : niveau FULL (auteur du cas d'usage, visibilite totale hors audit logs DU)
+    //    Reconnaissance robuste : (a) via institutionSourceCode, (b) via role=INITIATEUR sur un
+    //    stakeholder. L'INITIATEUR ne peut par definition ni etre evince ni se retirer — son
+    //    identite est constitutive du cas d'usage, independante du champ actif.
+    const isInitiateurByCode =
+      !!user.institutionCode && !!institutionSourceCode && user.institutionCode === institutionSourceCode;
+    const isInitiateurByStakeholder = stakeholders.some(
       s => s.institutionId === user.institutionId && s.role === 'INITIATEUR'
     );
-    if (isInitiateurStakeholder) {
+    if (isInitiateurByCode || isInitiateurByStakeholder) {
       return {
-        level: 'DETAILED',
-        fields: [...PUBLIC_METADATA_FIELDS, ...DETAILED_ADDITIONAL_FIELDS],
+        level: 'FULL',
+        fields: [...PUBLIC_METADATA_FIELDS, ...DETAILED_ADDITIONAL_FIELDS, ...FULL_ADDITIONAL_FIELDS],
       };
     }
 
-    // Partie prenante active (non initiateur)
+    // 2. Partie prenante active (FOURNISSEUR / CONSOMMATEUR / PARTIE_PRENANTE) : DETAILED
     const isActiveStakeholder = stakeholders.some(
-      s => s.institutionId === user.institutionId && s.actif === true
+      s => s.institutionId === user.institutionId
+        && s.actif === true
+        && ['FOURNISSEUR', 'CONSOMMATEUR', 'PARTIE_PRENANTE'].includes(s.role)
     );
     if (isActiveStakeholder) {
       return {
@@ -131,6 +129,7 @@ export function computeVisibility(
       };
     }
 
+    // 3. Institution connectee PINS mais non stakeholder (ou evincee/retiree) : METADATA
     return {
       level: 'METADATA',
       fields: [...PUBLIC_METADATA_FIELDS],
