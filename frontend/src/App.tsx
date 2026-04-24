@@ -36,6 +36,8 @@ import { UseCaseDetailPage } from '@/modules/vue360/UseCaseDetailPage';
 import { MesCasUsagePage } from '@/modules/vue360/MesCasUsagePage';
 import { DuArbitragePage } from '@/modules/vue360/du/DuArbitragePage';
 import { RegistresCouverturePage } from '@/modules/vue360/registres/RegistresCouverturePage';
+import { CataloguePropositionsPage } from '@/modules/vue360/catalogue/CataloguePropositionsPage';
+import { PropositionDetailPage } from '@/modules/vue360/catalogue/PropositionDetailPage';
 import { DocumentsPage } from '@/pages/DocumentsPage';
 import { NotFoundPage } from '@/pages/NotFoundPage';
 
@@ -279,6 +281,22 @@ function App() {
             element={
               <ProtectedRoute>
                 <MesCasUsagePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/catalogue-propositions"
+            element={
+              <ProtectedRoute>
+                <CataloguePropositionsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/catalogue-propositions/:id"
+            element={
+              <ProtectedRoute>
+                <PropositionDetailPage />
               </ProtectedRoute>
             }
           />

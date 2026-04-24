@@ -33,6 +33,7 @@ import {
   Scale,
   Layers,
   ListChecks,
+  FolderOpen,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { CommandPalette } from '@/components/CommandPalette';
@@ -100,6 +101,7 @@ const navGroups: NavGroup[] = [
     label: 'Mon espace',
     items: [
       { name: 'Mes cas d\'usage', href: '/mes-cas-usage', icon: ListChecks },
+      { name: 'Catalogue des propositions', href: '/catalogue-propositions', icon: FolderOpen },
       { name: 'Questionnaire', href: '/questionnaire', icon: FileText, institutionOnly: true },
       { name: 'Soumissions', href: '/submissions', icon: ClipboardList, institutionOnly: true },
       { name: 'Mes demandes', href: '/institution/demandes', icon: MessageSquare, institutionOnly: true },
