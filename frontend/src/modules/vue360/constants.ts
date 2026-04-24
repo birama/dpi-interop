@@ -35,10 +35,10 @@ export const ROLE_LABELS: Record<string, string> = {
 };
 
 export const TYPE_CONCERNEMENT_OPTIONS = [
-  { value: 'DONNEES_DETENUES',      label: 'Mon institution detient ou produit les donnees concernees' },
-  { value: 'PROCESSUS_IMPACTE',     label: 'Un processus metier de mon institution est directement impacte' },
-  { value: 'GOUVERNANCE_TRANSVERSE', label: 'Gouvernance transverse ou responsabilite de coordination' },
-  { value: 'AUTRE',                 label: 'Autre motif (a preciser dans la motivation)' },
+  { value: 'DONNEES_DETENUES',       label: 'Donnees detenues par mon institution' },
+  { value: 'PROCESSUS_IMPACTE',      label: 'Processus impacte' },
+  { value: 'GOUVERNANCE_TRANSVERSE', label: 'Gouvernance transverse' },
+  { value: 'AUTRE',                  label: 'Autre — a preciser' },
 ];
 
 export const TYPE_CONCERNEMENT_LABELS: Record<string, string> = {

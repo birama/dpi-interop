@@ -80,14 +80,13 @@ export function UseCaseHeader({ cu, visibility, myConsultationId, onGiveFeedback
         </div>
 
         {/* Bandeau METADATA */}
-        {visibility === 'METADATA' && (
+        {visibility === 'METADATA' && !myEvicted && (
           <div className="mt-4 p-3 bg-amber-50 rounded-lg border border-amber-200 text-xs text-amber-700 flex flex-wrap items-center gap-2">
             <span className="flex-1 min-w-0">
               Informations detaillees reservees aux parties prenantes formellement designees.
-              {user?.institutionId && !myEvicted && <span className="ml-1">Vos donnees ou processus sont concernes ?</span>}
-              {myEvicted && <span className="ml-1 font-semibold">Votre institution a ete evincee de ce cas d'usage par la Delivery Unit — reinscription impossible.</span>}
+              {user?.institutionId && <span className="ml-1">Vos donnees ou processus sont concernes ?</span>}
             </span>
-            {user?.institutionId && !myEvicted && (
+            {user?.institutionId && (
               <button
                 onClick={() => setShowAutoSaisine(true)}
                 className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-md bg-teal text-white hover:bg-teal/90"
@@ -95,6 +94,19 @@ export function UseCaseHeader({ cu, visibility, myConsultationId, onGiveFeedback
                 Me porter partie prenante
               </button>
             )}
+          </div>
+        )}
+
+        {visibility === 'METADATA' && myEvicted && (
+          <div className="mt-4 p-3 bg-red-50 rounded-lg border border-red-200 text-xs text-red-800">
+            <div className="font-semibold mb-1">Votre institution a ete retiree de ce cas d'usage par la Delivery Unit.</div>
+            <div>
+              Contactez{' '}
+              <a href="mailto:dpi-interop@senum.sn" className="underline font-semibold">
+                dpi-interop@senum.sn
+              </a>{' '}
+              pour toute question ou pour solliciter une reinscription motivee.
+            </div>
           </div>
         )}
       </div>

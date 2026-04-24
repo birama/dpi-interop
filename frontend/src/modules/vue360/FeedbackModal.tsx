@@ -102,7 +102,7 @@ export function FeedbackModal({
               )}
             </div>
             <h3 className="text-lg font-bold text-navy">
-              {isAmendment ? 'Amender mon avis' : 'Donner mon avis'}
+              {isAmendment ? `Amender mon avis — ${casUsageCode}` : 'Donner mon avis'}
             </h3>
             <p className="text-xs text-gray-500 mt-0.5">{casUsageTitre}</p>
             {isAmendment && (

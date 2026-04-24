@@ -200,7 +200,7 @@ export function FeedbacksFeed({ stakeholders, casUsage, onGiveFeedback, onAmende
           mode="amendment"
           originalFeedbackId={amendTarget.id}
           initialType={amendTarget._fbType}
-          initialMotivation={''}
+          initialMotivation={amendTarget._fbMotivation}
           casUsageCode={casUsage.code}
           casUsageTitre={casUsage.titre}
           casUsageStatut={casUsage.statutVueSection}

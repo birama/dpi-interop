@@ -338,7 +338,7 @@ export async function useCasesWriteRoutes(app: FastifyInstance) {
     }
     if (existing && existing.evictionParDU && autoSaisine) {
       return reply.status(409).send({
-        error: 'Votre institution a été évincée de ce cas d\'usage par la Delivery Unit. Une nouvelle inscription nécessite l\'accord explicite de la DU.',
+        error: 'Votre institution a été retirée de ce cas d\'usage par la Delivery Unit. Réinscription possible uniquement sur validation DU explicite.',
       });
     }
 
@@ -399,16 +399,16 @@ export async function useCasesWriteRoutes(app: FastifyInstance) {
           where: { code: cu.institutionSourceCode },
           include: { users: { select: { id: true } } },
         });
-        const motifAbrege = motifAutoSaisine.substring(0, 100) + (motifAutoSaisine.length > 100 ? '…' : '');
+        const motifAbrege = motifAutoSaisine.substring(0, 50) + (motifAutoSaisine.length > 50 ? '…' : '');
         if (initInst) {
           for (const u of initInst.users) {
             await app.prisma.notification.create({
               data: {
                 userId: u.id,
                 institutionId: initInst.id,
-                type: 'AUTO_SAISINE_RECUE',
+                type: 'CONSULTATION_OUVERTE',
                 titre: `Nouvelle partie prenante — ${cu.titre}`,
-                message: `${stakeholder.institution.code} s'est portée partie prenante. Motif : ${motifAbrege}`,
+                message: `${stakeholder.institution.code} s'est portée partie prenante — motif : ${motifAbrege}`,
                 lienUrl: `/admin/cas-usage/${cu.id}`,
                 refType: 'CAS_USAGE',
                 refId: cu.id,

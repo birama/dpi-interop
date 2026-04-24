@@ -17,6 +17,8 @@ const TYPE_ICON: Record<string, string> = {
   RELANCE: '⏰',
   TRANSITION: '🔄',
   ARBITRAGE: '⚖',
+  STAKEHOLDER_WITHDRAWN: '↩',
+  STAKEHOLDER_EVICTED: '⚠',
 };
 
 export function NotificationsBell() {
