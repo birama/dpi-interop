@@ -18,6 +18,7 @@ import { FeedbacksFeed } from './FeedbacksFeed';
 import { TransitionsTimeline } from './TransitionsTimeline';
 import { RegistresTouchesTable } from './RegistresTouchesTable';
 import { FeedbackModal } from './FeedbackModal';
+import { RelationsBlock } from './RelationsBlock';
 
 export function UseCaseDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -115,6 +116,9 @@ export function UseCaseDetailPage() {
               <TransitionsTimeline history={cu.statusHistory || []} />
             </div>
           </div>
+
+          {/* Relations metier <-> technique (P9) */}
+          <RelationsBlock cu={cu} />
 
           {/* Referentiels touches */}
           <RegistresTouchesTable registres={cu.registresAssocies || []} />

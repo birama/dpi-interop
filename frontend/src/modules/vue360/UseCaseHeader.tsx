@@ -2,8 +2,10 @@ import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { Link } from 'react-router-dom';
 import { useAuthStore } from '@/store/auth';
+import { Users, Cog, Tag } from 'lucide-react';
 import { VUE360_STATUT_COLORS, ROLE_BADGE_STYLES, ROLE_LABELS, daysUntil } from './constants';
 import { AutoSaisineModal } from './AutoSaisineModal';
+import { ReclasserTypologieModal } from './ReclasserTypologieModal';
 
 interface Props {
   cu: any;
@@ -15,7 +17,10 @@ interface Props {
 export function UseCaseHeader({ cu, visibility, myConsultationId, onGiveFeedback }: Props) {
   const { user } = useAuthStore();
   const [showAutoSaisine, setShowAutoSaisine] = useState(false);
+  const [showReclasser, setShowReclasser] = useState(false);
   const sc = VUE360_STATUT_COLORS[cu.statutVueSection] || VUE360_STATUT_COLORS.DECLARE;
+  const isAdmin = user?.role === 'ADMIN';
+  const isMetier = cu.typologie === 'METIER';
 
   // Trouver le role de mon institution (stakeholder actif)
   const myStakeholders = cu.stakeholders360?.filter(
@@ -52,6 +57,25 @@ export function UseCaseHeader({ cu, visibility, myConsultationId, onGiveFeedback
             <div className="flex flex-wrap items-center gap-2 mb-2">
               <span className="text-xs font-bold text-gray-500 bg-gray-100 px-2 py-1 rounded">{cu.code}</span>
               <span className={cn('inline-flex items-center text-[10px] font-semibold px-2 py-0.5 rounded', sc.chip)}>{sc.label}</span>
+              {cu.typologie && (
+                <span className={cn(
+                  'inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded border',
+                  isMetier ? 'bg-navy/10 text-navy border-navy/30' : 'bg-teal/10 text-teal border-teal/30'
+                )}>
+                  {isMetier ? <Users className="w-3 h-3" /> : <Cog className="w-3 h-3" />}
+                  {isMetier ? 'Parcours metier' : 'Service technique'}
+                </span>
+              )}
+              {isAdmin && cu.typologie && (
+                <button
+                  onClick={() => setShowReclasser(true)}
+                  className="inline-flex items-center gap-0.5 text-[9px] text-gray-500 hover:text-navy underline"
+                  title="Reclasser la typologie (DU)"
+                >
+                  <Tag className="w-2.5 h-2.5" />
+                  Reclasser
+                </button>
+              )}
               {cu.phaseMVP && <span className="inline-flex items-center text-[10px] font-semibold px-2 py-0.5 rounded bg-teal/10 text-teal">{cu.phaseMVP.code}</span>}
               {myRoles.map((role: string) => (
                 <span key={role} className={cn('inline-flex text-[10px] font-bold px-1.5 py-0.5 rounded border', ROLE_BADGE_STYLES[role])}>
@@ -126,6 +150,9 @@ export function UseCaseHeader({ cu, visibility, myConsultationId, onGiveFeedback
           cuTitre={cu.titre}
           onClose={() => setShowAutoSaisine(false)}
         />
+      )}
+      {showReclasser && (
+        <ReclasserTypologieModal cu={cu} onClose={() => setShowReclasser(false)} />
       )}
     </>
   );
