@@ -178,10 +178,40 @@ Fil d'avis avec les 2 interventions successives : RÉSERVE ANSD + CONTRE_PROPOSI
 ### RÉSULTAT
 
 - [ ] PASS
-- [ ] FAIL
+- [x] FAIL — 2026-04-24
 - [ ] BLOQUÉ
 
 **Commentaire** :
+
+CONSTAT
+- L'avis VALIDATION soumis par ANSD sur PINS-CU-026 ne peut plus être
+  modifié ou amendé depuis l'UI.
+- Aucun bouton "Amender", "Modifier", "Ajouter un complément" n'est
+  présent sur la fiche détail à côté du fil d'avis.
+- Le backend dispose pourtant d'un endpoint `PATCH /api/feedback/:id/amend`
+  et le modèle de données prévoit le champ `amendeDe` dans `UseCaseFeedback`
+  pour chaîner les amendements.
+- Gap : l'UI `FeedbacksFeed.tsx` n'expose pas cette fonctionnalité.
+
+IMPACT INSTITUTIONNEL
+- Un Point Focal ne peut pas corriger une erreur de saisie.
+- Une institution ne peut pas faire évoluer sa position après débat
+  hiérarchique ou nouvelle information (ex. CDP demande un contrôle
+  supplémentaire).
+- L'autonomie institutionnelle prévue par la Vue 360° est incomplète.
+
+CAPTURE : `captures-recette/s03-absence-bouton-amender.png`
+
+RECOMMANDATION
+- Ajouter un bouton "Amender mon avis" sur chaque avis du fil, visible
+  uniquement par l'auteur (`user.id === feedback.auteurUserId`) et
+  uniquement si le cas d'usage n'est pas en statut QUALIFIE ou postérieur.
+- Au clic, rouvrir la même modal `FeedbackModal` préremplie avec le type
+  et la motivation précédente, et soumettre via `PATCH /api/feedback/:id/amend`.
+- Afficher le nouvel avis comme enfant indenté de l'avis initial
+  (pattern déjà livré en P4).
+
+Effort estimé : 2-3h. Priorité HAUTE post-recette. Reporté en backlog UX.
 
 ---
 
@@ -433,7 +463,7 @@ Page complète de PINS-CU-008 vue par ANSD, avec le bandeau "Informations détai
 |---|----------|-------------|-------------|-----------|
 | 1 | Déclaration cas d'usage DGID → ANSD | PASS | | |
 | 2 | Avis RÉSERVE ANSD avec pièce jointe | PASS | | |
-| 3 | Contre-proposition DGID sur l'avis ANSD | PASS | | |
+| 3 | Contre-proposition DGID sur l'avis ANSD | PASS | FAIL | Bouton amender non expose UI (backend OK) — reporte backlog |
 | 4 | Auto-saisine DGCPT via radar | PASS | | |
 | 5 | Arbitrage DU + qualification | PASS | | |
 | 6 | Visibilité METADATA pour non-stakeholder | PASS | | |
