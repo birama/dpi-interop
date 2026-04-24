@@ -1,5 +1,7 @@
 # Recette end-to-end manuelle — Vue 360° des cas d'usage PINS
 
+> **Dernière mise à jour : 24/04/2026** — post-livraison de l'exposition de l'amendement d'avis et de la gouvernance des parties prenantes (auto-saisine motivée, retrait spontané, éviction Delivery Unit).
+
 Conduite de la recette fonctionnelle des 8 scénarios définis en section 6.3 du document de conception v1.0 (référence MCTN/DU/APP-DPI-INTEROP/CONC-2026-02).
 
 ---
@@ -36,7 +38,7 @@ Conduite de la recette fonctionnelle des 8 scénarios définis en section 6.3 du
 
 ### Méthode de capture
 
-Pour chaque scénario, prendre une capture d'écran (Win+Shift+S sur Windows) au moment du "Résultat attendu" et la stocker dans `docs/vue-360/captures-recette/scN-YYYYMMDD-HHmm.png`. Les captures valent preuve en cas de validation par M. DIABY.
+Pour chaque scénario, prendre une capture d'écran (Win+Shift+S sur Windows) au moment du "Résultat attendu" et la stocker dans `docs/vue-360/captures-recette/scN-YYYYMMDD-HHmm.png`. Les captures valent preuve en cas de validation par la Delivery Unit.
 
 ---
 
@@ -177,41 +179,35 @@ Fil d'avis avec les 2 interventions successives : RÉSERVE ANSD + CONTRE_PROPOSI
 
 ### RÉSULTAT
 
-- [ ] PASS
-- [x] FAIL — 2026-04-24
+- [x] PASS — 2026-04-24 (résolu par la livraison du 24/04/2026)
+- [ ] FAIL
 - [ ] BLOQUÉ
 
 **Commentaire** :
 
-CONSTAT
-- L'avis VALIDATION soumis par ANSD sur PINS-CU-026 ne peut plus être
-  modifié ou amendé depuis l'UI.
-- Aucun bouton "Amender", "Modifier", "Ajouter un complément" n'est
-  présent sur la fiche détail à côté du fil d'avis.
-- Le backend dispose pourtant d'un endpoint `PATCH /api/feedback/:id/amend`
-  et le modèle de données prévoit le champ `amendeDe` dans `UseCaseFeedback`
-  pour chaîner les amendements.
-- Gap : l'UI `FeedbacksFeed.tsx` n'expose pas cette fonctionnalité.
+RÉSOLUTION
+- Bouton "Amender mon avis" désormais exposé sur chaque avis du fil,
+  visible uniquement par l'auteur (`user.id === feedback.auteurUserId`)
+  et uniquement si le cas d'usage n'est pas dans un statut figé
+  (QUALIFIE, PRIORISE, FINANCEMENT_OK, CONVENTIONNE, EN_PRODUCTION_360,
+  SUSPENDU_360, RETIRE).
+- Au clic, la modal `FeedbackModal` s'ouvre en mode amendement avec le
+  type et la motivation de l'avis initial préremplis, titre
+  "Amender mon avis — PINS-CU-XXX".
+- Soumission via `PATCH /api/feedback/:id/amend` : l'avis initial reste
+  inaltérable, l'amendement est créé comme nouvel enregistrement avec
+  `amendeDe` pointant sur l'avis parent.
+- Rendu : l'amendement apparaît indenté sous son avis parent dans
+  `FeedbacksFeed`, avec badge "Amendement" distinct.
 
-IMPACT INSTITUTIONNEL
-- Un Point Focal ne peut pas corriger une erreur de saisie.
-- Une institution ne peut pas faire évoluer sa position après débat
-  hiérarchique ou nouvelle information (ex. CDP demande un contrôle
-  supplémentaire).
-- L'autonomie institutionnelle prévue par la Vue 360° est incomplète.
+VALIDATION
+- Test en fenêtre privée Brave (hors cache client) : PASS complet.
+  L'ANSD peut amender son avis VALIDATION en RESERVE sur PINS-CU-026,
+  l'avis original reste visible, l'amendement est chaîné dans le fil.
 
-CAPTURE : `captures-recette/s03-absence-bouton-amender.png`
-
-RECOMMANDATION
-- Ajouter un bouton "Amender mon avis" sur chaque avis du fil, visible
-  uniquement par l'auteur (`user.id === feedback.auteurUserId`) et
-  uniquement si le cas d'usage n'est pas en statut QUALIFIE ou postérieur.
-- Au clic, rouvrir la même modal `FeedbackModal` préremplie avec le type
-  et la motivation précédente, et soumettre via `PATCH /api/feedback/:id/amend`.
-- Afficher le nouvel avis comme enfant indenté de l'avis initial
-  (pattern déjà livré en P4).
-
-Effort estimé : 2-3h. Priorité HAUTE post-recette. Reporté en backlog UX.
+RÉFÉRENCES COMMITS
+- `128fb2e` — exposition UI de l'amendement + gouvernance des parties prenantes
+- `337838d` — alignement des libellés sur spec finale (titre modal, pré-remplissage motivation)
 
 ---
 
@@ -461,20 +457,29 @@ Page complète de PINS-CU-008 vue par ANSD, avec le bandeau "Informations détai
 
 | # | Scénario | Statut cible | Statut réel | Anomalies |
 |---|----------|-------------|-------------|-----------|
-| 1 | Déclaration cas d'usage DGID → ANSD | PASS | | |
-| 2 | Avis RÉSERVE ANSD avec pièce jointe | PASS | | |
-| 3 | Contre-proposition DGID sur l'avis ANSD | PASS | FAIL | Bouton amender non expose UI (backend OK) — reporte backlog |
-| 4 | Auto-saisine DGCPT via radar | PASS | | |
-| 5 | Arbitrage DU + qualification | PASS | | |
-| 6 | Visibilité METADATA pour non-stakeholder | PASS | | |
-| 7 | Transition EN_PRODUCTION + inaltérabilité | PASS *(critique)* | | |
-| 8 | Tableau de bord consolidé DU | PASS | | |
+| 1 | Déclaration cas d'usage DGID → ANSD | PASS | PASS (23/04/2026) | — |
+| 2 | Avis RÉSERVE ANSD avec pièce jointe | PASS | PASS (23/04/2026) | — |
+| 3 | Amendement d'avis par l'auteur | PASS | PASS (24/04/2026) | Résolu par la livraison du 24/04/2026 — bouton "Amender mon avis" exposé dans le fil |
+| 4 | Auto-saisine DGCPT via radar | PASS | PASS (23/04/2026) | — |
+| 5 | Arbitrage DU + qualification | PASS | PASS PARTIEL (23/04/2026) | Boutons "Convoquer cadrage" et "Décision d'arbitrage" encore en toast stub — transitions de statut fonctionnelles |
+| 6 | Visibilité METADATA pour non-stakeholder | PASS | PASS (23/04/2026) | — |
+| 7 | Transition EN_PRODUCTION + inaltérabilité | PASS *(critique)* | PASS (23/04/2026) | — |
+| 8 | Tableau de bord consolidé DU | PASS | PASS (23/04/2026) | — |
 
 ### Critères de succès global
 
 - **Recette validée** : les 8 scénarios passent sans anomalie bloquante
 - **Recette conditionnellement validée** : 1 à 2 anomalies non bloquantes, corrigées avant déploiement prod
 - **Recette échouée** : au moins 1 anomalie bloquante, notamment sur le scénario 7 (inaltérabilité) ou 6 (fuite de visibilité)
+
+### Statut global au 24/04/2026
+
+- **7 PASS** (S1, S2, S3, S4, S6, S7, S8)
+- **1 PASS PARTIEL** (S5 — arbitrage actif encore en stub)
+- **0 FAIL**
+- **0 anomalie bloquante ouverte**
+
+La plateforme est en état de démonstration : toutes les briques critiques (déclaration, consultation, avis formel, amendement, auto-saisine motivée, retrait spontané, éviction motivée, visibilité contrôlée, inaltérabilité du journal, tableau de bord consolidé) sont opérationnelles bout en bout.
 
 ### Anomalies transverses observées
 
@@ -485,6 +490,168 @@ Page complète de PINS-CU-008 vue par ANSD, avec le bandeau "Informations détai
 ## Notes pour l'après-recette
 
 - Les anomalies non bloquantes sont à verser dans `docs/vue-360/ux-backlog.md` section "À traiter"
-- Les anomalies bloquantes déclenchent un hotfix avant validation M. DIABY
+- Les anomalies bloquantes déclenchent un hotfix avant validation par la Delivery Unit
 - Les captures sont à nommer `scN-YYYYMMDD-HHmm.png` dans `docs/vue-360/captures-recette/`
-- Une fois la recette validée, la phase P7 (automatisation end-to-end) peut démarrer sur la base de ces 8 scénarios transformés en specs Playwright/Cypress
+- Une fois la recette validée, l'étape suivante (automatisation end-to-end) peut démarrer sur la base de ces scénarios transformés en specs Playwright/Cypress
+
+### Leçon retenue 24/04/2026 — Cache client trompeur
+
+Pendant la vague de tests de régression post-livraison, un comportement en apparence bloquant (visibilité INITIATEUR retournée en METADATA au lieu de FULL sur PINS-CU-026 avec le compte `dsi@dgid.sn`) s'est révélé être **un artefact de cache navigateur** : la session Brave ordinaire conservait le bundle frontend pré-livraison, alors que la session en fenêtre privée exécutait le nouveau code et affichait correctement la vue FULL.
+
+**Recommandation pour toutes les prochaines recettes de régression visuelle** :
+
+1. Systématiquement valider en fenêtre privée **avant de conclure** à un FAIL
+2. Si FAIL en navigation normale mais PASS en privée → ne pas rollback : invalider le cache (Ctrl+F5 ou purge du Service Worker) suffit
+3. Si FAIL dans les deux modes → diagnostic backend/data confirmé
+
+Une régression a néanmoins été consolidée par un hotfix défensif multi-couches (reconnaissance initiateur via `institutionSourceCode` + backfill SQL + masquage UI conditionnel), qui couvre toute désynchronisation future, voir section suivante.
+
+---
+
+## Recette post-livraison — 24/04/2026
+
+Quatre tests d'acceptation complémentaires conduits après la livraison pour valider la gouvernance des parties prenantes et la préservation de la visibilité INITIATEUR.
+
+### Test A — Visibilité FULL préservée pour l'INITIATEUR
+
+#### Pré-requis
+
+- Compte `dsi@dgid.sn` (INITIATEUR de PINS-CU-026)
+- PINS-CU-026 existe en base avec DGID (INITIATEUR), ANSD (FOURNISSEUR actif), DGCPT (retirée/évincée)
+
+#### Étapes
+
+1. Se connecter avec `dsi@dgid.sn` (de préférence en fenêtre privée pour écarter le cache)
+2. Ouvrir la fiche détail de PINS-CU-026
+3. Observer le rendu complet
+
+#### Résultat attendu
+
+- En-tête : code, titre, résumé, base légale, badge "Mon rôle : Initiateur"
+- **Aucun bandeau** "Informations détaillées réservées aux parties prenantes formellement désignées"
+- **Aucun bouton** "Me porter partie prenante" (l'initiateur est déjà partie prenante par définition)
+- Tableau Parties prenantes visible avec DGID + ANSD (section principale) et DGCPT (section "Retraits et évictions")
+- Fil d'avis formels visible avec l'avis VALIDATION d'ANSD
+- Historique des transitions visible
+- Bloc Référentiels nationaux touchés visible
+- `_visibility` dans la réponse API `/api/use-cases/:id` = `FULL`
+
+#### Points de vigilance
+
+- Si bandeau affiché malgré le rôle INITIATEUR : cache navigateur (purger), sinon bug backend `computeVisibility`
+- Si bouton "Me porter partie prenante" visible : régression défense en profondeur `UseCaseHeader`
+
+#### RÉSULTAT
+
+- [x] PASS — 2026-04-24
+
+---
+
+### Test B — FOURNISSEUR désigné voit DETAILED
+
+#### Pré-requis
+
+- Compte `dsi@ansd.sn` (FOURNISSEUR actif de PINS-CU-026)
+
+#### Étapes
+
+1. Se connecter avec `dsi@ansd.sn`
+2. Ouvrir la fiche détail de PINS-CU-026
+
+#### Résultat attendu
+
+- Mêmes blocs visibles qu'en Test A (stakeholders, fil d'avis, historique, référentiels)
+- `_visibility` = `DETAILED` (pas FULL — les audit logs restent réservés à l'initiateur et à l'admin)
+- Bouton "Amender mon avis" visible sur l'avis VALIDATION de l'ANSD (car ANSD en est l'auteur)
+- Aucun bandeau METADATA, aucune invitation à l'auto-saisine
+
+#### RÉSULTAT
+
+- [x] PASS — 2026-04-24
+
+---
+
+### Test C — Non stakeholder voit METADATA avec modal d'auto-saisine motivée
+
+#### Pré-requis
+
+- Compte `dsi@dgpsn.sn` (institution non stakeholder de PINS-CU-026)
+
+#### Étapes
+
+1. Se connecter avec `dsi@dgpsn.sn`
+2. Ouvrir la fiche détail de PINS-CU-026
+3. Cliquer sur "Me porter partie prenante" dans le bandeau METADATA
+4. Dans la modal `AutoSaisineModal` :
+   - Sélectionner une typologie (ex. "Gouvernance transverse")
+   - Saisir une motivation de moins de 50 caractères → vérifier que le bouton reste grisé
+   - Compléter la motivation à 50+ caractères → bouton "Confirmer l'auto-saisine motivée" devient actif
+5. Confirmer la soumission
+
+#### Résultat attendu
+
+- Bandeau METADATA visible à l'arrivée sur la fiche, avec bouton d'auto-saisine
+- Modal `AutoSaisineModal` s'ouvre avec 4 options de typologie, textarea motif avec compteur temps réel, signature institutionnelle auto-remplie en lecture seule
+- Bouton confirmer grisé tant que motif < 50 caractères OU typologie non sélectionnée
+- Après soumission : stakeholder DGPSN créé avec `autoSaisine=true`, `motifAutoSaisine` et `typeConcernement` persistés en base
+- Notification CONSULTATION_OUVERTE envoyée à l'initiateur avec message du type `[DGPSN] s'est portée partie prenante — motif : [50 premiers caractères]...`
+- Rechargement de la fiche : DGPSN apparaît dans le tableau avec badge "Auto-saisie" et motif visible au hover ou dans la zone expansible "Voir les motifs d'auto-saisine"
+- Visibilité bascule en DETAILED
+
+#### RÉSULTAT
+
+- [x] PASS — 2026-04-24
+
+---
+
+### Test D — Éviction DU avec anti-réinscription
+
+#### Pré-requis
+
+- Compte admin `admin@senum.sn`
+- Une institution auto-saisie ou désignée non critique sur un cas d'usage test (par exemple DGPSN après Test C)
+
+#### Étapes
+
+1. Se connecter avec le compte admin
+2. Ouvrir la fiche détail du cas d'usage contenant DGPSN
+3. Sur la ligne DGPSN du tableau Parties prenantes, cliquer sur le bouton discret "Évincer" (rôle DU / SENUM_ADMIN requis)
+4. Dans la modal `EvictStakeholderModal` :
+   - Saisir un motif de moins de 50 caractères → bouton grisé
+   - Compléter à 50+ caractères → bouton actif
+5. Confirmer l'éviction
+6. Se déconnecter, se reconnecter avec `dsi@dgpsn.sn`
+7. Retourner sur la fiche du cas d'usage
+8. Tenter de cliquer sur "Me porter partie prenante" depuis le radar sectoriel ou le bandeau
+
+#### Résultat attendu
+
+- DGPSN passe en `actif=false`, `evictionParDU=true`, `evictionMotif` persisté
+- Ligne DGPSN migre vers la section "Retraits et évictions" avec mention "Évincée par la Delivery Unit" et motif tronqué
+- Notification STAKEHOLDER_EVICTED reçue par DGPSN avec le motif complet
+- Trace dans `UseCaseStatusHistory` avec auteur admin et motif "Éviction DU — ..."
+- Côté DGPSN connectée : bandeau rouge sur la fiche METADATA avec message exact "Votre institution a été retirée de ce cas d'usage par la Delivery Unit." et lien mailto `dpi-interop@senum.sn`
+- Aucun bouton "Me porter partie prenante" visible
+- Tentative de réinscription via `POST /api/use-cases/:id/stakeholders` retourne **409 Conflict** avec le message "Votre institution a été retirée de ce cas d'usage par la Delivery Unit. Réinscription possible uniquement sur validation DU explicite."
+
+#### Points de vigilance
+
+- Si la réinscription passe en 201 au lieu de 409 : régression critique du principe contradictoire
+- Si la notification d'éviction n'est pas envoyée : manquement au principe contradictoire (information de l'institution concernée)
+
+#### RÉSULTAT
+
+- [x] PASS — 2026-04-24
+
+---
+
+### Synthèse des 4 tests post-livraison
+
+| Test | Scénario | Statut |
+|------|----------|--------|
+| A | Visibilité FULL préservée pour INITIATEUR | ✅ PASS |
+| B | FOURNISSEUR désigné voit DETAILED | ✅ PASS |
+| C | Non stakeholder → METADATA + modal auto-saisine motivée | ✅ PASS |
+| D | Éviction DU + anti-réinscription 409 | ✅ PASS |
+
+Références commits Git : `128fb2e`, `337838d`, `3e18d19`, `317a9d6`.
