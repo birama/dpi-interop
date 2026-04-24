@@ -64,7 +64,7 @@ export async function useCasesRoutes(app: FastifyInstance) {
   // GET /catalog — Liste paginée de tous les cas d'usage
   // =========================================================================
   app.get('/catalog', { onRequest: [app.authenticate] }, async (req: any, reply: any) => {
-    const { limit = '20', cursor, status, search } = req.query as any;
+    const { limit = '20', cursor, status, search, typologie, includePropose } = req.query as any;
     const take = Math.min(parseInt(limit) || 20, 100);
 
     // Resoudre le code de l'institution de l'utilisateur (pour reconnaissance initiateur robuste)
@@ -86,10 +86,16 @@ export async function useCasesRoutes(app: FastifyInstance) {
     };
 
     // Build where clause
+    // Par defaut : exclure le catalogue (PROPOSE, ARCHIVE, FUSIONNE) — reserve a /catalogue/propositions
     const where: any = {};
     if (status) {
       const statuses = Array.isArray(status) ? status : [status];
       where.statutVueSection = { in: statuses };
+    } else if (includePropose !== 'true') {
+      where.statutVueSection = { notIn: ['PROPOSE', 'ARCHIVE', 'FUSIONNE'] };
+    }
+    if (typologie && ['METIER', 'TECHNIQUE'].includes(typologie)) {
+      where.typologie = typologie;
     }
     if (search) {
       where.OR = [
@@ -244,5 +250,200 @@ export async function useCasesRoutes(app: FastifyInstance) {
       xroadCible: visibility.level !== 'METADATA' ? xroadCible : undefined,
       _visibility: visibility.level,
     });
+  });
+
+  // =========================================================================
+  // GET /:id/relations — Relations de service metier <-> technique (P9)
+  // =========================================================================
+  app.get('/:id/relations', { onRequest: [app.authenticate] }, async (req: any, reply: any) => {
+    const { id } = req.params;
+    const cu = await app.prisma.casUsageMVP.findUnique({
+      where: { id },
+      select: { id: true, typologie: true },
+    });
+    if (!cu) return reply.status(404).send({ error: 'Cas d\'usage non trouve' });
+
+    if (cu.typologie === 'METIER') {
+      const relations = await app.prisma.relationCasUsage.findMany({
+        where: { casUsageMetierId: id },
+        include: {
+          casUsageTechnique: {
+            select: {
+              id: true, code: true, titre: true, statutVueSection: true,
+              institutionSourceCode: true,
+            },
+          },
+        },
+        orderBy: { ordre: 'asc' },
+      });
+      return reply.send({ typologie: 'METIER', relations });
+    }
+    // TECHNIQUE : CU metier servis
+    const relations = await app.prisma.relationCasUsage.findMany({
+      where: { casUsageTechniqueId: id },
+      include: {
+        casUsageMetier: {
+          select: {
+            id: true, code: true, titre: true, statutVueSection: true,
+            institutionSourceCode: true,
+          },
+        },
+      },
+    });
+    // Calcul criticite = nombre de CU metier servis
+    let criticite: 'SPECIFIQUE' | 'MUTUALISE' | 'CRITIQUE' | 'HYPER_CRITIQUE' = 'SPECIFIQUE';
+    if (relations.length >= 10) criticite = 'HYPER_CRITIQUE';
+    else if (relations.length >= 5) criticite = 'CRITIQUE';
+    else if (relations.length >= 2) criticite = 'MUTUALISE';
+    return reply.send({ typologie: 'TECHNIQUE', relations, criticite, nbConsommateurs: relations.length });
+  });
+
+  // =========================================================================
+  // POST /:id/relations — Ajout d'une relation metier -> technique (P9)
+  // =========================================================================
+  app.post('/:id/relations', { onRequest: [app.authenticate] }, async (req: any, reply: any) => {
+    const { id } = req.params;
+    const { casUsageTechniqueId, ordre, obligatoire, commentaire } = req.body as any;
+    const user = req.user;
+
+    if (!casUsageTechniqueId) return reply.status(400).send({ error: 'casUsageTechniqueId requis' });
+
+    const [metier, technique] = await Promise.all([
+      app.prisma.casUsageMVP.findUnique({
+        where: { id },
+        include: { stakeholders360: { where: { role: 'INITIATEUR', actif: true }, select: { institutionId: true } } },
+      }),
+      app.prisma.casUsageMVP.findUnique({
+        where: { id: casUsageTechniqueId },
+        select: { id: true, typologie: true },
+      }),
+    ]);
+    if (!metier) return reply.status(404).send({ error: 'Cas d\'usage metier non trouve' });
+    if (!technique) return reply.status(404).send({ error: 'Cas d\'usage technique non trouve' });
+    if (metier.typologie !== 'METIER') {
+      return reply.status(400).send({ error: 'Seul un cas d\'usage METIER peut mobiliser des services techniques' });
+    }
+    if (technique.typologie !== 'TECHNIQUE') {
+      return reply.status(400).send({ error: 'La cible d\'une relation doit etre de typologie TECHNIQUE' });
+    }
+
+    // Autorisation : DU ou institution initiatrice du CU metier
+    const isAdmin = user.role === 'ADMIN';
+    const isInitiateur = metier.stakeholders360.some((s: any) => s.institutionId === user.institutionId);
+    if (!isAdmin && !isInitiateur) {
+      return reply.status(403).send({ error: 'Seule l\'institution initiatrice ou la DU peut ajouter une relation' });
+    }
+
+    const relation = await app.prisma.relationCasUsage.create({
+      data: {
+        casUsageMetierId: id,
+        casUsageTechniqueId,
+        ordre: ordre || null,
+        obligatoire: obligatoire !== false,
+        commentaire: commentaire || null,
+        createdBy: user.id,
+      },
+      include: {
+        casUsageTechnique: { select: { id: true, code: true, titre: true, institutionSourceCode: true } },
+      },
+    });
+    return reply.status(201).send(relation);
+  });
+
+  // =========================================================================
+  // DELETE /:id/relations/:relationId (P9)
+  // =========================================================================
+  app.delete('/:id/relations/:relationId', { onRequest: [app.authenticate] }, async (req: any, reply: any) => {
+    const { id, relationId } = req.params;
+    const user = req.user;
+
+    const [rel, metier] = await Promise.all([
+      app.prisma.relationCasUsage.findUnique({ where: { id: relationId } }),
+      app.prisma.casUsageMVP.findUnique({
+        where: { id },
+        include: { stakeholders360: { where: { role: 'INITIATEUR', actif: true }, select: { institutionId: true } } },
+      }),
+    ]);
+    if (!rel || rel.casUsageMetierId !== id) return reply.status(404).send({ error: 'Relation non trouvee' });
+    if (!metier) return reply.status(404).send({ error: 'Cas d\'usage non trouve' });
+
+    const isAdmin = user.role === 'ADMIN';
+    const isInitiateur = metier.stakeholders360.some((s: any) => s.institutionId === user.institutionId);
+    if (!isAdmin && !isInitiateur) {
+      return reply.status(403).send({ error: 'Operation reservee a l\'institution initiatrice ou a la DU' });
+    }
+
+    await app.prisma.relationCasUsage.delete({ where: { id: relationId } });
+    return reply.send({ ok: true });
+  });
+
+  // =========================================================================
+  // PATCH /:id/typologie (DU only) — Reclassement typologique motive (P9)
+  // =========================================================================
+  app.patch('/:id/typologie', { onRequest: [app.authenticateAdmin] }, async (req: any, reply: any) => {
+    const { id } = req.params;
+    const { typologie, motif } = req.body as any;
+    const user = req.user;
+
+    if (!typologie || !['METIER', 'TECHNIQUE'].includes(typologie)) {
+      return reply.status(400).send({ error: 'Typologie requise (METIER ou TECHNIQUE)' });
+    }
+    if (!motif || motif.trim().length < 50) {
+      return reply.status(400).send({ error: 'Motif du reclassement requis, min 50 caracteres' });
+    }
+
+    const cu = await app.prisma.casUsageMVP.findUnique({
+      where: { id },
+      select: {
+        id: true, code: true, typologie: true, reclassementsTypologie: true,
+        stakeholders360: { where: { role: 'INITIATEUR', actif: true }, select: { institutionId: true } },
+      },
+    });
+    if (!cu) return reply.status(404).send({ error: 'Cas d\'usage non trouve' });
+    if (cu.typologie === typologie) {
+      return reply.status(409).send({ error: 'Le cas d\'usage est deja dans cette typologie' });
+    }
+
+    // Historiser dans reclassementsTypologie (JSON append-only)
+    const prevLog = Array.isArray(cu.reclassementsTypologie) ? cu.reclassementsTypologie : [];
+    const newLog = [
+      ...prevLog,
+      {
+        from: cu.typologie,
+        to: typologie,
+        motif: motif.trim(),
+        auteurUserId: user.id,
+        auteurNom: user.email,
+        date: new Date().toISOString(),
+      },
+    ];
+
+    await app.prisma.casUsageMVP.update({
+      where: { id },
+      data: { typologie, reclassementsTypologie: newLog },
+    });
+
+    // Notifier l'initiateur
+    const initInstId = cu.stakeholders360[0]?.institutionId;
+    if (initInstId) {
+      const users = await app.prisma.user.findMany({ where: { institutionId: initInstId }, select: { id: true } });
+      for (const u of users) {
+        try {
+          await app.prisma.notification.create({
+            data: {
+              userId: u.id,
+              institutionId: initInstId,
+              type: 'ARBITRAGE',
+              titre: `Reclassement typologique — ${cu.code}`,
+              message: `La Delivery Unit a reclasse ce cas d'usage en ${typologie}. Motif : ${motif.substring(0, 150)}`,
+              lienUrl: `/admin/cas-usage/${id}`,
+              refType: 'CAS_USAGE',
+              refId: id,
+            },
+          });
+        } catch {}
+      }
+    }
+    return reply.send({ ok: true, typologie });
   });
 }

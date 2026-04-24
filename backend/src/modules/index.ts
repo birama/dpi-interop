@@ -10,6 +10,7 @@ import { useCasesMeRoutes } from './vue360/useCasesMe.routes.js';
 import { useCasesWriteRoutes, consultationRoutes, feedbackRoutes, duArbitrageRoutes } from './vue360/useCasesWrite.routes.js';
 import { registresCouvertureRoutes, registresUseCaseRoutes } from './vue360/registres.routes.js';
 import { notificationsMeRoutes, notificationsRoutes } from './vue360/notifications.routes.js';
+import { catalogueRoutes, suggestionsRoutes } from './vue360/catalogue.routes.js';
 
 // Inline routes for conventions and xroad
 async function conventionsRoutes(app: FastifyInstance) {
@@ -1060,6 +1061,8 @@ export async function registerRoutes(app: FastifyInstance) {
       api.register(consultationRoutes, { prefix: '/consultations' });
       api.register(feedbackRoutes, { prefix: '/feedback' });
       api.register(duArbitrageRoutes, { prefix: '/du/arbitrage' });
+      api.register(catalogueRoutes, { prefix: '/catalogue' });
+      api.register(suggestionsRoutes, { prefix: '/catalogue/suggestions' });
       api.register(registresCouvertureRoutes, { prefix: '/registres' });
       api.register(registresUseCaseRoutes, { prefix: '/use-cases' });
       api.register(notificationsMeRoutes, { prefix: '/me' });

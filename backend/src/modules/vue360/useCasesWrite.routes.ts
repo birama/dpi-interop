@@ -832,6 +832,7 @@ export async function duArbitrageRoutes(app: FastifyInstance) {
     });
 
     const kpi = {
+      propositions: await app.prisma.casUsageMVP.count({ where: { statutVueSection: 'PROPOSE' } }),
       declares: await app.prisma.casUsageMVP.count({ where: { statutVueSection: 'DECLARE' } }),
       declaresPipelineActif,
       enConsultation: await app.prisma.casUsageMVP.count({ where: { statutVueSection: 'EN_CONSULTATION' } }),
@@ -840,11 +841,101 @@ export async function duArbitrageRoutes(app: FastifyInstance) {
       enProduction: await app.prisma.casUsageMVP.count({ where: { statutVueSection: 'EN_PRODUCTION_360' } }),
     };
 
+    // Ventilation typologique (P9)
+    const ventilationTypologie = {
+      metier: {
+        total:          await app.prisma.casUsageMVP.count({ where: { typologie: 'METIER' } }),
+        propositions:   await app.prisma.casUsageMVP.count({ where: { typologie: 'METIER', statutVueSection: 'PROPOSE' } }),
+        pipeline:       await app.prisma.casUsageMVP.count({ where: { typologie: 'METIER', statutVueSection: { notIn: ['PROPOSE', 'ARCHIVE', 'FUSIONNE'] } } }),
+        enProduction:   await app.prisma.casUsageMVP.count({ where: { typologie: 'METIER', statutVueSection: 'EN_PRODUCTION_360' } }),
+      },
+      technique: {
+        total:          await app.prisma.casUsageMVP.count({ where: { typologie: 'TECHNIQUE' } }),
+        propositions:   await app.prisma.casUsageMVP.count({ where: { typologie: 'TECHNIQUE', statutVueSection: 'PROPOSE' } }),
+        pipeline:       await app.prisma.casUsageMVP.count({ where: { typologie: 'TECHNIQUE', statutVueSection: { notIn: ['PROPOSE', 'ARCHIVE', 'FUSIONNE'] } } }),
+        enProduction:   await app.prisma.casUsageMVP.count({ where: { typologie: 'TECHNIQUE', statutVueSection: 'EN_PRODUCTION_360' } }),
+      },
+    };
+
+    // Statistiques catalogue (P8)
+    const nowStart = new Date(); nowStart.setHours(0, 0, 0, 0);
+    const quarterStart = new Date(nowStart.getFullYear(), Math.floor(nowStart.getMonth() / 3) * 3, 1);
+
+    const [propositionsCreeesTrimestre, adoptionsTrimestre, adoptionsTotal, propositionsArchivees] = await Promise.all([
+      app.prisma.casUsageMVP.count({
+        where: { statutVueSection: 'PROPOSE', createdAt: { gte: quarterStart } },
+      }),
+      app.prisma.casUsageMVP.count({ where: { dateAdoption: { gte: quarterStart } } }),
+      app.prisma.casUsageMVP.count({ where: { dateAdoption: { not: null } } }),
+      app.prisma.casUsageMVP.count({ where: { statutVueSection: 'ARCHIVE' } }),
+    ]);
+    const totalPropositions = kpi.propositions + adoptionsTotal + propositionsArchivees;
+    const tauxAdoption = totalPropositions > 0 ? Math.round((adoptionsTotal / totalPropositions) * 1000) / 10 : 0;
+
+    const topAdopteuses = await app.prisma.casUsageMVP.groupBy({
+      by: ['adopteParInstitutionId'],
+      where: { adopteParInstitutionId: { not: null } },
+      _count: { id: true },
+      orderBy: { _count: { id: 'desc' } },
+      take: 3,
+    });
+    const adopteusesDetail = await app.prisma.institution.findMany({
+      where: { id: { in: topAdopteuses.map((t: any) => t.adopteParInstitutionId).filter(Boolean) as string[] } },
+      select: { id: true, code: true, nom: true },
+    });
+    const topAdopteusesFinal = topAdopteuses.map((t: any) => ({
+      ...adopteusesDetail.find((i: any) => i.id === t.adopteParInstitutionId),
+      nbAdoptions: t._count.id,
+    }));
+
+    // Mutualisation services techniques
+    const nbRelations = await app.prisma.relationCasUsage.count();
+    const nbTechniquesEnPipeline = await app.prisma.casUsageMVP.count({
+      where: {
+        typologie: 'TECHNIQUE',
+        statutVueSection: { in: ['EN_CONSULTATION', 'VALIDATION_CONJOINTE', 'QUALIFIE', 'PRIORISE', 'FINANCEMENT_OK', 'CONVENTIONNE', 'EN_PRODUCTION_360'] },
+      },
+    });
+    const tauxMutualisation = nbTechniquesEnPipeline > 0
+      ? Math.round((nbRelations / nbTechniquesEnPipeline) * 100) / 100
+      : 0;
+
+    // Top 5 techniques les plus consommes (relationsTechnique.count desc)
+    const topTechniquesRaw = await app.prisma.relationCasUsage.groupBy({
+      by: ['casUsageTechniqueId'],
+      _count: { id: true },
+      orderBy: { _count: { id: 'desc' } },
+      take: 5,
+    });
+    const topTechniquesDetail = await app.prisma.casUsageMVP.findMany({
+      where: { id: { in: topTechniquesRaw.map((t: any) => t.casUsageTechniqueId) } },
+      select: { id: true, code: true, titre: true, institutionSourceCode: true },
+    });
+    const topTechniques = topTechniquesRaw.map((t: any) => ({
+      ...topTechniquesDetail.find((c: any) => c.id === t.casUsageTechniqueId),
+      nbConsommateurs: t._count.id,
+    }));
+
     return reply.send({
       ouverts: ouverts.length,
       enRetard,
       desaccords,
       kpi,
+      ventilationTypologie,
+      catalogue: {
+        propositionsCreeesTrimestre,
+        adoptionsTrimestre,
+        adoptionsTotal,
+        propositionsArchivees,
+        tauxAdoption,
+        topAdopteuses: topAdopteusesFinal,
+      },
+      mutualisation: {
+        nbServicesTechniques: nbTechniquesEnPipeline,
+        nbConsommationsMetier: nbRelations,
+        tauxMutualisation,
+        topTechniques,
+      },
     });
   });
 }
