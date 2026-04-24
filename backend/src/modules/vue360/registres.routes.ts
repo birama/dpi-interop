@@ -27,7 +27,11 @@ export async function registresCouvertureRoutes(app: FastifyInstance) {
         where: { registreId: reg.id },
         include: {
           casUsage: {
-            select: { id: true, code: true, titre: true, institutionSourceCode: true, institutionCibleCode: true, statutVueSection: true },
+            select: {
+              id: true, code: true, titre: true,
+              institutionSourceCode: true, institutionCibleCode: true,
+              statutVueSection: true, typologie: true,
+            },
           },
         },
       });
@@ -35,6 +39,23 @@ export async function registresCouvertureRoutes(app: FastifyInstance) {
       const consomme = liens.filter(l => l.mode === 'CONSOMME').length;
       const alimente = liens.filter(l => l.mode === 'ALIMENTE').length;
       const cree = liens.filter(l => l.mode === 'CREE').length;
+
+      // Double compteur typologique (P9) : "consomme par X services techniques
+      // qui servent Y parcours metier"
+      const techniquesIds = liens
+        .filter(l => l.casUsage.typologie === 'TECHNIQUE')
+        .map(l => l.casUsage.id);
+      const metiersViaTechniques = techniquesIds.length > 0
+        ? await app.prisma.relationCasUsage.findMany({
+            where: { casUsageTechniqueId: { in: techniquesIds } },
+            select: { casUsageMetierId: true },
+          })
+        : [];
+      const metiersUniqueCount = new Set(metiersViaTechniques.map(r => r.casUsageMetierId)).size;
+      const doubleCompteur = {
+        nbServicesTechniques: techniquesIds.length,
+        nbParcoursMetier: metiersUniqueCount,
+      };
 
       // Institutions consommatrices (distinct)
       const consommateurs = new Set<string>();
@@ -69,6 +90,7 @@ export async function registresCouvertureRoutes(app: FastifyInstance) {
         detenteurNom: reg.institutionNom,
         disposeAPI: reg.disposeAPI,
         compteurs: { consomme, alimente, cree, total: consomme + alimente + cree },
+        doubleCompteur,
         consommateurs: [...consommateurs],
         doublonsPotentiels,
       });

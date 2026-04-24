@@ -655,3 +655,217 @@ Quatre tests d'acceptation complémentaires conduits après la livraison pour va
 | D | Éviction DU + anti-réinscription 409 | ✅ PASS |
 
 Références commits Git : `128fb2e`, `337838d`, `3e18d19`, `317a9d6`.
+
+---
+
+## Recette post-livraison — 25/04/2026 — Catalogue des propositions + typologie
+
+Dix scénarios complémentaires couvrant la livraison P8+P9 (commits `490371d → 6115fca`).
+
+### Test P8-1 — Migration du stock vers PROPOSE
+
+**Pré-requis** : base avec stock MVP 0 existant, migrations appliquées.
+
+**Étapes** :
+```sql
+SELECT typologie, COUNT(*) FROM cas_usage_mvp GROUP BY typologie;
+SELECT "sourceProposition", COUNT(*) FROM cas_usage_mvp GROUP BY "sourceProposition";
+SELECT "statutVueSection", COUNT(*) FROM cas_usage_mvp GROUP BY "statutVueSection";
+SELECT code, "statutVueSection" FROM cas_usage_mvp
+WHERE code IN ('PINS-CU-008','PINS-CU-011','PINS-CU-012','PINS-CU-019','PINS-CU-026');
+```
+
+**Attendu** : typologie unique TECHNIQUE, dormants en PROPOSE + ETUDE_SENUM, whitelist strictement non-PROPOSE, N traces inaltérables dans `use_case_status_history`.
+
+**Statut local** : ✅ PASS (49 CU, 41 PROPOSE, whitelist 4/5 présents, 026 absent en local).
+
+---
+
+### Test P8-2 — Création d'une proposition par la DU
+
+**Pré-requis** : compte `admin@senum.sn`.
+
+**Étapes** : `/catalogue-propositions` → (pas de bouton créer dans l'UI V1, créer via API ou seed démo). Alternative : vérifier la présence des 10 propositions PINS-PROP-DEMO-NN via le seed `npx tsx prisma/seed-catalogue-p8p9.ts`.
+
+**Attendu** : 10 propositions visibles, badges typologie/maturité/source corrects, pressenties affichées.
+
+**Statut** : ✅ PASS (seed exécuté, 51 propositions au total, 4 METIER + 47 TECHNIQUE).
+
+---
+
+### Test P8-3 — Adoption directe par institution pressentie
+
+**Pré-requis** : `dsi@apix.sn` (APIX pressentie sur PINS-PROP-DEMO-01).
+
+**Étapes** :
+1. `/catalogue-propositions` → ouvre PINS-PROP-DEMO-01
+2. Bouton teal "Adopter" (APIX pressentie comme INITIATEUR_PRESSENTI)
+3. Modal `AdoptionModal` : warning institutionnel navy visible, APIX en vert "deviendra INITIATEUR", autres pressenties décochables
+4. Coche "Je confirme l'engagement institutionnel", clique `Adopter`
+
+**Attendu** :
+- Statut `PROPOSE → DECLARE → EN_CONSULTATION`
+- Rename `PINS-PROP-DEMO-01 → PINS-CU-NNN` (ancienCode conservé)
+- APIX devient INITIATEUR actif, pressenties retenues deviennent FOURNISSEUR/CONSOMMATEUR actifs
+- Consultations SLA 15j ouvertes, notifications CONSULTATION_OUVERTE envoyées
+- Trace inaltérable dans status history : motif "Adoption — APIX adopte la proposition…"
+- Redirection vers `/admin/cas-usage/:id`
+
+---
+
+### Test P8-4 — Adoption motivée par institution non pressentie
+
+**Pré-requis** : `dsi@dgpsn.sn` (DGPSN non pressentie sur PINS-PROP-DEMO-02).
+
+**Étapes** :
+1. `/catalogue-propositions/:id` ouvert sur PINS-PROP-DEMO-02
+2. Bouton navy "Signaler notre intérêt"
+3. Modal : warning ambre "Non pressentie, validation DU requise"
+4. Textarea motif min 50 car (bouton grisé tant qu'insuffisant)
+5. Coche engagement, clique "Transmettre la demande"
+
+**Attendu** :
+- Réponse 202 PENDING_VALIDATION
+- Création AdoptionRequest status EN_ATTENTE
+- Notification ARBITRAGE aux admins DU
+- Proposition reste en statut PROPOSE
+
+Puis login `admin@senum.sn` :
+6. `GET /api/catalogue/adoption-requests` → la demande apparaît
+7. `POST /api/catalogue/adoption-requests/:id/valider` → déclenche l'adoption effective (même workflow atomique que Test P8-3)
+
+**Attendu après validation** : DGPSN initiatrice, renumérotation effective.
+
+---
+
+### Test P8-5 — Détection de doublons à la création
+
+**Pré-requis** : `dsi@dgid.sn`.
+
+**Étapes** :
+1. `/mes-cas-usage` → "Déclarer un nouveau cas d'usage"
+2. Étape 1 : choisir "Service technique"
+3. Étape 2 : saisir titre "Consultation RCCM pour vérification entreprises"
+4. Attendre le debounce 400ms
+
+**Attendu** :
+- Encart ambre avec PINS-PROP-DEMO-05 "Consultation RCCM" en suggestion adoptable
+- Badge "Proposition adoptable" visible
+- Lien "Voir les propositions" + bouton "Créer quand même un nouveau CU"
+- Bouton "Continuer" grisé tant que doublons non acquittés
+
+5. Clique "Créer quand même un nouveau CU" → étape 3 débloquée
+
+**Statut** : couvert par le flux API `/catalogue/suggestions` (ILIKE fuzzy sur mots-clés).
+
+---
+
+### Test P8-6 — Archivage d'une proposition
+
+**Pré-requis** : `admin@senum.sn`.
+
+**Étapes (API uniquement en V1)** :
+```http
+POST /api/catalogue/propositions/:id/archive
+Body: { "motif": "Proposition redondante avec PINS-PROP-DEMO-XX, fusion non pertinente (60+ caracteres)" }
+```
+
+**Attendu** :
+- Statut `PROPOSE → ARCHIVE`
+- Transition tracée avec motif dans status history
+- Notifications ARBITRAGE aux pressenties
+- Proposition invisible du catalogue par défaut (statut filtré)
+
+Désarchivage possible via `PATCH` typologie ou manuel DB si besoin.
+
+---
+
+### Test P9-1 — Création d'un parcours métier
+
+**Pré-requis** : `dsi@apix.sn`.
+
+**Étapes** :
+1. `/mes-cas-usage` → "Déclarer un nouveau cas d'usage"
+2. Étape 1 : choisir "Parcours métier" (navy)
+3. Étape 2 : titre + résumé (aucune suggestion proche → continuer direct)
+4. Étape 3 : badge navy "Parcours métier" en tête, formulaire adapté
+5. Remplir titre, résumé, base légale, stakeholders pressentis (DGID FOURNISSEUR, ANSD FOURNISSEUR)
+6. **Multi-select "Services techniques mobilisés"** : sélectionner 2-3 techniques du pipeline (ex. PINS-PROP-DEMO-05 Consultation RCCM, mais seuls les CU déjà adoptés en pipeline apparaîtront)
+7. Soumettre
+
+**Attendu** :
+- Création du CU avec `typologie=METIER`
+- Création automatique des `RelationCasUsage` (une par technique sélectionnée)
+- Vérification côté backend que chaque technique a bien `typologie=TECHNIQUE` (sinon skip)
+- Consultations SLA 15j ouvertes pour les stakeholders
+
+---
+
+### Test P9-2 — Bloc "Services techniques mobilisés" sur fiche métier
+
+**Pré-requis** : un CU métier existant avec relations (cf. Test P9-1).
+
+**Étapes** :
+1. `/admin/cas-usage/:id` du CU métier
+2. Badge navy "Parcours métier" en tête
+3. Bloc "Services techniques mobilisés" visible
+
+**Attendu** :
+- Liste ordonnée : code technique, titre, institution détentrice, obligatoire/conditionnel, statut disponibilité
+- Indicateur global "X sur Y services techniques sont disponibles en production"
+- Bouton "Ajouter" visible (initiatrice + DU)
+- Clic sur un service technique → navigation vers sa fiche
+
+---
+
+### Test P9-3 — Bloc "Parcours métier servis" sur fiche technique
+
+**Pré-requis** : un CU technique mobilisé par au moins 2 parcours métier.
+
+**Étapes** :
+1. `/admin/cas-usage/:id` du CU technique
+2. Badge teal "Service technique" en tête
+3. Bloc "Parcours métier servis"
+
+**Attendu** :
+- Badge criticité à droite : SPECIFIQUE (1), MUTUALISE (2-4), CRITIQUE (5-9), HYPER-CRITIQUE (10+)
+- Liste des parcours cliquables avec code + titre + institution porteuse + statut
+
+---
+
+### Test P9-4 — Reclassement typologique par la DU
+
+**Pré-requis** : `admin@senum.sn`.
+
+**Étapes** :
+1. Ouvrir un CU en TECHNIQUE, ex. `PINS-CU-008`
+2. Lien discret "Reclasser" dans l'en-tête (visible admin seulement)
+3. Modal `ReclasserTypologieModal` : transition visuelle TECHNIQUE → METIER, warning ambre
+4. Textarea motif min 50 car (bouton grisé si insuffisant)
+5. Saisir motif 55+ car, confirmer
+
+**Attendu** :
+- `PATCH /api/use-cases/:id/typologie` réussi
+- `reclassementsTypologie` JSON append-only mis à jour avec l'entrée
+- Badge typologie passe à "Parcours métier" (navy)
+- Notification ARBITRAGE envoyée à l'institution initiatrice
+- Trace visible au rechargement
+
+---
+
+### Synthèse des tests P8+P9
+
+| Test | Scénario | Statut |
+|------|----------|--------|
+| P8-1 | Migration du stock → PROPOSE | ✅ PASS (local) |
+| P8-2 | Création propositions via seed | ✅ PASS (10 propositions) |
+| P8-3 | Adoption directe (pressentie) | 🔄 À tester UI |
+| P8-4 | Adoption motivée (non pressentie + validation DU) | 🔄 À tester UI |
+| P8-5 | Détection doublons (formulaire) | ✅ PASS (API) |
+| P8-6 | Archivage proposition | 🔄 À tester API |
+| P9-1 | Création parcours métier avec relations | 🔄 À tester UI |
+| P9-2 | Bloc services techniques mobilisés | 🔄 À tester UI |
+| P9-3 | Bloc parcours métier servis + criticité | 🔄 À tester UI |
+| P9-4 | Reclassement typologique DU | 🔄 À tester UI |
+
+Références commits Git : `490371d`, `0a86117`, `4ace260`, `da528f9`, `d0e0497`, `e3732e8`, `0aa3912`, `6115fca`.

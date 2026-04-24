@@ -107,6 +107,12 @@ export function RegistresCouverturePage() {
 
                 {/* Consommateurs + alertes */}
                 <div className="p-3">
+                  {/* Double compteur typologique (P9) */}
+                  {reg.doubleCompteur && (reg.doubleCompteur.nbServicesTechniques > 0 || reg.doubleCompteur.nbParcoursMetier > 0) && (
+                    <div className="mb-2 p-2 bg-teal/5 rounded border border-teal/20 text-[11px] text-teal-900">
+                      Consomme par <b>{reg.doubleCompteur.nbServicesTechniques}</b> service{reg.doubleCompteur.nbServicesTechniques > 1 ? 's' : ''} technique{reg.doubleCompteur.nbServicesTechniques > 1 ? 's' : ''} qui sert{reg.doubleCompteur.nbServicesTechniques > 1 ? 'ent' : ''} <b>{reg.doubleCompteur.nbParcoursMetier}</b> parcours metier.
+                    </div>
+                  )}
                   {reg.consommateurs?.length > 0 ? (
                     <>
                       <div className="text-[10px] uppercase text-gray-500 font-semibold mb-1">Consommateurs</div>
