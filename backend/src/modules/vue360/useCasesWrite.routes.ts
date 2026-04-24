@@ -44,9 +44,11 @@ export async function useCasesWriteRoutes(app: FastifyInstance) {
   app.post('/', { onRequest: [app.authenticate] }, async (req: any, reply: any) => {
     const { titre, resumeMetier, baseLegale, description, donneesEchangees,
             institutionCibleCode, axePrioritaire, impact, complexite,
-            stakeholders, registresAssocies } = req.body as any;
+            stakeholders, registresAssocies,
+            typologie, conventionLieeId, casUsagesTechniquesMobilises } = req.body as any;
 
     if (!titre) return reply.status(400).send({ error: 'Titre requis' });
+    const validTypologie = typologie && ['METIER', 'TECHNIQUE'].includes(typologie) ? typologie : 'TECHNIQUE';
 
     const user = req.user;
     // Résoudre le code de l'institution de l'utilisateur
@@ -75,9 +77,33 @@ export async function useCasesWriteRoutes(app: FastifyInstance) {
         complexite: complexite || 'MOYEN',
         statutImpl: 'IDENTIFIE',
         statutVueSection: 'DECLARE',
+        typologie: validTypologie,
+        conventionLieeId: (validTypologie === 'TECHNIQUE' && conventionLieeId) ? conventionLieeId : null,
         dateIdentification: new Date(),
       },
     });
+
+    // Si METIER et CU techniques mobilises : creer les RelationCasUsage
+    if (validTypologie === 'METIER' && Array.isArray(casUsagesTechniquesMobilises)) {
+      for (const tid of casUsagesTechniquesMobilises) {
+        if (!tid) continue;
+        const tech = await app.prisma.casUsageMVP.findUnique({
+          where: { id: tid }, select: { typologie: true },
+        });
+        if (tech && tech.typologie === 'TECHNIQUE') {
+          try {
+            await app.prisma.relationCasUsage.create({
+              data: {
+                casUsageMetierId: cu.id,
+                casUsageTechniqueId: tid,
+                obligatoire: true,
+                createdBy: user.id,
+              },
+            });
+          } catch {}
+        }
+      }
+    }
 
     // Stakeholder INITIATEUR automatique
     if (user.institutionId) {
