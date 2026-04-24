@@ -35,6 +35,7 @@ model User {
 
   // Vue 360° — relations inverses
   stakeholdersAjoutes      UseCaseStakeholder[]    @relation("StakeholderAjoute")
+  stakeholdersRetires      UseCaseStakeholder[]    @relation("StakeholderRetire")
   consultationsOuvertes    UseCaseConsultation[]   @relation("ConsultationOuvertePar")
   feedbacksAuteur          UseCaseFeedback[]       @relation("FeedbackAuteur")
   statusHistoryAuteur      UseCaseStatusHistory[]  @relation("StatusHistoryAuteur")
@@ -1027,27 +1028,40 @@ model DemandeInterop {
 
 /// Partie prenante formellement désignée d'un cas d'usage
 model UseCaseStakeholder {
-  id             String         @id @default(cuid())
-  casUsageId     String
-  institutionId  String
-  role           UseCaseRole
-  autoSaisine    Boolean        @default(false)
-  dateAjout      DateTime       @default(now())
-  ajoutePar      String?
-  actif          Boolean        @default(true)
-  dateRetrait    DateTime?
-  motifRetrait   String?        @db.Text
+  id                 String         @id @default(cuid())
+  casUsageId         String
+  institutionId      String
+  role               UseCaseRole
+  autoSaisine        Boolean        @default(false)
+  motifAutoSaisine   String?        @db.Text
+  typeConcernement   TypeConcernement?
+  dateAjout          DateTime       @default(now())
+  ajoutePar          String?
+  actif              Boolean        @default(true)
+  dateRetrait        DateTime?
+  motifRetrait       String?        @db.Text
+  retireParUserId    String?
+  evictionParDU      Boolean        @default(false)
+  evictionMotif      String?        @db.Text
 
-  casUsage       CasUsageMVP    @relation(fields: [casUsageId], references: [id], onDelete: Cascade)
-  institution    Institution    @relation(fields: [institutionId], references: [id])
-  ajouteParUser  User?          @relation("StakeholderAjoute", fields: [ajoutePar], references: [id])
-  consultations  UseCaseConsultation[]
-  feedbacks      UseCaseFeedback[]
+  casUsage           CasUsageMVP    @relation(fields: [casUsageId], references: [id], onDelete: Cascade)
+  institution        Institution    @relation(fields: [institutionId], references: [id])
+  ajouteParUser      User?          @relation("StakeholderAjoute", fields: [ajoutePar], references: [id])
+  retireParUser      User?          @relation("StakeholderRetire", fields: [retireParUserId], references: [id])
+  consultations      UseCaseConsultation[]
+  feedbacks          UseCaseFeedback[]
 
   @@unique([casUsageId, institutionId, role])
   @@index([institutionId, role, actif])
   @@index([casUsageId, actif])
   @@map("use_case_stakeholder")
+}
+
+enum TypeConcernement {
+  DONNEES_DETENUES
+  PROCESSUS_IMPACTE
+  GOUVERNANCE_TRANSVERSE
+  AUTRE
 }
 
 /// Consultation : demande d'avis adressée à une partie prenante

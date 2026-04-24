@@ -34,6 +34,26 @@ export const ROLE_LABELS: Record<string, string> = {
   PARTIE_PRENANTE: 'Partie prenante',
 };
 
+export const TYPE_CONCERNEMENT_OPTIONS = [
+  { value: 'DONNEES_DETENUES',      label: 'Mon institution detient ou produit les donnees concernees' },
+  { value: 'PROCESSUS_IMPACTE',     label: 'Un processus metier de mon institution est directement impacte' },
+  { value: 'GOUVERNANCE_TRANSVERSE', label: 'Gouvernance transverse ou responsabilite de coordination' },
+  { value: 'AUTRE',                 label: 'Autre motif (a preciser dans la motivation)' },
+];
+
+export const TYPE_CONCERNEMENT_LABELS: Record<string, string> = {
+  DONNEES_DETENUES: 'Donnees detenues',
+  PROCESSUS_IMPACTE: 'Processus impacte',
+  GOUVERNANCE_TRANSVERSE: 'Gouvernance transverse',
+  AUTRE: 'Autre',
+};
+
+// Statuts ou l'amendement d'avis n'est plus recevable (cas d'usage deja fige)
+export const STATUTS_NON_AMENDABLES = new Set([
+  'QUALIFIE', 'PRIORISE', 'FINANCEMENT_OK', 'CONVENTIONNE',
+  'EN_PRODUCTION_360', 'SUSPENDU_360', 'RETIRE',
+]);
+
 export const FEEDBACK_TYPE_STYLES: Record<string, { bg: string; icon: string }> = {
   VALIDATION:         { bg: 'bg-teal/15 text-teal',      icon: '✓' },
   RESERVE:            { bg: 'bg-red-100 text-red-700',    icon: '⚠' },

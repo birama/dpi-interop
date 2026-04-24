@@ -105,7 +105,11 @@ export function UseCaseDetailPage() {
           {/* Grid : Stakeholders + Timeline */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
             <div className="lg:col-span-2">
-              <StakeholdersTable stakeholders={cu.stakeholders360 || []} />
+              <StakeholdersTable
+                casUsageId={cu.id}
+                stakeholders={cu.stakeholders360 || []}
+                onChanged={() => refetch()}
+              />
             </div>
             <div>
               <TransitionsTimeline history={cu.statusHistory || []} />
@@ -118,7 +122,9 @@ export function UseCaseDetailPage() {
           {/* Fil d'avis formels */}
           <FeedbacksFeed
             stakeholders={cu.stakeholders360 || []}
+            casUsage={{ id: cu.id, code: cu.code, titre: cu.titre, statutVueSection: cu.statutVueSection }}
             onGiveFeedback={myConsultationId ? openModal : undefined}
+            onAmended={() => refetch()}
           />
 
           {/* Specs techniques (accordion) */}

@@ -307,7 +307,7 @@ export async function useCasesWriteRoutes(app: FastifyInstance) {
   // =========================================================================
   app.post('/:id/stakeholders', { onRequest: [app.authenticate] }, async (req: any, reply: any) => {
     const { id } = req.params;
-    const { institutionId, role } = req.body as any;
+    const { institutionId, role, motifAutoSaisine, typeConcernement } = req.body as any;
     const user = req.user;
 
     if (!institutionId || !role) return reply.status(400).send({ error: 'institutionId et role requis' });
@@ -318,22 +318,48 @@ export async function useCasesWriteRoutes(app: FastifyInstance) {
     // Auto-saisine : l'utilisateur ajoute sa propre institution
     const autoSaisine = institutionId === user.institutionId;
 
-    // Vérifier unicité
+    // Validation : motif obligatoire pour auto-saisine (min 50 car) + typologie
+    if (autoSaisine) {
+      if (!motifAutoSaisine || motifAutoSaisine.trim().length < 50) {
+        return reply.status(400).send({ error: 'Un motif d\'au moins 50 caractères est requis pour l\'auto-saisine.' });
+      }
+      const validTypes = ['DONNEES_DETENUES', 'PROCESSUS_IMPACTE', 'GOUVERNANCE_TRANSVERSE', 'AUTRE'];
+      if (!typeConcernement || !validTypes.includes(typeConcernement)) {
+        return reply.status(400).send({ error: 'Un type de concernement valide est requis.' });
+      }
+    }
+
+    // Vérifier unicité + anti-réinscription après éviction DU
     const existing = await app.prisma.useCaseStakeholder.findUnique({
       where: { casUsageId_institutionId_role: { casUsageId: id, institutionId, role } },
     });
     if (existing && existing.actif) {
       return reply.status(409).send({ error: 'Ce stakeholder existe déjà avec ce rôle' });
     }
+    if (existing && existing.evictionParDU && autoSaisine) {
+      return reply.status(409).send({
+        error: 'Votre institution a été évincée de ce cas d\'usage par la Delivery Unit. Une nouvelle inscription nécessite l\'accord explicite de la DU.',
+      });
+    }
 
     const stakeholder = await app.prisma.useCaseStakeholder.upsert({
       where: { casUsageId_institutionId_role: { casUsageId: id, institutionId, role } },
-      update: { actif: true, dateRetrait: null, motifRetrait: null },
+      update: {
+        actif: true,
+        dateRetrait: null,
+        motifRetrait: null,
+        retireParUserId: null,
+        // Si eviction DU, seul un non-auto-saisine peut passer (= DU/initiateur reintegre manuellement)
+        ...(existing?.evictionParDU && !autoSaisine ? { evictionParDU: false, evictionMotif: null } : {}),
+        ...(autoSaisine ? { autoSaisine: true, motifAutoSaisine, typeConcernement } : {}),
+      },
       create: {
         casUsageId: id,
         institutionId,
         role,
         autoSaisine,
+        motifAutoSaisine: autoSaisine ? motifAutoSaisine : null,
+        typeConcernement: autoSaisine ? typeConcernement : null,
         ajoutePar: user.id,
       },
       include: { institution: { select: { id: true, code: true, nom: true } } },
@@ -366,7 +392,189 @@ export async function useCasesWriteRoutes(app: FastifyInstance) {
       }
     }
 
+    // Notification a l'initiateur en cas d'auto-saisine (principe de transparence)
+    if (autoSaisine && cu.institutionSourceCode) {
+      try {
+        const initInst = await app.prisma.institution.findUnique({
+          where: { code: cu.institutionSourceCode },
+          include: { users: { select: { id: true } } },
+        });
+        const motifAbrege = motifAutoSaisine.substring(0, 100) + (motifAutoSaisine.length > 100 ? '…' : '');
+        if (initInst) {
+          for (const u of initInst.users) {
+            await app.prisma.notification.create({
+              data: {
+                userId: u.id,
+                institutionId: initInst.id,
+                type: 'AUTO_SAISINE_RECUE',
+                titre: `Nouvelle partie prenante — ${cu.titre}`,
+                message: `${stakeholder.institution.code} s'est portée partie prenante. Motif : ${motifAbrege}`,
+                lienUrl: `/admin/cas-usage/${cu.id}`,
+                refType: 'CAS_USAGE',
+                refId: cu.id,
+              },
+            });
+          }
+        }
+      } catch {}
+    }
+
     return reply.status(201).send(stakeholder);
+  });
+
+  // =========================================================================
+  // POST /:id/stakeholders/:sid/withdraw — Retrait spontane par l'institution
+  // =========================================================================
+  app.post('/:id/stakeholders/:sid/withdraw', { onRequest: [app.authenticate] }, async (req: any, reply: any) => {
+    const { id, sid } = req.params;
+    const { motif } = req.body as any;
+    const user = req.user;
+
+    const sh = await app.prisma.useCaseStakeholder.findUnique({
+      where: { id: sid },
+      include: { institution: { select: { id: true, code: true, nom: true } }, feedbacks: { select: { id: true }, take: 1 }, casUsage: { select: { id: true, code: true, titre: true, institutionSourceCode: true } } },
+    });
+    if (!sh || sh.casUsageId !== id) return reply.status(404).send({ error: 'Partie prenante non trouvée' });
+
+    // Seul le proprietaire de l'institution peut se retirer, et seulement si auto-saisine
+    if (!user.institutionId || user.institutionId !== sh.institutionId) {
+      return reply.status(403).send({ error: 'Vous ne pouvez retirer que votre propre institution.' });
+    }
+    if (!sh.autoSaisine) {
+      return reply.status(403).send({ error: 'Seules les parties prenantes auto-saisies peuvent se retirer. Les institutions désignées doivent émettre un avis formel.' });
+    }
+    if (sh.feedbacks.length > 0) {
+      return reply.status(409).send({ error: 'Vous avez déjà émis un avis. Amendez-le plutôt que de vous retirer.' });
+    }
+    if (!sh.actif) {
+      return reply.status(409).send({ error: 'Cette partie prenante est déjà retirée.' });
+    }
+
+    const updated = await app.prisma.useCaseStakeholder.update({
+      where: { id: sid },
+      data: {
+        actif: false,
+        dateRetrait: new Date(),
+        motifRetrait: motif || null,
+        retireParUserId: user.id,
+      },
+    });
+
+    // Trace dans UseCaseStatusHistory (non inaltérable pour cette transition, mais journalisée)
+    try {
+      const userInst = await app.prisma.institution.findUnique({ where: { id: user.institutionId }, select: { nom: true } });
+      await app.prisma.useCaseStatusHistory.create({
+        data: {
+          casUsageId: id,
+          statusFrom: sh.casUsage ? undefined : null,
+          statusTo: 'DECLARE',  // pas de transition de statut du CU, juste une trace informative
+          motif: `Retrait volontaire — ${sh.institution.code}${motif ? ' — ' + motif.substring(0, 100) : ''}`,
+          auteurUserId: user.id,
+          auteurNom: user.email,
+          auteurInstitution: userInst?.nom || sh.institution.nom,
+        },
+      });
+    } catch {}
+
+    // Notification a l'initiateur
+    if (sh.casUsage?.institutionSourceCode) {
+      try {
+        const initInst = await app.prisma.institution.findUnique({
+          where: { code: sh.casUsage.institutionSourceCode },
+          include: { users: { select: { id: true } } },
+        });
+        if (initInst) {
+          for (const u of initInst.users) {
+            await app.prisma.notification.create({
+              data: {
+                userId: u.id,
+                institutionId: initInst.id,
+                type: 'STAKEHOLDER_WITHDRAWN',
+                titre: `Retrait — ${sh.casUsage.titre}`,
+                message: `${sh.institution.code} s'est retirée du cas d'usage${motif ? '. Motif : ' + motif.substring(0, 100) : '.'}`,
+                lienUrl: `/admin/cas-usage/${id}`,
+                refType: 'CAS_USAGE',
+                refId: id,
+              },
+            });
+          }
+        }
+      } catch {}
+    }
+
+    try { await app.prisma.auditLog.create({ data: { userId: user.id, userEmail: user.email, userRole: user.role, action: 'UPDATE', resource: 'stakeholder', resourceId: sid, resourceLabel: `retrait volontaire ${sh.institution.code}`, ipAddress: req.headers['x-forwarded-for']?.toString() || req.ip, userAgent: req.headers['user-agent'] } }); } catch {}
+
+    return reply.send(updated);
+  });
+
+  // =========================================================================
+  // DELETE /:id/stakeholders/:sid — Eviction DU (motivee, anti-reinscription)
+  // =========================================================================
+  app.delete('/:id/stakeholders/:sid', { onRequest: [app.authenticateAdmin] }, async (req: any, reply: any) => {
+    const { id, sid } = req.params;
+    const { motif } = req.body as any;
+    const user = req.user;
+
+    if (!motif || motif.trim().length < 50) {
+      return reply.status(400).send({ error: 'Un motif d\'éviction d\'au moins 50 caractères est obligatoire (principe du contradictoire).' });
+    }
+
+    const sh = await app.prisma.useCaseStakeholder.findUnique({
+      where: { id: sid },
+      include: { institution: { select: { id: true, code: true, nom: true, users: { select: { id: true } } } }, casUsage: { select: { id: true, code: true, titre: true } } },
+    });
+    if (!sh || sh.casUsageId !== id) return reply.status(404).send({ error: 'Partie prenante non trouvée' });
+    if (sh.role === 'INITIATEUR') {
+      return reply.status(403).send({ error: 'L\'initiateur ne peut pas être évincé. Utilisez une transition de statut (SUSPENDU / RETIRE).' });
+    }
+
+    const updated = await app.prisma.useCaseStakeholder.update({
+      where: { id: sid },
+      data: {
+        actif: false,
+        dateRetrait: new Date(),
+        evictionParDU: true,
+        evictionMotif: motif,
+        retireParUserId: user.id,
+      },
+    });
+
+    // Notification motivee a l'institution evincee (principe contradictoire)
+    for (const u of sh.institution.users) {
+      try {
+        await app.prisma.notification.create({
+          data: {
+            userId: u.id,
+            institutionId: sh.institution.id,
+            type: 'STAKEHOLDER_EVICTED',
+            titre: `Éviction — ${sh.casUsage.titre}`,
+            message: `La Delivery Unit a retiré votre institution de ce cas d'usage. Motif : ${motif.substring(0, 200)}${motif.length > 200 ? '…' : ''}`,
+            lienUrl: `/admin/cas-usage/${id}`,
+            refType: 'CAS_USAGE',
+            refId: id,
+          },
+        });
+      } catch {}
+    }
+
+    // Trace dans status history (inalterable)
+    try {
+      await app.prisma.useCaseStatusHistory.create({
+        data: {
+          casUsageId: id,
+          statusFrom: undefined,
+          statusTo: 'DECLARE',
+          motif: `Éviction DU — ${sh.institution.code} — ${motif.substring(0, 150)}`,
+          auteurUserId: user.id,
+          auteurNom: user.email,
+          auteurInstitution: 'SENUM SA',
+        },
+      });
+    } catch {}
+
+    try { await app.prisma.auditLog.create({ data: { userId: user.id, userEmail: user.email, userRole: user.role, action: 'DELETE', resource: 'stakeholder', resourceId: sid, resourceLabel: `éviction DU ${sh.institution.code}`, ipAddress: req.headers['x-forwarded-for']?.toString() || req.ip, userAgent: req.headers['user-agent'] } }); } catch {}
+
+    return reply.send(updated);
   });
 }
 

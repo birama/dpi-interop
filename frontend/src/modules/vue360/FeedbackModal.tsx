@@ -18,7 +18,13 @@ const FEEDBACK_TYPES = [
 const MIN_MOTIVATION_TYPES = ['RESERVE', 'REFUS_MOTIVE', 'QUESTION'];
 
 interface Props {
-  consultationId: string;
+  // Mode 'new' : consultation en attente, POST /consultations/:id/feedback
+  // Mode 'amendment' : amendement d'un avis deja emis, PATCH /feedback/:id/amend
+  mode?: 'new' | 'amendment';
+  consultationId?: string;         // requis si mode='new'
+  originalFeedbackId?: string;     // requis si mode='amendment'
+  initialType?: string;            // pour pre-remplir en mode amendement
+  initialMotivation?: string;
   casUsageCode: string;
   casUsageTitre: string;
   casUsageStatut: string;
@@ -27,23 +33,49 @@ interface Props {
   onSubmitted: () => void;
 }
 
-export function FeedbackModal({ consultationId, casUsageCode, casUsageTitre, casUsageStatut, stakeholderRole, onClose, onSubmitted }: Props) {
+export function FeedbackModal({
+  mode = 'new',
+  consultationId,
+  originalFeedbackId,
+  initialType,
+  initialMotivation,
+  casUsageCode,
+  casUsageTitre,
+  casUsageStatut,
+  stakeholderRole,
+  onClose,
+  onSubmitted,
+}: Props) {
   const { user } = useAuthStore();
   const { toast } = useToast();
   const qc = useQueryClient();
-  const [type, setType] = useState('VALIDATION');
-  const [motivation, setMotivation] = useState('');
+  const [type, setType] = useState(initialType || 'VALIDATION');
+  const [motivation, setMotivation] = useState(initialMotivation || '');
 
+  const isAmendment = mode === 'amendment';
   const sc = VUE360_STATUT_COLORS[casUsageStatut];
-  const needsMinLength = MIN_MOTIVATION_TYPES.includes(type);
-  const isValid = motivation.length >= (needsMinLength ? 50 : 1);
+  const needsMinLength = MIN_MOTIVATION_TYPES.includes(type) || isAmendment;
+  const minChars = needsMinLength ? 50 : 1;
+  const isValid = motivation.length >= minChars;
 
   const submitMut = useMutation({
-    mutationFn: () => api.post(`/consultations/${consultationId}/feedback`, { type, motivation }),
+    mutationFn: () => {
+      if (isAmendment) {
+        if (!originalFeedbackId) throw new Error('originalFeedbackId requis en mode amendement');
+        return api.patch(`/feedback/${originalFeedbackId}/amend`, { type, motivation });
+      }
+      if (!consultationId) throw new Error('consultationId requis en mode new');
+      return api.post(`/consultations/${consultationId}/feedback`, { type, motivation });
+    },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['vue360-use-case-detail'] });
       qc.invalidateQueries({ queryKey: ['vue360-incoming'] });
-      toast({ title: 'Avis soumis', description: `Votre avis ${type} a ete enregistre.` });
+      toast({
+        title: isAmendment ? 'Amendement soumis' : 'Avis soumis',
+        description: isAmendment
+          ? 'Votre amendement a ete enregistre — l\'avis original reste inaltere.'
+          : `Votre avis ${type} a ete enregistre.`,
+      });
       onSubmitted();
     },
     onError: (e: any) => {
@@ -63,9 +95,21 @@ export function FeedbackModal({ consultationId, casUsageCode, casUsageTitre, cas
               <span className={cn('inline-flex text-[10px] font-bold px-1.5 py-0.5 rounded border', ROLE_BADGE_STYLES[stakeholderRole])}>
                 {ROLE_LABELS[stakeholderRole]}
               </span>
+              {isAmendment && (
+                <span className="inline-flex items-center text-[10px] font-semibold px-2 py-0.5 rounded bg-gold-50 text-gold">
+                  Amendement
+                </span>
+              )}
             </div>
-            <h3 className="text-lg font-bold text-navy">Donner mon avis</h3>
+            <h3 className="text-lg font-bold text-navy">
+              {isAmendment ? 'Amender mon avis' : 'Donner mon avis'}
+            </h3>
             <p className="text-xs text-gray-500 mt-0.5">{casUsageTitre}</p>
+            {isAmendment && (
+              <p className="text-[11px] text-gray-500 italic mt-1">
+                L'avis original est conserve et reste visible — votre amendement sera archive a sa suite.
+              </p>
+            )}
           </div>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
             <X className="w-5 h-5" />
@@ -96,15 +140,19 @@ export function FeedbackModal({ consultationId, casUsageCode, casUsageTitre, cas
           {/* Motivation */}
           <div>
             <label className="block text-xs font-semibold text-gray-700 mb-1 uppercase tracking-wide">
-              Motivation <span className="text-red-500">*</span>
-              {needsMinLength && <span className="text-[10px] text-gray-400 font-normal normal-case"> · min. 50 caracteres pour {type.replace('_', ' ').toLowerCase()}</span>}
+              {isAmendment ? 'Motivation de l\'amendement' : 'Motivation'} <span className="text-red-500">*</span>
+              {needsMinLength && <span className="text-[10px] text-gray-400 font-normal normal-case"> · min. 50 caracteres</span>}
             </label>
             <textarea
               rows={5}
               value={motivation}
               onChange={e => setMotivation(e.target.value)}
               className="w-full border border-gray-300 rounded-md p-3 text-sm focus:border-teal focus:ring-1 focus:ring-teal outline-none"
-              placeholder="Exposer clairement la position institutionnelle, les conditions eventuelles et les points d'attention..."
+              placeholder={
+                isAmendment
+                  ? 'Expliquez clairement ce qui evolue dans votre position : element nouveau, clarification, changement de circonstances...'
+                  : 'Exposer clairement la position institutionnelle, les conditions eventuelles et les points d\'attention...'
+              }
             />
             <div className={cn('text-right text-[10px] mt-1', needsMinLength && motivation.length < 50 ? 'text-red-500' : 'text-gray-400')}>
               {motivation.length} caracteres {needsMinLength && motivation.length < 50 && `(min. 50)`}
@@ -117,7 +165,11 @@ export function FeedbackModal({ consultationId, casUsageCode, casUsageTitre, cas
             <div className="text-xs text-gray-700">
               <b>{user?.email}</b> · {user?.institution?.nom || 'Institution'}
             </div>
-            <div className="text-[10px] text-gray-400 mt-0.5">Cet avis sera horodate et fige des soumission</div>
+            <div className="text-[10px] text-gray-400 mt-0.5">
+              {isAmendment
+                ? 'Cet amendement sera horodate et fige des soumission. L\'avis original demeure inaltere.'
+                : 'Cet avis sera horodate et fige des soumission'}
+            </div>
           </div>
 
           {/* Actions */}
@@ -134,7 +186,7 @@ export function FeedbackModal({ consultationId, casUsageCode, casUsageTitre, cas
               )}
             >
               {submitMut.isPending && <Loader2 className="w-3 h-3 animate-spin" />}
-              Soumettre l'avis formel
+              {isAmendment ? 'Soumettre l\'amendement' : 'Soumettre l\'avis formel'}
             </button>
           </div>
         </div>
