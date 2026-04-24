@@ -1,11 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/store/auth';
 import {
-  LayoutDashboard,
-  FileText,
-  Building2,
-  BarChart3,
   LogOut,
   Menu,
   X,
@@ -13,101 +9,15 @@ import {
   User,
   PanelLeftClose,
   PanelLeft,
-  Grid3X3,
-  ClipboardList,
-  Radar,
-  BookOpen,
-  Gauge,
-  FileCheck,
-  GitBranch,
-  Network,
-  Database,
-  Map as MapIcon,
-  Wallet,
-  ClipboardCheck,
-  Users,
-  Upload,
-  Shield,
-  MessageSquare,
   Search,
-  Scale,
-  Layers,
-  ListChecks,
-  FolderOpen,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { CommandPalette } from '@/components/CommandPalette';
 import { Breadcrumb } from '@/components/Breadcrumb';
 import { NotificationsBell } from '@/modules/vue360/notifications/NotificationsBell';
-
-type NavGroup = {
-  label: string;
-  items: { name: string; href: string; icon: any; adminOnly?: boolean; institutionOnly?: boolean }[];
-};
-
-const navGroups: NavGroup[] = [
-  {
-    label: 'Pilotage',
-    items: [
-      { name: 'Cockpit DPI', href: '/admin/cockpit', icon: Gauge, adminOnly: true },
-      { name: 'Tableau de bord', href: '/dashboard', icon: LayoutDashboard },
-    ],
-  },
-  {
-    label: 'Interoperabilite',
-    items: [
-      { name: 'Qualification', href: '/admin/qualification', icon: ClipboardCheck, adminOnly: true },
-      { name: 'Roadmap MVP', href: '/admin/roadmap', icon: MapIcon, adminOnly: true },
-      { name: 'Pipeline X-Road', href: '/admin/xroad-pipeline', icon: GitBranch, adminOnly: true },
-      { name: 'Graphe flux', href: '/admin/graphe', icon: Network, adminOnly: true },
-      { name: 'Matrice flux', href: '/matrice', icon: Grid3X3, adminOnly: true },
-    ],
-  },
-  {
-    label: 'Gouvernance',
-    items: [
-      { name: 'Conventions', href: '/admin/conventions', icon: FileCheck, adminOnly: true },
-      { name: 'Registres', href: '/admin/registres-nationaux', icon: Database, adminOnly: true },
-      { name: 'Couverture referentiels', href: '/registres/couverture', icon: Layers },
-      { name: 'Catalogue DPI', href: '/catalogue', icon: BookOpen },
-      { name: 'Documents', href: '/documents', icon: FileText },
-    ],
-  },
-  {
-    label: 'Gestion',
-    items: [
-      { name: 'Institutions', href: '/institutions', icon: Building2, adminOnly: true },
-      { name: 'Utilisateurs', href: '/admin/utilisateurs', icon: Users, adminOnly: true },
-      { name: 'Financements', href: '/admin/financements', icon: Wallet, adminOnly: true },
-    ],
-  },
-  {
-    label: 'Arbitrage DU',
-    items: [
-      { name: 'File d\'arbitrage', href: '/du/arbitrage', icon: Scale, adminOnly: true },
-    ],
-  },
-  {
-    label: 'Outils',
-    items: [
-      { name: 'Import Word', href: '/admin/import', icon: Upload, adminOnly: true },
-      { name: 'Rapports', href: '/reports', icon: BarChart3, adminOnly: true },
-      { name: 'Radar maturite', href: '/maturite', icon: Radar, adminOnly: true },
-      { name: 'Audit & Sessions', href: '/admin/audit', icon: Shield, adminOnly: true },
-      { name: 'Demandes', href: '/admin/demandes', icon: MessageSquare, adminOnly: true },
-    ],
-  },
-  {
-    label: 'Mon espace',
-    items: [
-      { name: 'Mes cas d\'usage', href: '/mes-cas-usage', icon: ListChecks },
-      { name: 'Catalogue des propositions', href: '/catalogue-propositions', icon: FolderOpen },
-      { name: 'Questionnaire', href: '/questionnaire', icon: FileText, institutionOnly: true },
-      { name: 'Soumissions', href: '/submissions', icon: ClipboardList, institutionOnly: true },
-      { name: 'Mes demandes', href: '/institution/demandes', icon: MessageSquare, institutionOnly: true },
-    ],
-  },
-];
+import { useQuery } from '@tanstack/react-query';
+import { api } from '@/services/api';
+import { MENU_SECTIONS, MENU_TOP, findSectionForPath, type MenuItem } from '@/config/menuConfig';
 
 export function DashboardLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -122,16 +32,56 @@ export function DashboardLayout() {
     navigate('/login');
   };
 
-  const filteredGroups = navGroups
-    .map(group => ({
-      ...group,
-      items: group.items.filter(item => {
-        if (item.adminOnly && user?.role !== 'ADMIN') return false;
-        if (item.institutionOnly && user?.role === 'ADMIN') return false;
-        return true;
-      }),
+  // Filtrage des rubriques selon le role
+  const visibleSections = MENU_SECTIONS
+    .filter(s => user?.role && s.roles.includes(user.role as 'ADMIN' | 'INSTITUTION'))
+    .map(s => ({
+      ...s,
+      items: s.items.filter(i => !i.roles || (user?.role && i.roles.includes(user.role as 'ADMIN' | 'INSTITUTION'))),
     }))
-    .filter(group => group.items.length > 0);
+    .filter(s => s.items.length > 0);
+
+  // Section contenant la route active : ouverte par defaut
+  const activeSectionId = findSectionForPath(location.pathname);
+  const [openSections, setOpenSections] = useState<Record<string, boolean>>(() => {
+    const init: Record<string, boolean> = {};
+    for (const s of MENU_SECTIONS) init[s.id] = s.id === activeSectionId;
+    return init;
+  });
+  // Re-synchronise quand la route change (si l'user clique sur un lien d'une autre rubrique)
+  useEffect(() => {
+    if (activeSectionId) {
+      setOpenSections(prev => prev[activeSectionId] ? prev : { ...prev, [activeSectionId]: true });
+    }
+  }, [activeSectionId]);
+
+  const toggleSection = (id: string) => setOpenSections(prev => ({ ...prev, [id]: !prev[id] }));
+
+  // Compteurs contextuels (R6) — chargement paresseux
+  const { data: involvedData } = useQuery({
+    queryKey: ['menu-counter-mes-cas-usage'],
+    queryFn: () => api.get('/me/use-cases/involved').then((r: any) => r.data),
+    enabled: !!user?.institutionId,
+    staleTime: 60000,
+  });
+  const { data: duData } = useQuery({
+    queryKey: ['menu-counter-du'],
+    queryFn: () => api.get('/du/arbitrage').then((r: any) => r.data),
+    enabled: user?.role === 'ADMIN',
+    staleTime: 60000,
+  });
+  const { data: adoptionRequestsData } = useQuery({
+    queryKey: ['menu-counter-adoption-requests'],
+    queryFn: () => api.get('/catalogue/adoption-requests', { params: { status: 'EN_ATTENTE' } }).then((r: any) => r.data),
+    enabled: user?.role === 'ADMIN',
+    staleTime: 60000,
+  });
+
+  const counters: Record<string, { value: number; color: 'amber' | 'red' | 'teal' }> = {
+    mesCasUsage: { value: (involvedData?.length || 0), color: 'teal' },
+    desaccords: { value: (duData?.desaccords?.length || 0), color: 'amber' },
+    adoptionRequestsEnAttente: { value: (adoptionRequestsData?.length || 0), color: 'red' },
+  };
 
   const sidebarWidth = sidebarCollapsed ? 'w-16' : 'w-64';
 
@@ -191,45 +141,110 @@ export function DashboardLayout() {
           </button>
         </div>
 
-        {/* Navigation with groups */}
+        {/* Navigation — 5 rubriques collapsibles + Tableau de bord en tete */}
         <nav className="flex-1 px-2 py-3 space-y-1 overflow-y-auto">
-          {filteredGroups.map((group, gi) => (
-            <div key={group.label}>
-              {!sidebarCollapsed && gi > 0 && (
-                <div className="px-3 pt-3 pb-1">
-                  <p className="text-[9px] font-semibold text-gray-500 uppercase tracking-wider">{group.label}</p>
+          {/* Lien tableau de bord en tete */}
+          {(() => {
+            const isActive = location.pathname === MENU_TOP.href;
+            const Icon = MENU_TOP.icon;
+            return (
+              <Link
+                to={MENU_TOP.href}
+                onClick={() => setSidebarOpen(false)}
+                title={sidebarCollapsed ? MENU_TOP.name : undefined}
+                className={cn(
+                  'flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors mb-2',
+                  isActive ? 'bg-teal text-white' : 'text-gray-300 hover:bg-navy-light hover:text-white',
+                  sidebarCollapsed && 'justify-center px-2'
+                )}
+              >
+                <Icon className={cn('w-5 h-5 flex-shrink-0', !sidebarCollapsed && 'mr-3', isActive ? 'text-white' : 'text-gray-400')} />
+                {!sidebarCollapsed && MENU_TOP.name}
+              </Link>
+            );
+          })()}
+
+          {/* Rubriques collapsibles */}
+          {visibleSections.map(section => {
+            const isOpen = !!openSections[section.id];
+            const SectionIcon = section.icon;
+            // En mode collapse, on ne rend pas les entetes de section — juste la liste avec separateur
+            if (sidebarCollapsed) {
+              return (
+                <div key={section.id}>
+                  <div className="border-t border-navy-light my-2 mx-2" />
+                  {section.items.map((item: MenuItem) => {
+                    const isActive = location.pathname === item.href
+                      || (item.href !== '/dashboard' && location.pathname.startsWith(item.href + '/'));
+                    const Icon = item.icon;
+                    return (
+                      <Link
+                        key={item.name}
+                        to={item.href}
+                        onClick={() => setSidebarOpen(false)}
+                        title={item.name}
+                        className={cn(
+                          'flex items-center justify-center px-2 py-2 text-sm font-medium rounded-lg transition-colors',
+                          isActive ? 'bg-teal text-white' : 'text-gray-300 hover:bg-navy-light hover:text-white'
+                        )}
+                      >
+                        <Icon className={cn('w-5 h-5 flex-shrink-0', isActive ? 'text-white' : 'text-gray-400')} />
+                      </Link>
+                    );
+                  })}
                 </div>
-              )}
-              {sidebarCollapsed && gi > 0 && <div className="border-t border-navy-light my-2 mx-2" />}
-              {group.items.map((item) => {
-                const isActive = location.pathname === item.href || (item.href !== '/dashboard' && location.pathname.startsWith(item.href));
-                return (
-                  <Link
-                    key={item.name}
-                    to={item.href}
-                    className={cn(
-                      'flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors',
-                      isActive
-                        ? 'bg-teal text-white'
-                        : 'text-gray-300 hover:bg-navy-light hover:text-white',
-                      sidebarCollapsed && 'justify-center px-2'
-                    )}
-                    onClick={() => setSidebarOpen(false)}
-                    title={sidebarCollapsed ? item.name : undefined}
-                  >
-                    <item.icon
-                      className={cn(
-                        'w-5 h-5 flex-shrink-0',
-                        !sidebarCollapsed && 'mr-3',
-                        isActive ? 'text-white' : 'text-gray-400'
-                      )}
-                    />
-                    {!sidebarCollapsed && item.name}
-                  </Link>
-                );
-              })}
-            </div>
-          ))}
+              );
+            }
+            return (
+              <div key={section.id} className="mt-1">
+                <button
+                  onClick={() => toggleSection(section.id)}
+                  className="w-full flex items-center justify-between px-3 py-1.5 text-[10px] font-semibold text-gray-400 uppercase tracking-wider hover:text-gray-200"
+                >
+                  <span className="flex items-center gap-2">
+                    <SectionIcon className="w-3.5 h-3.5" />
+                    {section.label}
+                  </span>
+                  <ChevronDown className={cn('w-3 h-3 transition-transform', isOpen ? 'rotate-0' : '-rotate-90')} />
+                </button>
+                {isOpen && (
+                  <div className="space-y-0.5">
+                    {section.items.map((item: MenuItem) => {
+                      const isActive = location.pathname === item.href
+                        || (item.href !== '/dashboard' && location.pathname.startsWith(item.href + '/'));
+                      const Icon = item.icon;
+                      const counter = item.counter ? counters[item.counter] : null;
+                      const showCounter = counter && counter.value > 0;
+                      return (
+                        <Link
+                          key={item.name}
+                          to={item.href}
+                          onClick={() => setSidebarOpen(false)}
+                          className={cn(
+                            'flex items-center gap-2 px-3 pl-5 py-1.5 text-xs font-medium rounded-md transition-colors',
+                            isActive ? 'bg-teal text-white' : 'text-gray-300 hover:bg-navy-light hover:text-white'
+                          )}
+                        >
+                          <Icon className={cn('w-4 h-4 flex-shrink-0', isActive ? 'text-white' : 'text-gray-400')} />
+                          <span className="flex-1 min-w-0 truncate">{item.name}</span>
+                          {showCounter && (
+                            <span className={cn(
+                              'inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full text-[10px] font-bold',
+                              counter.color === 'red' && 'bg-red-500 text-white',
+                              counter.color === 'amber' && 'bg-amber-500 text-white',
+                              counter.color === 'teal' && 'bg-teal/70 text-white'
+                            )}>
+                              {counter.value > 99 ? '99+' : counter.value}
+                            </span>
+                          )}
+                        </Link>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </nav>
 
         {/* User info */}

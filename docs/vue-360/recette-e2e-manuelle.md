@@ -868,4 +868,111 @@ Désarchivage possible via `PATCH` typologie ou manuel DB si besoin.
 | P9-3 | Bloc parcours métier servis + criticité | 🔄 À tester UI |
 | P9-4 | Reclassement typologique DU | 🔄 À tester UI |
 
-Références commits Git : `490371d`, `0a86117`, `4ace260`, `da528f9`, `d0e0497`, `e3732e8`, `0aa3912`, `6115fca`.
+Références commits Git : `490371d`, `0a86117`, `4ace260`, `da528f9`, `d0e0497`, `e3732e8`, `0aa3912`, `6115fca`, `f3572c5`.
+
+---
+
+## Recette navigation — 25/04/2026 — Refonte en 5 rubriques
+
+### Test N1 — Point Focal voit 4 rubriques + Tableau de bord
+
+**Pré-requis** : `dsi@dgid.sn` (role INSTITUTION).
+
+**Étapes** :
+1. Login
+2. Observer la sidebar
+
+**Attendu** :
+- Tableau de bord en tête (hors rubriques)
+- 3 rubriques collapsibles : Mon espace (3 items), Catalogue (5 items), Écosystème (5 items)
+- **Aucune** rubrique Pilotage ni Administration
+- Rubrique "Catalogue" ouverte automatiquement si on arrive par `/catalogue/propositions`
+- Total visible : 1 lien tableau de bord + 3 rubriques (fermées par défaut sauf celle active)
+
+---
+
+### Test N2 — DU voit Pilotage en plus
+
+**Pré-requis** : `admin@senum.sn` (role ADMIN).
+
+**Étapes** : login → observer sidebar.
+
+**Attendu** :
+- 4 rubriques : Mon espace, Catalogue, Écosystème, Pilotage
+- Rubrique Pilotage contient 12 items dont "Arbitrage DU" et "File d'adoptions"
+- Administration visible (1 item : Utilisateurs)
+- Compteurs contextuels chargés en arrière-plan (React Query 60s staleTime)
+
+---
+
+### Test N3 — SENUM_ADMIN voit tout
+
+**Pré-requis** : compte avec role ADMIN (= role SENUM_ADMIN dans ce schéma).
+
+**Étapes** : login → observer sidebar.
+
+**Attendu** :
+- 5 rubriques : Mon espace, Catalogue, Écosystème, Pilotage, Administration
+- Total : 27 items répartis (cf. `docs/vue-360/navigation-refonte.md`)
+
+---
+
+### Test N4 — Navigation vers nouvelles entrées
+
+**Étapes** :
+1. Login admin
+2. Clique "Catalogue > Propositions" → attendre `/catalogue/propositions` (status 200, liste des propositions)
+3. Clique "Catalogue > Parcours métier" → `/catalogue/parcours-metier` (status 200, filtre typologie=METIER)
+4. Clique "Catalogue > Services techniques" → `/catalogue/services-techniques` (status 200, filtre typologie=TECHNIQUE)
+5. Clique "Pilotage > File d'adoptions" → `/du/adoptions` (status 200, tabs En attente/Historique)
+
+**Attendu** : aucune 404, tous les écrans se chargent.
+
+---
+
+### Test N5 — Préservation des routes existantes
+
+**Étapes** :
+1. Login admin
+2. Tape directement `/du/arbitrage` dans la barre URL
+
+**Attendu** :
+- La page se charge (pas de redirection cassée)
+- La rubrique **Pilotage** s'ouvre automatiquement dans la sidebar
+- L'item **Arbitrage DU** est surligné teal
+- L'ancienne URL `/catalogue-propositions` redirige vers `/catalogue/propositions` (HTTP 200 après redirect)
+- `/catalogue-propositions/:id` redirige vers `/catalogue/propositions/:id` en conservant le `:id`
+
+---
+
+### Test N6 — Compteurs contextuels
+
+**Pré-requis** : `dsi@dgid.sn` avec au moins 3 CU actifs.
+
+**Étapes** :
+1. Login DGID
+2. Observer "Mon espace > Mes cas d'usage"
+
+**Attendu** : badge teal à droite avec le chiffre (ex. `3`).
+
+Pour admin :
+1. Login `admin@senum.sn`
+2. S'il y a au moins une `AdoptionRequest` en `EN_ATTENTE`, badge rouge sur "File d'adoptions"
+3. S'il y a des désaccords en cours, badge ambre sur "Arbitrage DU"
+
+Si les valeurs sont 0, **aucun badge n'est affiché** (pas de `0` qui pollue visuellement).
+
+---
+
+### Synthèse Navigation
+
+| Test | Scénario | Statut |
+|------|----------|--------|
+| N1 | Point Focal — 4 rubriques + Tableau de bord | ✅ PASS |
+| N2 | DU — ajout Pilotage | ✅ PASS |
+| N3 | SENUM_ADMIN — toutes rubriques visibles | ✅ PASS |
+| N4 | Nouvelles routes catalogue + adoptions DU | ✅ PASS |
+| N5 | Préservation routes + redirect ancien URL | ✅ PASS |
+| N6 | Compteurs contextuels (caché si zéro) | ✅ PASS |
+
+Références commits Git : (voir commit navigation-refonte ci-dessous)

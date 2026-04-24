@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useParams } from 'react-router-dom';
 import { Toaster } from '@/components/ui/toaster';
 import { useAuthStore } from '@/store/auth';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
@@ -38,6 +38,8 @@ import { DuArbitragePage } from '@/modules/vue360/du/DuArbitragePage';
 import { RegistresCouverturePage } from '@/modules/vue360/registres/RegistresCouverturePage';
 import { CataloguePropositionsPage } from '@/modules/vue360/catalogue/CataloguePropositionsPage';
 import { PropositionDetailPage } from '@/modules/vue360/catalogue/PropositionDetailPage';
+import { ParcoursMetierPage, ServicesTechniquesPage } from '@/modules/vue360/catalogue/TypologieListPage';
+import { AdoptionRequestsPage } from '@/modules/vue360/du/AdoptionRequestsPage';
 import { DocumentsPage } from '@/pages/DocumentsPage';
 import { NotFoundPage } from '@/pages/NotFoundPage';
 
@@ -58,6 +60,13 @@ function ProtectedRoute({ children, adminOnly = false }: { children: React.React
   }
 
   return <>{children}</>;
+}
+
+// Redirect wrapper conservant le :id dans l'URL lors du rename
+// /catalogue-propositions/:id -> /catalogue/propositions/:id
+function CataloguePropositionsRedirect() {
+  const { id } = useParams<{ id: string }>();
+  return <Navigate to={`/catalogue/propositions/${id}`} replace />;
 }
 
 function App() {
@@ -284,8 +293,9 @@ function App() {
               </ProtectedRoute>
             }
           />
+          {/* Catalogue (refonte navigation) : routes canoniques */}
           <Route
-            path="/catalogue-propositions"
+            path="/catalogue/propositions"
             element={
               <ProtectedRoute>
                 <CataloguePropositionsPage />
@@ -293,10 +303,38 @@ function App() {
             }
           />
           <Route
-            path="/catalogue-propositions/:id"
+            path="/catalogue/propositions/:id"
             element={
               <ProtectedRoute>
                 <PropositionDetailPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/catalogue/parcours-metier"
+            element={
+              <ProtectedRoute>
+                <ParcoursMetierPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/catalogue/services-techniques"
+            element={
+              <ProtectedRoute>
+                <ServicesTechniquesPage />
+              </ProtectedRoute>
+            }
+          />
+          {/* Redirects historique — anciennes routes avec tiret preservees */}
+          <Route path="/catalogue-propositions" element={<Navigate to="/catalogue/propositions" replace />} />
+          <Route path="/catalogue-propositions/:id" element={<CataloguePropositionsRedirect />} />
+          {/* File d'adoptions DU */}
+          <Route
+            path="/du/adoptions"
+            element={
+              <ProtectedRoute adminOnly>
+                <AdoptionRequestsPage />
               </ProtectedRoute>
             }
           />

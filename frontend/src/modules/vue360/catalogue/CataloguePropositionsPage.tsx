@@ -240,7 +240,7 @@ function PropositionCard({ proposition, userInstitutionId }: { proposition: any;
 
       <div className="mt-auto pt-2 border-t border-gray-100 flex items-center gap-2">
         <Link
-          to={`/catalogue-propositions/${proposition.id}`}
+          to={`/catalogue/propositions/${proposition.id}`}
           className={cn(
             'inline-flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-md flex-1 justify-center',
             isPressentie

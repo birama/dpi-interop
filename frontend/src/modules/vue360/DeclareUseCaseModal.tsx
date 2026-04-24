@@ -348,7 +348,7 @@ export function DeclareUseCaseModal({ onClose }: Props) {
                         Voulez-vous plutot adopter une proposition existante ?
                       </span>
                       <Link
-                        to="/catalogue-propositions"
+                        to="/catalogue/propositions"
                         onClick={onClose}
                         className="inline-flex items-center gap-1 text-[11px] font-semibold px-3 py-1.5 rounded bg-teal text-white hover:bg-teal/90"
                       >

@@ -37,7 +37,7 @@ export function PropositionDetailPage() {
     <div className="space-y-5 max-w-6xl mx-auto pb-24">
       {/* Breadcrumb */}
       <div className="flex items-center gap-2 text-sm">
-        <Link to="/catalogue-propositions" className="text-teal hover:underline">Catalogue des propositions</Link>
+        <Link to="/catalogue/propositions" className="text-teal hover:underline">Catalogue des propositions</Link>
         <ChevronRight className="w-3 h-3 text-gray-400" />
         <span className="font-semibold text-navy">{p.code}</span>
       </div>
