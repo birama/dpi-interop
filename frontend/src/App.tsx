@@ -69,6 +69,12 @@ function CataloguePropositionsRedirect() {
   return <Navigate to={`/catalogue/propositions/${id}`} replace />;
 }
 
+// /admin/institution/:id (legacy) -> /institutions/:id
+function InstitutionProfileRedirect() {
+  const { id } = useParams<{ id: string }>();
+  return <Navigate to={`/institutions/${id}`} replace />;
+}
+
 function App() {
   return (
     <ErrorBoundary>
@@ -173,14 +179,18 @@ function App() {
               </ProtectedRoute>
             }
           />
+          {/* Route canonique consultable par toutes les institutions PINS connectees.
+              Le backend /api/institutions/:id est deja en authenticate (pas adminOnly). */}
           <Route
-            path="/admin/institution/:id"
+            path="/institutions/:id"
             element={
-              <ProtectedRoute adminOnly>
+              <ProtectedRoute>
                 <InstitutionProfilePage />
               </ProtectedRoute>
             }
           />
+          {/* Retro-compat ancien chemin : redirige en preservant l'id */}
+          <Route path="/admin/institution/:id" element={<InstitutionProfileRedirect />} />
           {/* /admin/conventions : consultation autorisee aux institutions
               (la page filtre les actions ecriture par role en interne) */}
           <Route

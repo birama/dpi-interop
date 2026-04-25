@@ -242,7 +242,7 @@ export function InstitutionsPage() {
                               </Button>
                             </>
                           )}
-                          <Link to={`/admin/institution/${institution.id}`}>
+                          <Link to={`/institutions/${institution.id}`}>
                             <Button variant="ghost" size="sm">
                               <Eye className="w-4 h-4 mr-1" />
                               Profil
