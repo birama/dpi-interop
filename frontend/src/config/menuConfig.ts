@@ -66,8 +66,10 @@ export const MENU_SECTIONS: MenuSection[] = [
     roles: ['INSTITUTION', 'ADMIN'],
     items: [
       { name: 'Propositions', href: '/catalogue/propositions', icon: FolderOpen },
-      // "Cas d'usage actifs" pointe vers la page Kanban du pipeline (route existante)
-      { name: 'Cas d\'usage actifs', href: '/admin/qualification', icon: ListChecks },
+      // "Cas d'usage actifs" = page Kanban /admin/qualification, reservee a la DU.
+      // Les Point Focal d'institution voient leurs cas d'usage via "Mon espace > Mes cas d'usage"
+      // et naviguent les CU actifs via les vues typologiques ci-dessous.
+      { name: 'Cas d\'usage actifs', href: '/admin/qualification', icon: ListChecks, roles: ['ADMIN'] },
       { name: 'Parcours metier', href: '/catalogue/parcours-metier', icon: UsersIcon },
       { name: 'Services techniques', href: '/catalogue/services-techniques', icon: Cog },
       { name: 'Couverture referentiels', href: '/registres/couverture', icon: Database },

@@ -116,10 +116,11 @@ function App() {
               </ProtectedRoute>
             }
           />
+          {/* /institutions : consultable par toutes les institutions PINS connectees */}
           <Route
             path="/institutions"
             element={
-              <ProtectedRoute adminOnly>
+              <ProtectedRoute>
                 <InstitutionsPage />
               </ProtectedRoute>
             }
@@ -180,10 +181,12 @@ function App() {
               </ProtectedRoute>
             }
           />
+          {/* /admin/conventions : consultation autorisee aux institutions
+              (la page filtre les actions ecriture par role en interne) */}
           <Route
             path="/admin/conventions"
             element={
-              <ProtectedRoute adminOnly>
+              <ProtectedRoute>
                 <ConventionsPage />
               </ProtectedRoute>
             }
@@ -237,10 +240,11 @@ function App() {
               </ProtectedRoute>
             }
           />
+          {/* /admin/registres-nationaux : consultation des 10 referentiels par toute institution */}
           <Route
             path="/admin/registres-nationaux"
             element={
-              <ProtectedRoute adminOnly>
+              <ProtectedRoute>
                 <RegistresNationauxPage />
               </ProtectedRoute>
             }
