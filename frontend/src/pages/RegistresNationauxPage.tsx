@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { api, institutionsApi } from '@/services/api';
 import { useToast } from '@/components/ui/use-toast';
+import { useAuthStore } from '@/store/auth';
 import { SearchableSelect } from '@/components/ui/searchable-select';
 import { MultiSearchableSelect } from '@/components/ui/multi-searchable-select';
 import { Loader2, Pencil, X, Plus } from 'lucide-react';
@@ -32,6 +33,8 @@ const STATUT_NUM: Record<string, string> = {
 export function RegistresNationauxPage() {
   const { toast } = useToast();
   const qc = useQueryClient();
+  const { user } = useAuthStore();
+  const isAdmin = user?.role === 'ADMIN';
   const [modal, setModal] = useState<any>(null);
   const [form, setForm] = useState<any>({});
   const [filter, setFilter] = useState('');
@@ -65,7 +68,9 @@ export function RegistresNationauxPage() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div><h1 className="text-xl font-bold text-navy">Registres Nationaux</h1><p className="text-xs text-gray-500">Référentiel autoritaire des bases de données nationales</p></div>
-        <Button size="sm" onClick={() => { setModal('create'); setForm({ code: '', nom: '', domaine: 'Finances Publiques', institutionCode: '', institutionNom: '', systemeSource: '', identifiantPivot: '', statutNumerisation: '', statutEjokkoo: '', disposeAPI: false, protocoleAPI: '', consommateurs: '', observations: '' }); }} className="bg-teal hover:bg-teal-dark"><Plus className="w-3.5 h-3.5 mr-1" /> Nouveau</Button>
+        {isAdmin && (
+          <Button size="sm" onClick={() => { setModal('create'); setForm({ code: '', nom: '', domaine: 'Finances Publiques', institutionCode: '', institutionNom: '', systemeSource: '', identifiantPivot: '', statutNumerisation: '', statutEjokkoo: '', disposeAPI: false, protocoleAPI: '', consommateurs: '', observations: '' }); }} className="bg-teal hover:bg-teal-dark"><Plus className="w-3.5 h-3.5 mr-1" /> Nouveau</Button>
+        )}
       </div>
 
       <div className="grid grid-cols-4 gap-3">
@@ -97,7 +102,9 @@ export function RegistresNationauxPage() {
                         </div>
                         <p className="text-[10px] text-gray-500 mt-1">{reg.institutionCode} — {reg.institutionNom}</p>
                       </div>
-                      <button onClick={() => { setModal('edit'); setForm({ ...reg }); }} className="p-1 hover:bg-gray-100 rounded"><Pencil className="w-3 h-3 text-gray-400" /></button>
+                      {isAdmin && (
+                        <button onClick={() => { setModal('edit'); setForm({ ...reg }); }} className="p-1 hover:bg-gray-100 rounded"><Pencil className="w-3 h-3 text-gray-400" /></button>
+                      )}
                     </div>
                     <div className="flex flex-wrap gap-1 mt-2">
                       {reg.statutNumerisation && <span className={cn('px-1.5 py-0.5 rounded text-[9px] font-medium', STATUT_NUM[reg.statutNumerisation] || 'bg-gray-100 text-gray-500')}>{reg.statutNumerisation}</span>}

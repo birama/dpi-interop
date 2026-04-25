@@ -8,6 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/components/ui/use-toast';
 import { api, institutionsApi } from '@/services/api';
 import { SearchableSelect } from '@/components/ui/searchable-select';
+import { useAuthStore } from '@/store/auth';
 import { Plus, FileCheck, Loader2, X, Pencil, ExternalLink } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -28,6 +29,8 @@ const EMPTY_FORM = { institutionAId: '', institutionBId: '', objet: '', donneesV
 export function ConventionsPage() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { user } = useAuthStore();
+  const isAdmin = user?.role === 'ADMIN';
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<any>(null);
   const [form, setForm] = useState<any>({ ...EMPTY_FORM });
@@ -94,16 +97,22 @@ export function ConventionsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-navy">Conventions d'échange</h1>
-          <p className="text-gray-500 mt-1">Suivi des accords de partage de données inter-administrations</p>
+          <p className="text-gray-500 mt-1">
+            {isAdmin
+              ? `Total : ${convList.length} convention${convList.length > 1 ? 's' : ''} — suivi des accords de partage de données inter-administrations`
+              : `${convList.length} convention${convList.length > 1 ? 's' : ''} concerne${convList.length > 1 ? 'nt' : ''} votre institution`}
+          </p>
         </div>
-        <Button onClick={() => { setShowForm(true); setEditing(null); setForm({ ...EMPTY_FORM }); }} className="bg-teal hover:bg-teal-dark">
-          <Plus className="w-4 h-4 mr-2" /> Nouvelle convention
-        </Button>
+        {isAdmin && (
+          <Button onClick={() => { setShowForm(true); setEditing(null); setForm({ ...EMPTY_FORM }); }} className="bg-teal hover:bg-teal-dark">
+            <Plus className="w-4 h-4 mr-2" /> Nouvelle convention
+          </Button>
+        )}
       </div>
 
       {/* Compteurs */}
       <div className="grid grid-cols-3 gap-4">
-        <Card className="border-l-4 border-l-navy"><CardContent className="pt-4"><p className="text-xs text-gray-500">Total</p><p className="text-2xl font-bold text-navy">{convList.length}</p></CardContent></Card>
+        <Card className="border-l-4 border-l-navy"><CardContent className="pt-4"><p className="text-xs text-gray-500">{isAdmin ? 'Total' : 'Vous concernent'}</p><p className="text-2xl font-bold text-navy">{convList.length}</p></CardContent></Card>
         <Card className="border-l-4 border-l-success"><CardContent className="pt-4"><p className="text-xs text-gray-500">Signées / Actives</p><p className="text-2xl font-bold text-success">{signees}</p></CardContent></Card>
         <Card className="border-l-4 border-l-gold"><CardContent className="pt-4"><p className="text-xs text-gray-500">En attente</p><p className="text-2xl font-bold text-gold">{convList.length - signees}</p></CardContent></Card>
       </div>
@@ -226,14 +235,20 @@ export function ConventionsPage() {
                     </td>
                     <td className="p-3 text-right">
                       <div className="flex justify-end space-x-1">
-                        <Button variant="ghost" size="sm" onClick={() => openEdit(conv)}>
-                          <Pencil className="w-3 h-3 mr-1" /> Éditer
-                        </Button>
-                        <Button variant="ghost" size="sm" className="text-red-500 hover:text-red-700" onClick={() => {
-                          if (confirm('Supprimer cette convention ?')) deleteMut.mutate(conv.id);
-                        }}>
-                          <X className="w-3 h-3" />
-                        </Button>
+                        {isAdmin ? (
+                          <>
+                            <Button variant="ghost" size="sm" onClick={() => openEdit(conv)}>
+                              <Pencil className="w-3 h-3 mr-1" /> Éditer
+                            </Button>
+                            <Button variant="ghost" size="sm" className="text-red-500 hover:text-red-700" onClick={() => {
+                              if (confirm('Supprimer cette convention ?')) deleteMut.mutate(conv.id);
+                            }}>
+                              <X className="w-3 h-3" />
+                            </Button>
+                          </>
+                        ) : (
+                          <span className="text-[10px] text-gray-400 italic">Consultation</span>
+                        )}
                       </div>
                     </td>
                   </tr>

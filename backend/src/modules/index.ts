@@ -14,9 +14,18 @@ import { catalogueRoutes, suggestionsRoutes } from './vue360/catalogue.routes.js
 
 // Inline routes for conventions and xroad
 async function conventionsRoutes(app: FastifyInstance) {
-  // List all
-  app.get('/', { onRequest: [app.authenticateAdmin], schema: { tags: ['Conventions'] } }, async (_req: any, reply: any) => {
+  // List : ADMIN voit toutes les conventions, INSTITUTION voit celles ou son institution figure
+  app.get('/', { onRequest: [app.authenticate], schema: { tags: ['Conventions'] } }, async (req: any, reply: any) => {
+    const where: any = {};
+    if (req.user.role !== 'ADMIN') {
+      if (!req.user.institutionId) return reply.send([]);
+      where.OR = [
+        { institutionAId: req.user.institutionId },
+        { institutionBId: req.user.institutionId },
+      ];
+    }
     const conventions = await app.prisma.convention.findMany({
+      where,
       include: { institutionA: { select: { id: true, code: true, nom: true } }, institutionB: { select: { id: true, code: true, nom: true } } },
       orderBy: { updatedAt: 'desc' },
     });

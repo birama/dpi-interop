@@ -5,6 +5,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/components/ui/use-toast';
+import { useAuthStore } from '@/store/auth';
 import { institutionsApi, notificationsApi } from '@/services/api';
 import { Search, Building2, Plus, FileText, Eye, Mail, RefreshCw, Send } from 'lucide-react';
 
@@ -12,6 +13,8 @@ export function InstitutionsPage() {
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
   const { toast } = useToast();
+  const { user } = useAuthStore();
+  const isAdmin = user?.role === 'ADMIN';
 
   const inviteMutation = useMutation({
     mutationFn: (institutionId: string) => notificationsApi.invite(institutionId),
@@ -73,23 +76,29 @@ export function InstitutionsPage() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-navy">Institutions</h1>
-          <p className="text-gray-500 mt-1">Gestion des administrations sectorielles</p>
+          <p className="text-gray-500 mt-1">
+            {isAdmin
+              ? 'Gestion des administrations sectorielles'
+              : 'Annuaire des administrations PINS'}
+          </p>
         </div>
-        <div className="flex gap-2 mt-4 sm:mt-0">
-          <Button
-            variant="outline"
-            className="border-teal text-teal hover:bg-teal hover:text-white"
-            onClick={handleInviteAll}
-            disabled={inviteAllMutation.isPending}
-          >
-            <Send className="w-4 h-4 mr-2" />
-            {inviteAllMutation.isPending ? 'Envoi en cours...' : 'Inviter toutes les institutions'}
-          </Button>
-          <Button>
-            <Plus className="w-4 h-4 mr-2" />
-            Nouvelle institution
-          </Button>
-        </div>
+        {isAdmin && (
+          <div className="flex gap-2 mt-4 sm:mt-0">
+            <Button
+              variant="outline"
+              className="border-teal text-teal hover:bg-teal hover:text-white"
+              onClick={handleInviteAll}
+              disabled={inviteAllMutation.isPending}
+            >
+              <Send className="w-4 h-4 mr-2" />
+              {inviteAllMutation.isPending ? 'Envoi en cours...' : 'Inviter toutes les institutions'}
+            </Button>
+            <Button>
+              <Plus className="w-4 h-4 mr-2" />
+              Nouvelle institution
+            </Button>
+          </div>
+        )}
       </div>
 
       {/* Stats */}
@@ -211,24 +220,28 @@ export function InstitutionsPage() {
                       </td>
                       <td className="px-4 py-3 text-right">
                         <div className="flex items-center justify-end gap-1">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            title="Envoyer une invitation"
-                            onClick={() => inviteMutation.mutate(institution.id)}
-                            disabled={inviteMutation.isPending && inviteMutation.variables === institution.id}
-                          >
-                            <Mail className="w-4 h-4 text-teal" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            title="Envoyer une relance"
-                            onClick={() => relanceMutation.mutate(institution.id)}
-                            disabled={relanceMutation.isPending && relanceMutation.variables === institution.id}
-                          >
-                            <RefreshCw className={`w-4 h-4 text-gold ${relanceMutation.isPending && relanceMutation.variables === institution.id ? 'animate-spin' : ''}`} />
-                          </Button>
+                          {isAdmin && (
+                            <>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                title="Envoyer une invitation"
+                                onClick={() => inviteMutation.mutate(institution.id)}
+                                disabled={inviteMutation.isPending && inviteMutation.variables === institution.id}
+                              >
+                                <Mail className="w-4 h-4 text-teal" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                title="Envoyer une relance"
+                                onClick={() => relanceMutation.mutate(institution.id)}
+                                disabled={relanceMutation.isPending && relanceMutation.variables === institution.id}
+                              >
+                                <RefreshCw className={`w-4 h-4 text-gold ${relanceMutation.isPending && relanceMutation.variables === institution.id ? 'animate-spin' : ''}`} />
+                              </Button>
+                            </>
+                          )}
                           <Link to={`/admin/institution/${institution.id}`}>
                             <Button variant="ghost" size="sm">
                               <Eye className="w-4 h-4 mr-1" />

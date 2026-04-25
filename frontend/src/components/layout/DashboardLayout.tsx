@@ -41,21 +41,22 @@ export function DashboardLayout() {
     }))
     .filter(s => s.items.length > 0);
 
-  // Section contenant la route active : ouverte par defaut
+  // Pattern accordeon : une seule rubrique ouverte a la fois.
+  // null = toutes fermees (etat valide quand user clique pour fermer la rubrique active).
   const activeSectionId = findSectionForPath(location.pathname);
-  const [openSections, setOpenSections] = useState<Record<string, boolean>>(() => {
-    const init: Record<string, boolean> = {};
-    for (const s of MENU_SECTIONS) init[s.id] = s.id === activeSectionId;
-    return init;
-  });
-  // Re-synchronise quand la route change (si l'user clique sur un lien d'une autre rubrique)
+  const [activeRubrique, setActiveRubrique] = useState<string | null>(activeSectionId);
+
+  // Au changement de route : ouvre automatiquement la rubrique de la nouvelle URL,
+  // ferme toutes les autres. Ne touche pas a l'etat si l'user a delibere ferme la rubrique.
   useEffect(() => {
     if (activeSectionId) {
-      setOpenSections(prev => prev[activeSectionId] ? prev : { ...prev, [activeSectionId]: true });
+      setActiveRubrique(activeSectionId);
     }
   }, [activeSectionId]);
 
-  const toggleSection = (id: string) => setOpenSections(prev => ({ ...prev, [id]: !prev[id] }));
+  const toggleSection = (id: string) => {
+    setActiveRubrique(prev => prev === id ? null : id);
+  };
 
   // Compteurs contextuels (R6) — chargement paresseux
   const { data: involvedData } = useQuery({
@@ -164,9 +165,9 @@ export function DashboardLayout() {
             );
           })()}
 
-          {/* Rubriques collapsibles */}
+          {/* Rubriques collapsibles — accordeon : une seule ouverte a la fois */}
           {visibleSections.map(section => {
-            const isOpen = !!openSections[section.id];
+            const isOpen = activeRubrique === section.id;
             const SectionIcon = section.icon;
             // En mode collapse, on ne rend pas les entetes de section — juste la liste avec separateur
             if (sidebarCollapsed) {
