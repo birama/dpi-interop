@@ -111,6 +111,12 @@ export async function catalogueRoutes(app: FastifyInstance) {
         registresAssocies: {
           include: { registre: { select: { id: true, code: true, nom: true, domaine: true, institutionCode: true } } },
         },
+        // Fallback : pour les CU migres en PROPOSE qui n'ont pas de pressenties,
+        // on expose les stakeholders existants comme indication des institutions concernees
+        stakeholders360: {
+          where: { actif: true },
+          include: { institution: { select: { id: true, code: true, nom: true } } },
+        },
         phaseMVP: true,
         statusHistory: { orderBy: { dateTransition: 'desc' }, take: 20 },
       },

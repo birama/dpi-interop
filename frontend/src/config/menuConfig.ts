@@ -66,7 +66,8 @@ export const MENU_SECTIONS: MenuSection[] = [
     roles: ['INSTITUTION', 'ADMIN'],
     items: [
       { name: 'Propositions', href: '/catalogue/propositions', icon: FolderOpen },
-      { name: 'Cas d\'usage actifs', href: '/admin/cas-usage', icon: ListChecks },
+      // "Cas d'usage actifs" pointe vers la page Kanban du pipeline (route existante)
+      { name: 'Cas d\'usage actifs', href: '/admin/qualification', icon: ListChecks },
       { name: 'Parcours metier', href: '/catalogue/parcours-metier', icon: UsersIcon },
       { name: 'Services techniques', href: '/catalogue/services-techniques', icon: Cog },
       { name: 'Couverture referentiels', href: '/registres/couverture', icon: Database },
@@ -78,11 +79,11 @@ export const MENU_SECTIONS: MenuSection[] = [
     icon: Network,
     roles: ['INSTITUTION', 'ADMIN'],
     items: [
-      { name: 'Institutions', href: '/admin/institutions', icon: Building2 },
+      { name: 'Institutions', href: '/institutions', icon: Building2 },
       { name: 'Registres nationaux', href: '/admin/registres-nationaux', icon: Database },
       { name: 'Conventions', href: '/admin/conventions', icon: FileCheck },
       { name: 'Documents de reference', href: '/documents', icon: BookOpen },
-      { name: 'Catalogue DPI', href: '/admin/catalogue', icon: Layers },
+      { name: 'Catalogue DPI', href: '/catalogue', icon: Layers },
     ],
   },
   {
@@ -97,11 +98,11 @@ export const MENU_SECTIONS: MenuSection[] = [
       { name: 'File d\'adoptions', href: '/du/adoptions', icon: FolderOpen, counter: 'adoptionRequestsEnAttente' },
       { name: 'Pipeline X-Road', href: '/admin/xroad-pipeline', icon: Network },
       { name: 'Graphe des flux', href: '/admin/graphe', icon: Grid3X3 },
-      { name: 'Matrice des flux', href: '/admin/matrice', icon: Grid3X3 },
+      { name: 'Matrice des flux', href: '/matrice', icon: Grid3X3 },
       { name: 'Financements', href: '/admin/financements', icon: Wallet },
-      { name: 'Radar de maturite', href: '/admin/radar', icon: Radar },
+      { name: 'Radar de maturite', href: '/maturite', icon: Radar },
       { name: 'Audit & Sessions', href: '/admin/audit', icon: Shield },
-      { name: 'Rapports', href: '/admin/reports', icon: BarChart3 },
+      { name: 'Rapports', href: '/reports', icon: BarChart3 },
       { name: 'Import Word', href: '/admin/import', icon: Upload },
     ],
   },

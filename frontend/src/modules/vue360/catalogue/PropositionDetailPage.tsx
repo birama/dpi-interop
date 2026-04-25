@@ -63,70 +63,101 @@ export function PropositionDetailPage() {
           )}
         </div>
         <h1 className="text-xl sm:text-2xl font-bold text-navy">{p.titre}</h1>
-        {p.resumeMetier && (
-          <p className="text-sm text-gray-700 mt-3 whitespace-pre-wrap">{p.resumeMetier}</p>
-        )}
-        {p.baseLegale && (
-          <div className="mt-3 p-3 bg-gray-50 rounded text-xs text-gray-700">
-            <span className="text-[10px] uppercase tracking-wider text-gray-500 font-semibold">Base legale</span>
-            <div className="mt-1">{p.baseLegale}</div>
+        <div className="mt-3">
+          {p.resumeMetier ? (
+            <p className="text-sm text-gray-700 whitespace-pre-wrap">{p.resumeMetier}</p>
+          ) : (
+            <p className="text-xs italic text-gray-400">Aucun resume metier renseigne pour cette proposition.</p>
+          )}
+        </div>
+        <div className="mt-3 p-3 bg-gray-50 rounded text-xs text-gray-700">
+          <span className="text-[10px] uppercase tracking-wider text-gray-500 font-semibold">Base legale</span>
+          <div className="mt-1">
+            {p.baseLegale || <span className="italic text-gray-400">Non renseignee</span>}
           </div>
-        )}
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
         {/* Colonne principale */}
         <div className="lg:col-span-2 space-y-5">
-          {/* Pressenties */}
-          {p.institutionsPressenties && p.institutionsPressenties.length > 0 && (
-            <div className="bg-white rounded-lg border shadow-sm">
-              <div className="p-4 border-b border-gray-100 flex items-center gap-2">
-                <Building2 className="w-4 h-4 text-teal" />
-                <div className="font-bold text-navy text-sm">Institutions pressenties</div>
-                <span className="text-[10px] text-gray-500">
-                  ({p.institutionsPressenties.length})
-                </span>
+          {/* Pressenties — affichees toujours, avec fallback sur stakeholders existants */}
+          <div className="bg-white rounded-lg border shadow-sm">
+            <div className="p-4 border-b border-gray-100 flex items-center gap-2">
+              <Building2 className="w-4 h-4 text-teal" />
+              <div className="font-bold text-navy text-sm">
+                {(p.institutionsPressenties && p.institutionsPressenties.length > 0)
+                  ? 'Institutions pressenties'
+                  : 'Institutions concernees'}
               </div>
-              <div className="divide-y divide-gray-100">
-                {p.institutionsPressenties.map((ip: any) => (
-                  <div key={ip.id} className={cn(
-                    'p-3 flex items-start gap-3',
-                    ip.institutionId === user?.institutionId && 'bg-teal/5'
-                  )}>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="font-semibold text-navy text-sm">{ip.institution?.code}</span>
-                        <span className="text-xs text-gray-500">— {ip.institution?.nom}</span>
-                        <span className={cn(
-                          'inline-flex text-[10px] font-bold px-1.5 py-0.5 rounded border ml-auto',
-                          ROLE_PRESSENTI_BADGE[ip.rolePressenti]
-                        )}>
-                          {ROLE_PRESSENTI_LABELS[ip.rolePressenti]}
-                        </span>
-                      </div>
-                      {ip.institution?.ministere && (
-                        <div className="text-[10px] text-gray-500 mt-0.5">{ip.institution.ministere}</div>
-                      )}
-                      {ip.commentaire && (
-                        <div className="text-xs text-gray-600 italic mt-1">{ip.commentaire}</div>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
+              <span className="text-[10px] text-gray-500">
+                ({(p.institutionsPressenties?.length || p.stakeholders360?.length || 0)})
+              </span>
             </div>
-          )}
-
-          {/* Registres */}
-          {p.registresAssocies && p.registresAssocies.length > 0 && (
-            <div className="bg-white rounded-lg border shadow-sm">
-              <div className="p-4 border-b border-gray-100 flex items-center gap-2">
-                <Database className="w-4 h-4 text-amber" />
-                <div className="font-bold text-navy text-sm">Referentiels concernes</div>
-                <span className="text-[10px] text-gray-500">
-                  ({p.registresAssocies.length})
-                </span>
+            {(p.institutionsPressenties && p.institutionsPressenties.length > 0) ? (
+              <div className="divide-y divide-gray-100">
+                {p.institutionsPressenties.map((ip: any) => {
+                  const isMyInst = ip.institutionId === user?.institutionId;
+                  // Visibilite des roles : DU + pressenties voient les roles, public voit codes seuls
+                  const showRoles = isAdmin || isPressentie;
+                  return (
+                    <div key={ip.id} className={cn('p-3 flex items-start gap-3', isMyInst && 'bg-teal/5')}>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="font-semibold text-navy text-sm">{ip.institution?.code}</span>
+                          <span className="text-xs text-gray-500">— {ip.institution?.nom}</span>
+                          {showRoles && (
+                            <span className={cn(
+                              'inline-flex text-[10px] font-bold px-1.5 py-0.5 rounded border ml-auto',
+                              ROLE_PRESSENTI_BADGE[ip.rolePressenti]
+                            )}>
+                              {ROLE_PRESSENTI_LABELS[ip.rolePressenti]}
+                            </span>
+                          )}
+                        </div>
+                        {ip.institution?.ministere && (
+                          <div className="text-[10px] text-gray-500 mt-0.5">{ip.institution.ministere}</div>
+                        )}
+                        {showRoles && ip.commentaire && (
+                          <div className="text-xs text-gray-600 italic mt-1">{ip.commentaire}</div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
+            ) : (p.stakeholders360 && p.stakeholders360.length > 0) ? (
+              <>
+                <div className="px-4 pt-3 text-[11px] text-gray-500 italic">
+                  Cette proposition issue du catalogue historique n'a pas encore de pressenties dedie. Institutions
+                  identifiees dans le seed initial :
+                </div>
+                <div className="divide-y divide-gray-100">
+                  {p.stakeholders360.map((s: any) => (
+                    <div key={s.id} className="p-3 flex items-center gap-3">
+                      <span className="font-semibold text-navy text-sm">{s.institution?.code}</span>
+                      <span className="text-xs text-gray-500 flex-1">— {s.institution?.nom}</span>
+                    </div>
+                  ))}
+                </div>
+              </>
+            ) : (
+              <div className="p-6 text-center text-xs text-gray-400 italic">
+                Aucune institution pressentie ni concernee identifiee.
+              </div>
+            )}
+          </div>
+
+          {/* Registres — toujours rendus avec placeholder si vide */}
+          <div className="bg-white rounded-lg border shadow-sm">
+            <div className="p-4 border-b border-gray-100 flex items-center gap-2">
+              <Database className="w-4 h-4 text-amber" />
+              <div className="font-bold text-navy text-sm">Referentiels concernes</div>
+              <span className="text-[10px] text-gray-500">
+                ({p.registresAssocies?.length || 0})
+              </span>
+            </div>
+            {p.registresAssocies && p.registresAssocies.length > 0 ? (
               <div className="divide-y divide-gray-100">
                 {p.registresAssocies.map((ra: any) => (
                   <div key={ra.id} className="p-3 text-sm">
@@ -145,8 +176,12 @@ export function PropositionDetailPage() {
                   </div>
                 ))}
               </div>
-            </div>
-          )}
+            ) : (
+              <div className="p-6 text-center text-xs text-gray-400 italic">
+                Aucun referentiel national rattache a cette proposition.
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Sidebar */}
@@ -186,9 +221,9 @@ export function PropositionDetailPage() {
         </div>
       </div>
 
-      {/* Bouton adoption sticky */}
+      {/* Bouton adoption sticky — aligne sur la zone main, ne couvre PAS la sidebar */}
       {isAdoptable && user?.institutionId && (
-        <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg p-3 z-40">
+        <div className="fixed bottom-0 left-0 right-0 lg:left-64 bg-white border-t border-gray-200 shadow-lg p-3 z-40">
           <div className="max-w-6xl mx-auto flex items-center justify-between gap-3">
             <div className="text-xs">
               <div className="font-semibold text-navy">
