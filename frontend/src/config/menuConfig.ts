@@ -138,10 +138,15 @@ export function visibleSections(role: 'ADMIN' | 'INSTITUTION' | undefined): Menu
 
 /**
  * Trouve la section contenant un path donne (pour l'ouvrir automatiquement).
+ * Prend en compte le role pour eviter de retourner une rubrique ou l'item
+ * est filtre (ex: /submissions pour ADMIN ne doit pas retourner "mon-espace"
+ * car "Mes soumissions" y est masque pour ADMIN).
  */
-export function findSectionForPath(path: string): string | null {
+export function findSectionForPath(path: string, role?: 'ADMIN' | 'INSTITUTION'): string | null {
   for (const section of MENU_SECTIONS) {
+    if (role && !section.roles.includes(role)) continue;
     for (const item of section.items) {
+      if (role && item.roles && !item.roles.includes(role)) continue;
       if (path === item.href || path.startsWith(item.href + '/')) {
         return section.id;
       }

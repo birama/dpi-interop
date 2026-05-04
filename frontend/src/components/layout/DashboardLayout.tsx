@@ -43,7 +43,7 @@ export function DashboardLayout() {
 
   // Pattern accordeon : une seule rubrique ouverte a la fois.
   // null = toutes fermees (etat valide quand user clique pour fermer la rubrique active).
-  const activeSectionId = findSectionForPath(location.pathname);
+  const activeSectionId = findSectionForPath(location.pathname, user?.role as 'ADMIN' | 'INSTITUTION' | undefined);
   const [activeRubrique, setActiveRubrique] = useState<string | null>(activeSectionId);
 
   // Au changement de route : ouvre automatiquement la rubrique de la nouvelle URL,
