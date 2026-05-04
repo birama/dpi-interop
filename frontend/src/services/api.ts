@@ -22,8 +22,10 @@ import type {
 
 const API_URL = import.meta.env.VITE_API_URL || '';
 
+// Si VITE_API_URL=/api, le suffixe /api est deja inclus → pas de double prefixe.
+// Si VITE_API_URL='' (ou absent), on prefixe avec /api pour le proxy nginx.
 export const api = axios.create({
-  baseURL: `${API_URL}/api`,
+  baseURL: API_URL || '/api',
   headers: {
     'Content-Type': 'application/json',
   },

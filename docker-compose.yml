@@ -35,7 +35,8 @@ services:
       dockerfile: Dockerfile
       target: production
       args:
-        VITE_API_URL: /api
+        # Laisser vide : api.ts ajoute deja /api ('' + '/api' = '/api')
+        VITE_API_URL:
     restart: always
 
   nginx:
