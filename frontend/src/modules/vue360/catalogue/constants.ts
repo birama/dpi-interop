@@ -1,19 +1,19 @@
 export const TYPOLOGIE_BADGE: Record<string, { bg: string; label: string }> = {
-  METIER:    { bg: 'bg-navy/10 text-navy border border-navy/30',     label: 'Parcours metier' },
+  METIER:    { bg: 'bg-navy/10 text-navy border border-navy/30',     label: 'Parcours métier' },
   TECHNIQUE: { bg: 'bg-teal/10 text-teal border border-teal/30',     label: 'Service technique' },
 };
 
 export const MATURITE_BADGE: Record<string, { bg: string; label: string }> = {
   ESQUISSE:         { bg: 'bg-gray-100 text-gray-600 border border-gray-300',        label: 'Esquisse' },
-  PRE_CADREE:       { bg: 'bg-amber-50 text-amber-700 border border-amber-200',      label: 'Pre-cadree' },
-  PRETE_A_ADOPTER:  { bg: 'bg-emerald-50 text-emerald-700 border border-emerald-200', label: 'Prete a adopter' },
+  PRE_CADREE:       { bg: 'bg-amber-50 text-amber-700 border border-amber-200',      label: 'Pré-cadrée' },
+  PRETE_A_ADOPTER:  { bg: 'bg-emerald-50 text-emerald-700 border border-emerald-200', label: 'Prête à adopter' },
 };
 
 export const SOURCE_LABELS: Record<string, string> = {
   ATELIER_CADRAGE:             'Atelier de cadrage',
-  ETUDE_SENUM:                 'Etude interne SENUM',
-  RECOMMANDATION:              'Recommandation autorite',
-  CADRAGE_STRATEGIQUE:         'Cadrage strategique national',
+  ETUDE_SENUM:                 'Étude interne SENUM',
+  RECOMMANDATION:              'Recommandation autorité',
+  CADRAGE_STRATEGIQUE:         'Cadrage stratégique national',
   PROPOSITION_INSTITUTIONNELLE:'Proposition institutionnelle',
 };
 

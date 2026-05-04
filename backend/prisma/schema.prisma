@@ -863,6 +863,7 @@ model CasUsageMVP {
   id                    String               @id @default(uuid())
   code                  String               @unique
   ancienCode            String? // Ancien code avant harmonisation PINS-CU-XXX
+  codeHistorique        String?              @db.Text // N2 — Migration nomenclature : conserve l'origine (ex: "MVP1-CU-02, PINS-CU-011, UC-GIZ-FIN-01")
   titre                 String
   description           String?              @db.Text
   institutionSourceCode String?

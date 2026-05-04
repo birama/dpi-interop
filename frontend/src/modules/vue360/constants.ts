@@ -8,16 +8,16 @@
  */
 
 export const VUE360_STATUT_COLORS: Record<string, { chip: string; label: string }> = {
-  DECLARE:              { chip: 'bg-gray-100 text-gray-700',    label: 'Declare' },
+  DECLARE:              { chip: 'bg-gray-100 text-gray-700',    label: 'Déclaré' },
   EN_CONSULTATION:      { chip: 'bg-amber-50 text-amber-700',  label: 'Consultation' },
   VALIDATION_CONJOINTE: { chip: 'bg-blue-100 text-blue-700',   label: 'Validation conjointe' },
-  QUALIFIE:             { chip: 'bg-teal/10 text-teal',        label: 'Qualifie' },
-  PRIORISE:             { chip: 'bg-gold-50 text-gold',        label: 'Priorise' },
-  FINANCEMENT_OK:       { chip: 'bg-emerald-50 text-emerald-700', label: 'Finance' },
-  CONVENTIONNE:         { chip: 'bg-navy/10 text-navy',        label: 'Conventionne' },
+  QUALIFIE:             { chip: 'bg-teal/10 text-teal',        label: 'Qualifié' },
+  PRIORISE:             { chip: 'bg-gold-50 text-gold',        label: 'Priorisé' },
+  FINANCEMENT_OK:       { chip: 'bg-emerald-50 text-emerald-700', label: 'Financé' },
+  CONVENTIONNE:         { chip: 'bg-navy/10 text-navy',        label: 'Conventionné' },
   EN_PRODUCTION_360:    { chip: 'bg-green-50 text-green-700',  label: 'Production' },
   SUSPENDU_360:         { chip: 'bg-red-50 text-red-700',      label: 'Suspendu' },
-  RETIRE:               { chip: 'bg-gray-200 text-gray-500',   label: 'Retire' },
+  RETIRE:               { chip: 'bg-gray-200 text-gray-500',   label: 'Retiré' },
 };
 
 export const ROLE_BADGE_STYLES: Record<string, string> = {
@@ -35,15 +35,15 @@ export const ROLE_LABELS: Record<string, string> = {
 };
 
 export const TYPE_CONCERNEMENT_OPTIONS = [
-  { value: 'DONNEES_DETENUES',       label: 'Donnees detenues par mon institution' },
-  { value: 'PROCESSUS_IMPACTE',      label: 'Processus impacte' },
+  { value: 'DONNEES_DETENUES',       label: 'Données détenues par mon institution' },
+  { value: 'PROCESSUS_IMPACTE',      label: 'Processus impacté' },
   { value: 'GOUVERNANCE_TRANSVERSE', label: 'Gouvernance transverse' },
-  { value: 'AUTRE',                  label: 'Autre — a preciser' },
+  { value: 'AUTRE',                  label: 'Autre — à préciser' },
 ];
 
 export const TYPE_CONCERNEMENT_LABELS: Record<string, string> = {
-  DONNEES_DETENUES: 'Donnees detenues',
-  PROCESSUS_IMPACTE: 'Processus impacte',
+  DONNEES_DETENUES: 'Données détenues',
+  PROCESSUS_IMPACTE: 'Processus impacté',
   GOUVERNANCE_TRANSVERSE: 'Gouvernance transverse',
   AUTRE: 'Autre',
 };

@@ -173,8 +173,59 @@ Aucune action utilisateur requise. Les raccourcis clavier (si présents), les li
 
 - **"Où est Qualification ?"** → fusionné avec "Catalogue > Cas d'usage actifs" (les CU qualifiés sont filtrables par statut `QUALIFIE`)
 - **"Où est l'arbitrage DU ?"** → Pilotage > Arbitrage DU (renommage du "File d'arbitrage")
-- **"Où sont les soumissions ?"** → plus dans le menu, accessible via le questionnaire qui génère les soumissions
+- **"Où sont les soumissions ?"** → réintégrées suite au chantier 5 (voir ci-dessous) :
+  - INSTITUTION : Mon espace > Mes soumissions
+  - ADMIN : Pilotage > Soumissions
 
 ## Testabilité
 
 Voir `docs/vue-360/recette-e2e-manuelle.md` section "Recette navigation" (scénarios N1 à N6) pour les critères d'acceptation détaillés.
+
+## Chantier 5 — Audit & préservation des questionnaires (2026-04-27)
+
+### Contexte
+La refonte initiale avait retiré l'item "Soumissions" du menu en faisant l'hypothèse que la page était redondante avec le questionnaire. L'audit a montré que c'est faux : la page assure deux usages distincts encore nécessaires.
+
+### Inventaire produit
+| Route | Composant | Statut menu (avant) | Décision |
+|-------|-----------|---------------------|----------|
+| `/questionnaire` | `QuestionnairePage` | Présent (Mon espace, INSTITUTION) | Conservé tel quel |
+| `/questionnaire/:id` | `QuestionnairePage` | Accès via lien | Conservé |
+| `/submissions` | `SubmissionsPage` | **Absent du menu** | Ajouté dans Mon espace (INSTITUTION) **et** Pilotage (ADMIN) |
+| `/admin/soumissions` | _aucun_ | Référence morte dans CLAUDE.md | À supprimer du CLAUDE.md à la prochaine passe documentaire |
+
+### Décisions et justifications
+1. **`/submissions` est utile aux deux rôles** (cas hybride au sens du §5.2) :
+   - Pour un Point Focal : historique de ses propres soumissions (DRAFT, SUBMITTED, VALIDATED), bouton de relance, export Word.
+   - Pour un DU : vue exhaustive de toutes les institutions soumissionnaires (filtrable par statut, par institution).
+   Le backend filtre déjà via `findAll(role, institutionId)`. Un seul composant `SubmissionsPage` couvre les deux usages avec un titre différencié (`isAdmin ? 'Toutes les soumissions des institutions' : 'Vos questionnaires'`).
+2. **Label différencié** :
+   - INSTITUTION → "Mes soumissions" (ton possessif, cadre Point Focal)
+   - ADMIN → "Soumissions" (ton institutionnel, vue DU)
+3. **Aucune redirection nécessaire** : la route `/submissions` n'a jamais été retirée du routeur, juste de la sidebar.
+
+### Failles de sécurité corrigées (cross-institution)
+L'audit a révélé que le backend n'effectuait le contrôle d'accès cross-institution que sur `findOne`. Quatre handlers étaient exploitables par un user INSTITUTION connaissant un `submissionId` d'une autre institution :
+
+| Endpoint | Risque avant | Correction |
+|----------|--------------|------------|
+| `POST /submissions` | Création de brouillon pour une autre institution | Refus 403 si `body.institutionId !== user.institutionId` (sauf ADMIN) |
+| `PATCH /submissions/:id` | Édition du brouillon d'une autre institution | Refus 403 si `submission.institutionId !== user.institutionId` (sauf ADMIN) |
+| `PATCH /submissions/:id/status` | Soumission/validation pour le compte d'autrui | Refus 403 hors institution + refus 403 si statut ≠ `SUBMITTED` (la revue/validation reste ADMIN-only) |
+| `DELETE /submissions/:id` | Suppression du brouillon d'une autre institution | Refus 403 hors institution |
+| Routes inline `:id/infrastructure`, `:id/niveaux-interop`, `:id/conformite-principes`, `:id/dictionnaire`, `:id/preparation-decret` | Écriture sur les sous-objets d'une autre institution | `preHandler: ensureSubmissionAccess` ajouté à chaque route |
+
+Helper `ensureSubmissionAccess` ajouté dans `submissions.routes.ts` : vérifie l'appartenance avant tout traitement métier.
+
+### UX : navigation depuis le dashboard institution
+1. Card KPI "Questionnaire" rendue cliquable (navigation vers `/questionnaire/:id` si la soumission existe, sinon `/questionnaire` qui crée le brouillon).
+2. Items "Actions requises" ayant un `link` deviennent des `<button>` couvrant toute la largeur de la ligne, avec un chevron indicateur (au lieu d'un seul bouton "→" en bout de ligne).
+
+### Tests d'acceptation Q1 → Q5
+| Test | Description | Statut |
+|------|-------------|--------|
+| Q1 | Login `dsi@dgid.sn` → /questionnaire charge le brouillon DGID avec son statut | Backend OK (filtrage `findOne` par `institutionId`), création auto si absent |
+| Q2 | `dsi@dgid.sn` tente d'accéder à un brouillon ANSD via URL ou via API → 403 | Validé après ajout des contrôles dans `update/updateStatus/delete` et dans `ensureSubmissionAccess` pour les routes inline |
+| Q3 | Login `admin@senum.sn` → Pilotage > Soumissions affiche toutes les institutions, vue/Word disponibles | Item de menu réintégré, page existante intacte |
+| Q4 | Dashboard DGID → clic sur KPI "Questionnaire" → ouvre /questionnaire | Card transformée en `cursor-pointer` + `onClick={navigate}` |
+| Q5 | Dashboard DGID → clic sur alerte "Questionnaire non soumis" → ouvre /questionnaire | L'item entier est désormais un `<button>` cliquable, plus uniquement la flèche |

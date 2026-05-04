@@ -20,7 +20,13 @@ export class SubmissionsController {
   ) {
     try {
       const input = createSubmissionSchema.parse(request.body);
-      const submission = await this.submissionsService.create(input, request.user.id);
+      const submission = await this.submissionsService.create(
+        input,
+        request.user.id,
+        request.user.role,
+        request.user.institutionId,
+        request.user.email
+      );
       return reply.status(201).send(submission);
     } catch (error: any) {
       if (error.statusCode) {
@@ -81,7 +87,10 @@ export class SubmissionsController {
       const submission = await this.submissionsService.update(
         request.params.id,
         input,
-        request.user.id
+        request.user.id,
+        request.user.role,
+        request.user.institutionId,
+        request.user.email
       );
       return reply.send(submission);
     } catch (error: any) {
@@ -109,7 +118,10 @@ export class SubmissionsController {
       const submission = await this.submissionsService.updateStatus(
         request.params.id,
         input,
-        request.user.id
+        request.user.id,
+        request.user.role,
+        request.user.institutionId,
+        request.user.email
       );
       return reply.send(submission);
     } catch (error: any) {
@@ -129,7 +141,13 @@ export class SubmissionsController {
     reply: FastifyReply
   ) {
     try {
-      const result = await this.submissionsService.delete(request.params.id, request.user.id);
+      const result = await this.submissionsService.delete(
+        request.params.id,
+        request.user.id,
+        request.user.role,
+        request.user.institutionId,
+        request.user.email
+      );
       return reply.send(result);
     } catch (error: any) {
       if (error.statusCode) {

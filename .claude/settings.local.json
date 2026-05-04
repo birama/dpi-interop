@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run *)",
+      "Bash(curl -s http://localhost:3000/api/health)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:5173/)",
+      "Bash(npx tsc *)",
+      "Bash(curl *)",
+      "Bash(npx prisma *)",
+      "PowerShell(docker exec questionnaire-interop-db-1 *)",
+      "PowerShell(docker exec *)",
+      "PowerShell(docker exec questionnaire-interop-db-1 psql -U pins -d questionnaire_interop -c $sql)"
+    ]
+  }
+}

@@ -16,7 +16,7 @@ export function SollicitationsBlock() {
   if (isLoading) return <Card className="border-l-4 border-amber"><CardContent className="p-6 text-center"><Loader2 className="w-5 h-5 animate-spin text-amber mx-auto" /></CardContent></Card>;
 
   const items = data || [];
-  if (items.length === 0 && !error) return null;
+  if (error) return null;
 
   return (
     <Card className="border-l-4 border-amber">

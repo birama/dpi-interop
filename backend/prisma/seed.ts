@@ -352,6 +352,27 @@ async function main() {
     },
   });
 
+  // Documents de référence
+  const documents = [
+    { titre: 'Décret n°2025-1431 — Nomenclature des institutions de l\'administration sénégalaise', description: 'Décret fixant les codes et la liste des institutions publiques du Sénégal pour l\'interopérabilité nationale.', categorie: 'juridique', fichierNom: 'Decret-2025-1431-Nomenclature-Institutions.pdf', fichierPath: '/uploads/documents/decret-2025-1431.pdf', tailleMo: 2.1 },
+    { titre: 'Loi n°2008-12 — Protection des données à caractère personnel', description: 'Loi portant sur la protection des données personnelles au Sénégal, cadre légal de référence pour les échanges inter-administrations.', categorie: 'juridique', fichierNom: 'Loi-2008-12-Protection-Donnees.pdf', fichierPath: '/uploads/documents/loi-2008-12.pdf', tailleMo: 1.5 },
+    { titre: 'Référentiel Général d\'Interopérabilité (RGI) — Version 2.0', description: 'Document cadre définissant les règles, normes et standards techniques pour l\'interopérabilité des systèmes d\'information de l\'administration sénégalaise.', categorie: 'technique', fichierNom: 'RGI-Senegal-V2.0.pdf', fichierPath: '/uploads/documents/rgi-senegal-v2.pdf', tailleMo: 4.8 },
+    { titre: 'Guide de déploiement X-Road — Security Server', description: 'Guide pratique pour l\'installation et la configuration du Security Server X-Road dans les institutions pilotes.', categorie: 'technique', fichierNom: 'Guide-Deploiement-XRoad-SecurityServer.pdf', fichierPath: '/uploads/documents/guide-xroad-ss.pdf', tailleMo: 3.2 },
+    { titre: 'Spécifications techniques des services PINS-TECH', description: 'Document de spécification des services techniques d\'échange : Consultation, Vérification, Notification, Transmission, Réconciliation, Alimentation.', categorie: 'technique', fichierNom: 'Specifications-PINS-TECH.pdf', fichierPath: '/uploads/documents/specs-pins-tech.pdf', tailleMo: 5.4 },
+    { titre: 'Guide méthodologique — Déclaration d\'un cas d\'usage PINS', description: 'Guide pas à pas pour les Points Focaux institutionnels : comment déclarer un cas d\'usage métier ou technique dans le catalogue PINS.', categorie: 'guide', fichierNom: 'Guide-Declaration-Cas-Usage-PINS.pdf', fichierPath: '/uploads/documents/guide-declaration-cu.pdf', tailleMo: 1.8 },
+    { titre: 'Guide de l\'auto-évaluation de maturité d\'interopérabilité', description: 'Guide pour remplir le questionnaire d\'auto-évaluation en 8 étapes et interpréter les résultats.', categorie: 'guide', fichierNom: 'Guide-AutoEvaluation-Maturite.pdf', fichierPath: '/uploads/documents/guide-maturite.pdf', tailleMo: 2.5 },
+    { titre: 'Manuel du Point Focal Interopérabilité', description: 'Manuel de référence pour les Data Stewards et Points Focaux désignés dans chaque institution.', categorie: 'guide', fichierNom: 'Manuel-Point-Focal-Interop.pdf', fichierPath: '/uploads/documents/manuel-point-focal.pdf', tailleMo: 3.6 },
+    { titre: 'Modèle de convention d\'échange de données', description: 'Modèle type de convention bilatérale pour les échanges de données entre institutions, incluant les clauses de confidentialité et les SLA.', categorie: 'modele', fichierNom: 'Modele-Convention-Echange-Donnees.docx', fichierPath: '/uploads/documents/modele-convention.docx', tailleMo: 0.5 },
+    { titre: 'Modèle de fiche de poste — Data Steward', description: 'Modèle de fiche de poste pour le recrutement ou la désignation d\'un Data Steward au sein d\'une institution.', categorie: 'modele', fichierNom: 'Modele-Fiche-Poste-DataSteward.docx', fichierPath: '/uploads/documents/modele-datasteward.docx', tailleMo: 0.3 },
+    { titre: 'Modèle de lettre de mission — Point Focal', description: 'Lettre de mission type pour officialiser la désignation du Point Focal Interopérabilité auprès de la DU/SENUM SA.', categorie: 'modele', fichierNom: 'Modele-Lettre-Mission-PointFocal.docx', fichierPath: '/uploads/documents/modele-lettre-mission.docx', tailleMo: 0.2 },
+    { titre: 'Stratégie Nationale d\'Interopérabilité — Document cadre', description: 'Document de stratégie nationale définissant la vision, les objectifs et la feuille de route de l\'interopérabilité au Sénégal (horizon 2030).', categorie: 'juridique', fichierNom: 'Strategie-Nationale-Interoperabilite-2030.pdf', fichierPath: '/uploads/documents/sni-2030.pdf', tailleMo: 6.2 },
+  ];
+
+  for (const doc of documents) {
+    await prisma.documentReference.create({ data: doc });
+  }
+  console.log(`✅ Seeded ${documents.length} documents de référence`);
+
   console.log('');
   console.log('═══════════════════════════════════════════════════════════════');
   console.log('✅ DATABASE SEEDED SUCCESSFULLY');

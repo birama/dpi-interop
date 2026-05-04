@@ -1,6 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { api } from '@/services/api';
 import { useAuthStore } from '@/store/auth';
 import { Loader2, AlertTriangle, AlertCircle, ChevronRight } from 'lucide-react';
@@ -67,7 +66,16 @@ export function InstitutionDashboardPage() {
         <Card className="border-l-4 border-l-navy"><CardContent className="p-3"><p className="text-[10px] text-gray-500">Flux de données</p><p className="text-lg font-bold text-navy">{stats.nbFlux}</p></CardContent></Card>
         <Card className="border-l-4 border-l-teal"><CardContent className="p-3"><p className="text-[10px] text-gray-500">Cas d'usage MVP</p><p className="text-lg font-bold text-teal">{stats.nbCasUsages}</p></CardContent></Card>
         <Card className="border-l-4 border-l-gold"><CardContent className="p-3"><p className="text-[10px] text-gray-500">Conventions</p><p className="text-lg font-bold text-gold">{stats.nbConventions}</p></CardContent></Card>
-        <Card className="border-l-4 border-l-success"><CardContent className="p-3"><p className="text-[10px] text-gray-500">Questionnaire</p><p className="text-lg font-bold text-success">{submission?.status || 'Non commencé'}</p></CardContent></Card>
+        <Card
+          className="border-l-4 border-l-success cursor-pointer hover:shadow-md transition-shadow"
+          onClick={() => navigate(submission?.id ? `/questionnaire/${submission.id}` : '/questionnaire')}
+          title="Ouvrir mon questionnaire"
+        >
+          <CardContent className="p-3">
+            <p className="text-[10px] text-gray-500">Questionnaire</p>
+            <p className="text-lg font-bold text-success">{submission?.status || 'Non commencé'}</p>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Actions requises */}
@@ -90,13 +98,28 @@ export function InstitutionDashboardPage() {
                 </button>
               )}
 
-              {actions?.map((a: any, i: number) => (
-                <div key={i} className="flex items-center space-x-2 text-xs">
-                  <AlertTriangle className={cn('w-3.5 h-3.5 flex-shrink-0', a.type === 'warning' ? 'text-orange-500' : a.type === 'action' ? 'text-red-500' : 'text-blue-500')} />
-                  <span className="text-gray-700">{a.message}</span>
-                  {a.link && <Button size="sm" variant="ghost" className="h-5 text-[10px] text-teal" onClick={() => navigate(a.link)}>→</Button>}
-                </div>
-              ))}
+              {actions?.map((a: any, i: number) => {
+                const content = (
+                  <>
+                    <AlertTriangle className={cn('w-3.5 h-3.5 flex-shrink-0', a.type === 'warning' ? 'text-orange-500' : a.type === 'action' ? 'text-red-500' : 'text-blue-500')} />
+                    <span className="text-gray-700 flex-1">{a.message}</span>
+                    {a.link && <ChevronRight className="w-3.5 h-3.5 text-teal flex-shrink-0" />}
+                  </>
+                );
+                return a.link ? (
+                  <button
+                    key={i}
+                    onClick={() => navigate(a.link)}
+                    className="w-full flex items-center space-x-2 text-xs p-1.5 rounded hover:bg-orange-50 text-left"
+                  >
+                    {content}
+                  </button>
+                ) : (
+                  <div key={i} className="flex items-center space-x-2 text-xs p-1.5">
+                    {content}
+                  </div>
+                );
+              })}
             </div>
           </CardContent>
         </Card>

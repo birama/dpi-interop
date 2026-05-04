@@ -8,8 +8,25 @@ const MODE_STYLES: Record<string, string> = {
 
 interface Props { registres: any[] }
 
+// Normalise champsConcernes vers string[] : tolère array (cas normal),
+// string CSV (legacy), ou null/undefined (rendu '—' par le tableau).
+function normalizeChamps(v: unknown): string[] | null {
+  if (Array.isArray(v)) return v.filter((x): x is string => typeof x === 'string' && x.length > 0);
+  if (typeof v === 'string' && v.trim()) return v.split(',').map(s => s.trim()).filter(Boolean);
+  return null;
+}
+
 export function RegistresTouchesTable({ registres }: Props) {
-  if (!registres || registres.length === 0) return null;
+  if (!registres || registres.length === 0) {
+    return (
+      <div className="bg-white rounded-lg border shadow-sm border-l-4 border-l-gold p-4">
+        <div className="font-bold text-navy">Referentiels nationaux touches</div>
+        <p className="text-xs text-gray-400 italic mt-2">
+          Aucun referentiel national n'est rattache a ce cas d'usage.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white rounded-lg border shadow-sm border-l-4 border-l-gold">
@@ -40,7 +57,7 @@ export function RegistresTouchesTable({ registres }: Props) {
                   </span>
                 </td>
                 <td className="px-4 py-2 text-[11px] text-gray-600 font-mono">
-                  {Array.isArray(r.champsConcernes) ? r.champsConcernes.join(', ') : '—'}
+                  {normalizeChamps(r.champsConcernes)?.join(', ') || '—'}
                 </td>
               </tr>
             ))}

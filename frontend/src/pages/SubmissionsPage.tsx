@@ -123,12 +123,18 @@ export function SubmissionsPage() {
                     <tr key={submission.id} className="hover:bg-gray-50">
                       <td className="px-4 py-3">
                         <div>
-                          <p className="font-medium text-gray-900">
-                            {submission.institution?.nom}
-                          </p>
-                          <p className="text-sm text-gray-500">
-                            {submission.institution?.code}
-                          </p>
+                          {submission.institution ? (
+                            <>
+                              <p className="font-medium text-gray-900">
+                                {submission.institution.nom}
+                              </p>
+                              <p className="text-sm text-gray-500">
+                                {submission.institution.code}
+                              </p>
+                            </>
+                          ) : (
+                            <span className="px-2 py-0.5 rounded text-[10px] bg-orange-100 text-orange-600 font-medium">Non trouvée</span>
+                          )}
                         </div>
                       </td>
                       <td className="px-4 py-3">

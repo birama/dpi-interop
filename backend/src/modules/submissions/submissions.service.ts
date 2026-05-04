@@ -9,8 +9,12 @@ import {
 export class SubmissionsService {
   constructor(private app: FastifyInstance) {}
 
-  async create(input: CreateSubmissionInput, userId: string) {
+  async create(input: CreateSubmissionInput, userId: string, userRole?: string, userInstitutionId?: string, userEmail?: string) {
     const { institutionId } = input;
+
+    if (userRole && userRole !== 'ADMIN' && institutionId !== userInstitutionId) {
+      throw { statusCode: 403, message: 'Vous ne pouvez créer un questionnaire que pour votre institution' };
+    }
 
     // Verify institution exists
     const institution = await this.app.prisma.institution.findUnique({
@@ -51,7 +55,9 @@ export class SubmissionsService {
       data: {
         userId,
         action: 'CREATE',
-        userEmail: 'system', userRole: 'SYSTEM', resource: 'submissions',
+        userEmail: userEmail || 'unknown',
+        userRole: userRole || 'unknown',
+        resource: 'submissions',
         resourceId: submission.id,
       },
     });
@@ -141,13 +147,17 @@ export class SubmissionsService {
     return submission;
   }
 
-  async update(id: string, input: UpdateSubmissionInput, userId: string) {
+  async update(id: string, input: UpdateSubmissionInput, userId: string, userRole?: string, userInstitutionId?: string, userEmail?: string) {
     const existing = await this.app.prisma.submission.findUnique({
       where: { id },
     });
 
     if (!existing) {
       throw { statusCode: 404, message: 'Soumission non trouvée' };
+    }
+
+    if (userRole && userRole !== 'ADMIN' && existing.institutionId !== userInstitutionId) {
+      throw { statusCode: 403, message: 'Accès non autorisé à cette soumission' };
     }
 
     if (existing.status !== 'DRAFT') {
@@ -287,7 +297,9 @@ export class SubmissionsService {
       data: {
         userId,
         action: 'UPDATE',
-        userEmail: 'system', userRole: 'SYSTEM', resource: 'submissions',
+        userEmail: userEmail || 'unknown',
+        userRole: userRole || 'unknown',
+        resource: 'submissions',
         resourceId: id,
         details: input as any,
       },
@@ -296,13 +308,23 @@ export class SubmissionsService {
     return result;
   }
 
-  async updateStatus(id: string, input: UpdateStatusInput, userId: string) {
+  async updateStatus(id: string, input: UpdateStatusInput, userId: string, userRole?: string, userInstitutionId?: string, userEmail?: string) {
     const existing = await this.app.prisma.submission.findUnique({
       where: { id },
     });
 
     if (!existing) {
       throw { statusCode: 404, message: 'Soumission non trouvée' };
+    }
+
+    if (userRole && userRole !== 'ADMIN') {
+      if (existing.institutionId !== userInstitutionId) {
+        throw { statusCode: 403, message: 'Accès non autorisé à cette soumission' };
+      }
+      // Une institution ne peut que SOUMETTRE son brouillon. La revue/validation est réservée aux ADMIN.
+      if (input.status !== 'SUBMITTED') {
+        throw { statusCode: 403, message: 'Seul un administrateur peut effectuer ce changement de statut' };
+      }
     }
 
     const updateData: any = { status: input.status };
@@ -327,7 +349,9 @@ export class SubmissionsService {
       data: {
         userId,
         action: 'STATUS_CHANGE',
-        userEmail: 'system', userRole: 'SYSTEM', resource: 'submissions',
+        userEmail: userEmail || 'unknown',
+        userRole: userRole || 'unknown',
+        resource: 'submissions',
         resourceId: id,
         details: { oldStatus: existing.status, newStatus: input.status },
       },
@@ -336,13 +360,17 @@ export class SubmissionsService {
     return submission;
   }
 
-  async delete(id: string, userId: string) {
+  async delete(id: string, userId: string, userRole?: string, userInstitutionId?: string, userEmail?: string) {
     const existing = await this.app.prisma.submission.findUnique({
       where: { id },
     });
 
     if (!existing) {
       throw { statusCode: 404, message: 'Soumission non trouvée' };
+    }
+
+    if (userRole && userRole !== 'ADMIN' && existing.institutionId !== userInstitutionId) {
+      throw { statusCode: 403, message: 'Accès non autorisé à cette soumission' };
     }
 
     if (existing.status !== 'DRAFT') {
@@ -358,7 +386,9 @@ export class SubmissionsService {
       data: {
         userId,
         action: 'DELETE',
-        userEmail: 'system', userRole: 'SYSTEM', resource: 'submissions',
+        userEmail: userEmail || 'unknown',
+        userRole: userRole || 'unknown',
+        resource: 'submissions',
         resourceId: id,
       },
     });

@@ -6,6 +6,19 @@ export async function submissionsRoutes(app: FastifyInstance) {
   const submissionsService = new SubmissionsService(app);
   const submissionsController = new SubmissionsController(submissionsService);
 
+  // Helper : utilisé par toutes les sous-routes inline pour bloquer l'accès cross-institution.
+  async function ensureSubmissionAccess(request: any, reply: any) {
+    if (request.user.role === 'ADMIN') return;
+    const sub = await app.prisma.submission.findUnique({
+      where: { id: request.params.id },
+      select: { institutionId: true },
+    });
+    if (!sub) return reply.status(404).send({ error: 'Soumission non trouvée' });
+    if (sub.institutionId !== request.user.institutionId) {
+      return reply.status(403).send({ error: 'Accès non autorisé à cette soumission' });
+    }
+  }
+
   // Get all submissions (paginated)
   app.get('/', {
     onRequest: [app.authenticate],
@@ -143,6 +156,7 @@ export async function submissionsRoutes(app: FastifyInstance) {
   // Add/upsert infrastructure item
   app.post('/:id/infrastructure', {
     onRequest: [app.authenticate],
+    preHandler: [ensureSubmissionAccess],
     schema: {
       tags: ['Submissions'],
       description: 'Ajouter/mettre à jour un item d\'infrastructure',
@@ -167,6 +181,7 @@ export async function submissionsRoutes(app: FastifyInstance) {
   // Bulk upsert infrastructure items
   app.put('/:id/infrastructure', {
     onRequest: [app.authenticate],
+    preHandler: [ensureSubmissionAccess],
     schema: {
       tags: ['Submissions'],
       description: 'Mettre à jour tous les items d\'infrastructure',
@@ -210,6 +225,7 @@ export async function submissionsRoutes(app: FastifyInstance) {
   // Delete infrastructure item
   app.delete('/:id/infrastructure/:itemId', {
     onRequest: [app.authenticate],
+    preHandler: [ensureSubmissionAccess],
     schema: {
       tags: ['Submissions'],
       description: 'Supprimer un item d\'infrastructure',
@@ -227,6 +243,7 @@ export async function submissionsRoutes(app: FastifyInstance) {
   // ============================================================================
   app.put('/:id/niveaux-interop', {
     onRequest: [app.authenticate],
+    preHandler: [ensureSubmissionAccess],
     schema: { tags: ['Submissions'], description: 'Sauvegarder diagnostic niveaux interop', security: [{ bearerAuth: [] }] },
     handler: async (request: any, reply: any) => {
       const { id } = request.params;
@@ -249,6 +266,7 @@ export async function submissionsRoutes(app: FastifyInstance) {
   // ============================================================================
   app.put('/:id/conformite-principes', {
     onRequest: [app.authenticate],
+    preHandler: [ensureSubmissionAccess],
     schema: { tags: ['Submissions'], description: 'Sauvegarder conformité aux 13 principes', security: [{ bearerAuth: [] }] },
     handler: async (request: any, reply: any) => {
       const { id } = request.params;
@@ -271,6 +289,7 @@ export async function submissionsRoutes(app: FastifyInstance) {
   // ============================================================================
   app.put('/:id/dictionnaire', {
     onRequest: [app.authenticate],
+    preHandler: [ensureSubmissionAccess],
     schema: { tags: ['Submissions'], description: 'Sauvegarder dictionnaire de données', security: [{ bearerAuth: [] }] },
     handler: async (request: any, reply: any) => {
       const { id } = request.params;
@@ -292,6 +311,7 @@ export async function submissionsRoutes(app: FastifyInstance) {
   // ============================================================================
   app.put('/:id/preparation-decret', {
     onRequest: [app.authenticate],
+    preHandler: [ensureSubmissionAccess],
     schema: { tags: ['Submissions'], description: 'Sauvegarder préparation au décret', security: [{ bearerAuth: [] }] },
     handler: async (request: any, reply: any) => {
       const { id } = request.params;

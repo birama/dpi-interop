@@ -57,6 +57,7 @@ export const MENU_SECTIONS: MenuSection[] = [
       { name: 'Mes cas d\'usage', href: '/mes-cas-usage', icon: ListChecks, counter: 'mesCasUsage' },
       { name: 'Mes demandes', href: '/institution/demandes', icon: MessageSquare, roles: ['INSTITUTION'] },
       { name: 'Questionnaire', href: '/questionnaire', icon: FileText, roles: ['INSTITUTION'] },
+      { name: 'Mes soumissions', href: '/submissions', icon: FileCheck, roles: ['INSTITUTION'] },
     ],
   },
   {
@@ -103,6 +104,7 @@ export const MENU_SECTIONS: MenuSection[] = [
       { name: 'Matrice des flux', href: '/matrice', icon: Grid3X3 },
       { name: 'Financements', href: '/admin/financements', icon: Wallet },
       { name: 'Radar de maturite', href: '/maturite', icon: Radar },
+      { name: 'Soumissions', href: '/submissions', icon: FileCheck },
       { name: 'Audit & Sessions', href: '/admin/audit', icon: Shield },
       { name: 'Rapports', href: '/reports', icon: BarChart3 },
       { name: 'Import Word', href: '/admin/import', icon: Upload },

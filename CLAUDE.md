@@ -111,7 +111,16 @@ questionnaire-interop/
 - Plateforme : PINS (jamais e-jokkoo ni e-jokko)
 - Couleurs charte : Navy #0C1F3A, Teal #0A6B68, Gold #D4A820, Amber #C55A18
 - Police : Tahoma (titres), Times New Roman (corps)
-- Codes cas d'usage : PINS-CU-XXX (séquentiel, unique)
+- Codes cas d'usage (depuis N2 — 28/04/2026) :
+  - `PINS-TECH-XXXX` : services techniques d'échange (capacité 9 999)
+  - `PINS-METIER-XXX` : parcours métier multi-administrations (capacité 999)
+  - Champ `codeHistorique` (texte) sur `CasUsageMVP` conserve les anciens codes
+  - Lexique titres `PINS-TECH-XXXX` : Consultation, Vérification, Notification,
+    Transmission, Réconciliation, Alimentation
+  - Anciens préfixes (MVP1-CU, MVP2-CU, HIST, XRN-CU, UC-GIZ-FIN, PINS-CU,
+    PINS-PROP-DEMO) abandonnés en local le 28/04/2026 — déploiement prod différé.
+    Référence : `docs/vue-360/n2-migration-nomenclature.md` et note N1
+    (`MCTN/DU/APP-DPI-INTEROP/CONC-2026-06`).
 - ASTER et SIGIF coexistent à la DGCPT (ne pas remplacer l'un par l'autre)
 - SENTAX remplace SIGTAS à la DGID (en conception)
 

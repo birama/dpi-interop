@@ -15,6 +15,7 @@
  */
 
 import { FastifyInstance } from 'fastify';
+import { UseCaseStatus } from '@prisma/client';
 
 // Matrice de transitions autorisées : from → [to...]
 const TRANSITION_MATRIX: Record<string, string[]> = {
@@ -963,5 +964,151 @@ export async function duArbitrageRoutes(app: FastifyInstance) {
         topTechniques,
       },
     });
+  });
+
+  // POST /:cuId/convocation — Convoquer les parties prenantes pour un cadrage
+  app.post('/:cuId/convocation', { onRequest: [app.authenticateAdmin] }, async (req: any, reply: any) => {
+    const { cuId } = req.params;
+    const { dateEcheance, motif } = req.body as any;
+    const user = req.user;
+
+    if (!dateEcheance) return reply.status(400).send({ error: 'dateEcheance requis' });
+    if (!motif || motif.trim().length < 50) return reply.status(400).send({ error: 'motif requis (min 50 caractères)' });
+
+    const cu = await app.prisma.casUsageMVP.findUnique({ where: { id: cuId } });
+    if (!cu) return reply.status(404).send({ error: 'Cas d\'usage non trouvé' });
+
+    // Transition vers EN_CONSULTATION si nécessaire
+    if (cu.statutVueSection === 'DECLARE' || cu.statutVueSection === 'VALIDATION_CONJOINTE') {
+      await app.prisma.casUsageMVP.update({ where: { id: cuId }, data: { statutVueSection: 'EN_CONSULTATION' } });
+      const userInst = await app.prisma.institution.findUnique({ where: { id: user.institutionId }, select: { nom: true } });
+      await app.prisma.useCaseStatusHistory.create({
+        data: {
+          casUsageId: cuId, statusFrom: cu.statutVueSection, statusTo: 'EN_CONSULTATION',
+          motif: `Convocation cadrage DU — ${motif.trim().substring(0, 200)}`,
+          auteurUserId: user.id, auteurNom: user.email,
+          auteurInstitution: userInst?.nom || 'SENUM SA',
+        },
+      });
+    }
+
+    // Créer/actualiser les consultations pour tous les stakeholders actifs
+    const stakeholders = await app.prisma.useCaseStakeholder.findMany({
+      where: { casUsageId: cuId, actif: true },
+      include: { institution: { include: { users: { select: { id: true } } } } },
+    });
+
+    let consultationsCreated = 0;
+    for (const sh of stakeholders) {
+      const existingConsultation = await app.prisma.useCaseConsultation.findFirst({
+        where: { stakeholderId: sh.id, status: 'EN_ATTENTE' },
+      });
+      if (existingConsultation) {
+        await app.prisma.useCaseConsultation.update({
+          where: { id: existingConsultation.id },
+          data: { dateEcheance: new Date(dateEcheance), motifSollicit: motif.trim() },
+        });
+      } else {
+        await app.prisma.useCaseConsultation.create({
+          data: {
+            stakeholderId: sh.id, dateEcheance: new Date(dateEcheance),
+            status: 'EN_ATTENTE', ouvertePar: user.id, motifSollicit: motif.trim(),
+          },
+        });
+        consultationsCreated++;
+      }
+
+      // Notifier chaque utilisateur de l'institution
+      for (const u of sh.institution.users) {
+        try {
+          await app.prisma.notification.create({
+            data: {
+              userId: u.id, institutionId: sh.institutionId,
+              type: 'CONVOCATION',
+              titre: `Convocation cadrage — ${cu.titre}`,
+              message: `La Delivery Unit vous convoque pour un cadrage. Échéance : ${new Date(dateEcheance).toLocaleDateString('fr-FR')}. Motif : ${motif.trim().substring(0, 150)}`,
+              lienUrl: `/admin/cas-usage/${cuId}`,
+              refType: 'CAS_USAGE', refId: cuId,
+            },
+          });
+        } catch {}
+      }
+    }
+
+    try { await app.prisma.auditLog.create({ data: { userId: user.id, userEmail: user.email, userRole: user.role, action: 'ARBITRAGE', resource: 'use-case-360', resourceId: cuId, resourceLabel: `Convocation – ${cu.code}`, ipAddress: req.headers['x-forwarded-for']?.toString() || req.ip, userAgent: req.headers['user-agent'] } }); } catch {}
+
+    return reply.send({ success: true, consultationsCreated, stakeholdersNotifies: stakeholders.length });
+  });
+
+  // POST /:cuId/decision — Décision d'arbitrage de la DU
+  app.post('/:cuId/decision', { onRequest: [app.authenticateAdmin] }, async (req: any, reply: any) => {
+    const { cuId } = req.params;
+    const { decision, motif } = req.body as any;
+    const user = req.user;
+
+    if (!['MAINTENIR', 'SUSPENDRE', 'RETIRER'].includes(decision)) {
+      return reply.status(400).send({ error: 'decision invalide. Valeurs acceptées : MAINTENIR, SUSPENDRE, RETIRER' });
+    }
+    if (!motif || motif.trim().length < 50) return reply.status(400).send({ error: 'motif obligatoire (min 50 caractères)' });
+
+    const cu = await app.prisma.casUsageMVP.findUnique({ where: { id: cuId } });
+    if (!cu) return reply.status(404).send({ error: 'Cas d\'usage non trouvé' });
+
+    const statusMapping: Record<string, string> = {
+      MAINTENIR: 'QUALIFIE',
+      SUSPENDRE: 'SUSPENDU_360',
+      RETIRER: 'RETIRE',
+    };
+    const newStatus = statusMapping[decision] as UseCaseStatus;
+    const currentStatus = cu.statutVueSection;
+
+    // Vérifier que la transition est légale
+    const allowed = TRANSITION_MATRIX[currentStatus] || [];
+    if (!allowed.includes(newStatus)) {
+      return reply.status(400).send({ error: `Transition ${currentStatus} → ${newStatus} non autorisée`, allowedTransitions: allowed });
+    }
+
+    const userInst = await app.prisma.institution.findUnique({ where: { id: user.institutionId }, select: { nom: true } });
+
+    // Journal inaltérable
+    await app.prisma.useCaseStatusHistory.create({
+      data: {
+        casUsageId: cuId, statusFrom: currentStatus, statusTo: newStatus,
+        motif: `[Décision DU — ${decision}] ${motif.trim()}`,
+        auteurUserId: user.id, auteurNom: user.email,
+        auteurInstitution: userInst?.nom || 'SENUM SA',
+      },
+    });
+
+    // Mise à jour du statut
+    await app.prisma.casUsageMVP.update({ where: { id: cuId }, data: { statutVueSection: newStatus } });
+
+    // Notifier tous les stakeholders
+    const stakeholders = await app.prisma.useCaseStakeholder.findMany({
+      where: { casUsageId: cuId, actif: true },
+      include: { institution: { include: { users: { select: { id: true } } } } },
+    });
+
+    const decisionLabels: Record<string, string> = { MAINTENIR: 'maintenu (qualifié)', SUSPENDRE: 'suspendu', RETIRER: 'retiré' };
+    for (const sh of stakeholders) {
+      for (const u of sh.institution.users) {
+        try {
+          await app.prisma.notification.create({
+            data: {
+              userId: u.id, institutionId: sh.institutionId,
+              type: 'ARBITRAGE',
+              titre: `Décision d'arbitrage — ${cu.titre}`,
+              message: `La Delivery Unit a statué : cas d'usage ${decisionLabels[decision]}. Motif : ${motif.trim().substring(0, 150)}`,
+              lienUrl: `/admin/cas-usage/${cuId}`,
+              refType: 'CAS_USAGE', refId: cuId,
+            },
+          });
+        } catch {}
+      }
+    }
+
+    try { await app.prisma.auditLog.create({ data: { userId: user.id, userEmail: user.email, userRole: user.role, action: 'ARBITRAGE', resource: 'use-case-360', resourceId: cuId, resourceLabel: `Décision ${decision} – ${cu.code}`, ipAddress: req.headers['x-forwarded-for']?.toString() || req.ip, userAgent: req.headers['user-agent'] } }); } catch {}
+
+    return reply.send({ success: true, decision, newStatus, previousStatus: currentStatus });
   });
 }
