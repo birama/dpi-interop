@@ -19,7 +19,6 @@ export function useQuestionnaireData(submissionIdParam?: string) {
   const queryClient = useQueryClient();
   const { user } = useAuthStore();
 
-  const isInitialLoad = useRef(true);
   const isDirty = useRef(false);
   const autoSaveTimer = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -97,14 +96,13 @@ export function useQuestionnaireData(submissionIdParam?: string) {
     },
   });
 
-  // Charge les donnees existantes au premier rendu apres fetch
+  // Charge les donnees depuis l'API a chaque reponse (admin consultant un questionnaire
+  // tiers, rechargement apres mutation, etc.). Le stepper empeche toute interaction
+  // utilisateur pendant isLoading, donc pas de risque de conflit de navigation.
   useEffect(() => {
     if (!submissionQuery.data?.data) return;
     const s = submissionQuery.data.data;
-    if (isInitialLoad.current) {
-      setCurrentStep(s.currentStep || 0);
-      isInitialLoad.current = false;
-    }
+    setCurrentStep(s.currentStep || 0);
     setFormDataRaw(prev => ({
       ...prev,
       dataOwnerNom: s.dataOwnerNom || '',
