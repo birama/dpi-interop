@@ -1,13 +1,15 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useQuery, useMutation } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/use-toast';
 import { useAuthStore } from '@/store/auth';
 import { institutionsApi, notificationsApi } from '@/services/api';
-import { Search, Building2, Plus, FileText, Eye, Mail, RefreshCw, Send } from 'lucide-react';
+import { Search, Building2, Plus, FileText, Eye, Mail, RefreshCw, Send, Pencil } from 'lucide-react';
+import type { Institution } from '@/types';
 
 export function InstitutionsPage() {
   const [search, setSearch] = useState('');
@@ -51,6 +53,39 @@ export function InstitutionsPage() {
       inviteAllMutation.mutate();
     }
   };
+
+  // Edition d'institution
+  const queryClient = useQueryClient();
+  const [editingInst, setEditingInst] = useState<Institution | null>(null);
+  const [editForm, setEditForm] = useState({
+    code: '', nom: '', ministere: '',
+    responsableNom: '', responsableFonction: '', responsableEmail: '', responsableTel: '',
+  });
+
+  const openEdit = (inst: Institution) => {
+    setEditingInst(inst);
+    setEditForm({
+      code: inst.code,
+      nom: inst.nom,
+      ministere: inst.ministere,
+      responsableNom: inst.responsableNom,
+      responsableFonction: inst.responsableFonction,
+      responsableEmail: inst.responsableEmail,
+      responsableTel: inst.responsableTel,
+    });
+  };
+
+  const updateMutation = useMutation({
+    mutationFn: () => institutionsApi.update(editingInst!.id, editForm),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['institutions'] });
+      toast({ title: 'Institution modifiée', description: `${editForm.code} a été mise à jour` });
+      setEditingInst(null);
+    },
+    onError: (err: any) => {
+      toast({ title: 'Erreur', description: err.response?.data?.error || 'Impossible de modifier l\'institution', variant: 'destructive' });
+    },
+  });
 
   const { data, isLoading } = useQuery({
     queryKey: ['institutions', { search, page }],
@@ -225,6 +260,14 @@ export function InstitutionsPage() {
                               <Button
                                 variant="ghost"
                                 size="sm"
+                                title="Modifier l'institution"
+                                onClick={() => openEdit(institution)}
+                              >
+                                <Pencil className="w-4 h-4 text-navy" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
                                 title="Envoyer une invitation"
                                 onClick={() => inviteMutation.mutate(institution.id)}
                                 disabled={inviteMutation.isPending && inviteMutation.variables === institution.id}
@@ -285,6 +328,51 @@ export function InstitutionsPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* Modal édition institution */}
+      {editingInst && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => setEditingInst(null)}>
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg mx-4 p-6 space-y-4" onClick={e => e.stopPropagation()}>
+            <h2 className="text-lg font-bold text-navy">Modifier {editingInst.code}</h2>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>Code</Label>
+                <Input value={editForm.code} onChange={e => setEditForm(f => ({ ...f, code: e.target.value }))} />
+              </div>
+              <div>
+                <Label>Ministère</Label>
+                <Input value={editForm.ministere} onChange={e => setEditForm(f => ({ ...f, ministere: e.target.value }))} />
+              </div>
+              <div className="col-span-2">
+                <Label>Nom</Label>
+                <Input value={editForm.nom} onChange={e => setEditForm(f => ({ ...f, nom: e.target.value }))} />
+              </div>
+              <div className="col-span-2">
+                <Label>Responsable</Label>
+                <Input value={editForm.responsableNom} onChange={e => setEditForm(f => ({ ...f, responsableNom: e.target.value }))} />
+              </div>
+              <div>
+                <Label>Fonction</Label>
+                <Input value={editForm.responsableFonction} onChange={e => setEditForm(f => ({ ...f, responsableFonction: e.target.value }))} />
+              </div>
+              <div>
+                <Label>Email</Label>
+                <Input type="email" value={editForm.responsableEmail} onChange={e => setEditForm(f => ({ ...f, responsableEmail: e.target.value }))} />
+              </div>
+              <div>
+                <Label>Téléphone</Label>
+                <Input value={editForm.responsableTel} onChange={e => setEditForm(f => ({ ...f, responsableTel: e.target.value }))} />
+              </div>
+            </div>
+            <div className="flex justify-end gap-2 pt-2">
+              <Button variant="outline" onClick={() => setEditingInst(null)}>Annuler</Button>
+              <Button className="bg-teal hover:bg-teal-dark" onClick={() => updateMutation.mutate()} disabled={updateMutation.isPending}>
+                {updateMutation.isPending ? 'Enregistrement...' : 'Enregistrer'}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -165,9 +165,9 @@ const institutions: InstitutionData[] = [
   { code: 'DIREL', nom: 'Direction de l\'Élevage', ministere: 'Agriculture' },
 
   // ============================================================================
-  // MINISTÈRE DE LA SANTÉ ET DE L'ACTION SOCIALE
+  // MINISTÈRE DE LA SANTÉ ET DE L'HYGIÈNE PUBLIQUE
   // ============================================================================
-  { code: 'MSAS', nom: 'Ministère de la Santé et de l\'Action Sociale', ministere: 'Santé', responsableNom: 'Ibrahima SY', responsableFonction: 'Ministre' },
+  { code: 'MSHP', nom: 'Ministère de la Santé et de l''Hygiène Publique', ministere: 'Santé', responsableNom: 'Ibrahima SY', responsableFonction: 'Ministre' },
   { code: 'DGS', nom: 'Direction Générale de la Santé', ministere: 'Santé' },
   { code: 'DGAS', nom: 'Direction Générale de l\'Action Sociale', ministere: 'Santé' },
   { code: 'PNA', nom: 'Pharmacie Nationale d\'Approvisionnement', ministere: 'Santé' },

@@ -650,7 +650,7 @@
     "ID Flux": "XRN-CU-31",
     "Cas d’usage": "Dossier medical electronique <-> Identite nationale",
     "Processus métier": "Soins medicaux personnalises via interconnexion DPP et identification nationale",
-    "Institution source": "MSAS (Ministere de la Sante)",
+    "Institution source": "MSHP (Ministère de la Santé et de l'Hygiène Publique)",
     "Institution consommatrice": "Hopitaux, centres de sante, DGAS",
     "Système source": "DPP (Dossier Patient Partage - en cours de developpement)",
     "Système cible": "SI hospitalier / SIGICMU / SI DGAS",
@@ -663,7 +663,7 @@
     "Niveau de sensibilité": "Tres eleve",
     "Mesures de sécurité": "Chiffrement TLS, authentification forte, consentement patient explicite, pseudonymisation, audit renforce, secret medical",
     "SLA / Temps réel": "Synchrone < 3s",
-    "Responsable métier": "MSAS / DGAS",
+    "Responsable métier": "MSHP / DGAS",
     "Responsable technique": "SENUM / MCTN",
     "Statut": "Phase 5 - Sante DX"
   },

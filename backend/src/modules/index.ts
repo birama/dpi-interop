@@ -1024,7 +1024,8 @@ export async function registerRoutes(app: FastifyInstance) {
   // Update session activity on every authenticated request
   app.addHook('onResponse', async (request: any, reply: any) => {
     if (!request.user?.id) return;
-    if (['GET', 'OPTIONS', 'HEAD'].includes(request.method)) return;
+    // Suivi activité temps réel : mise à jour lastActivityAt pour toutes les requêtes
+    // (GET inclus — l'utilisateur navigue, les refetch automatiques le maintiennent actif)
     if (reply.statusCode >= 400) return;
     try {
       await app.prisma.userSession.updateMany({

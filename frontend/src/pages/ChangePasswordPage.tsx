@@ -17,7 +17,7 @@ export function ChangePasswordPage() {
   const [errors, setErrors] = useState<string[]>([]);
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { user, setAuth, token } = useAuthStore();
+  const { user, setAuth, token, logout } = useAuthStore();
 
   const validate = (): boolean => {
     const errs: string[] = [];
@@ -125,6 +125,19 @@ export function ChangePasswordPage() {
                 ) : (
                   'Modifier le mot de passe'
                 )}
+              </Button>
+
+              <Button
+                type="button"
+                variant="ghost"
+                className="w-full text-gray-400 hover:text-gray-200"
+                disabled={isLoading}
+                onClick={() => {
+                  logout();
+                  navigate('/login', { replace: true });
+                }}
+              >
+                Annuler et se deconnecter
               </Button>
             </form>
           </CardContent>

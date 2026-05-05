@@ -17,7 +17,7 @@ const INSTITUTIONS_ATELIER = [
   'DGPSN', 'IPRES', 'CSS', 'SEN-CSU', 'APIX',  // Nouvelles
   'ADIE', 'CDP', 'ARTP', 'GREFFE', 'CNCJ',
   'DAF', 'SENELEC', 'PETROSEN', 'ONAS', 'PAD',
-  'SAED', 'ISRA', 'ANCAR', 'MSAS', 'PNA',
+  'SAED', 'ISRA', 'ANCAR', 'MSHP', 'PNA',
   'FONSIS', 'FONGIP', 'DER-FJ', 'ADEPME', 'SENUM',
 ];
 
