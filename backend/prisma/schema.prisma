@@ -889,6 +889,12 @@ model ManifestationInteret {
   dateValidation  DateTime?
   motifRejet      String?   @db.Text
 
+  // PTF Phase 2 — Articulation amont/aval
+  // Une manifestation PUBLIE et de type FINANCEMENT peut générer un (ou plusieurs)
+  // Financement(s) côté DU. Une retentative après REJETE peut produire plusieurs
+  // Financements dans le temps — d'où la cardinalité 1:N (et non 1:1).
+  financementsGeneres Financement[] @relation("ManifestationVersFinancement")
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -1200,12 +1206,22 @@ model Financement {
   dateDemande     DateTime?
   dateAccord      DateTime?
   observations    String?
-  createdAt       DateTime          @default(now())
-  updatedAt       DateTime          @updatedAt
+
+  // PTF Phase 2 — Articulation amont/aval
+  // Un Financement peut être issu de la validation MCTN d'une ManifestationInteret
+  // de type FINANCEMENT (option de conversion offerte à l'admin lors du validate).
+  // Champ nullable : un Financement peut aussi être saisi directement (engagement
+  // hérité d'avant le module PTF, ou intégré sans passer par le workflow partenaire).
+  manifestationOrigineId String?
+  manifestationOrigine   ManifestationInteret? @relation("ManifestationVersFinancement", fields: [manifestationOrigineId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@unique([casUsageMVPId, programmeId])
   @@index([casUsageMVPId])
   @@index([programmeId])
+  @@index([manifestationOrigineId])
   @@map("financements")
 }
 

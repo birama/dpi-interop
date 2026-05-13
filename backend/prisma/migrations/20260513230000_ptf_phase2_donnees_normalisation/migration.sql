@@ -157,3 +157,17 @@ ALTER TABLE "journal_audit_ptf"
   ADD CONSTRAINT "journal_audit_ptf_userId_fkey"
   FOREIGN KEY ("userId") REFERENCES "users"("id")
   ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- 10. Articulation amont/aval : Financement.manifestationOrigineId
+--     Une manifestation PTF validée peut être convertie en Financement (statut IDENTIFIE).
+--     Champ nullable : un Financement peut aussi être saisi directement (héritage / admin).
+ALTER TABLE "financements"
+  ADD COLUMN IF NOT EXISTS "manifestationOrigineId" TEXT;
+
+CREATE INDEX IF NOT EXISTS "financements_manifestationOrigineId_idx"
+  ON "financements"("manifestationOrigineId");
+
+ALTER TABLE "financements"
+  ADD CONSTRAINT "financements_manifestationOrigineId_fkey"
+  FOREIGN KEY ("manifestationOrigineId") REFERENCES "manifestation_interet"("id")
+  ON DELETE SET NULL ON UPDATE CASCADE;
