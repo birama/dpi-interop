@@ -25,6 +25,11 @@ model User {
   institutionId String?
   institution   Institution? @relation(fields: [institutionId], references: [id])
 
+  // PTF (module Partenaires Techniques et Financiers — phase 1)
+  ptfId          String?
+  ptf            PTF?      @relation(fields: [ptfId], references: [id])
+  cguAccepteesAt DateTime?
+
   // Audit
   lastLoginAt DateTime?
   createdAt   DateTime  @default(now())
@@ -49,12 +54,14 @@ model User {
   relationsCasUsageCrees  RelationCasUsage[] @relation("RelationCasUsageCree")
 
   @@index([email])
+  @@index([ptfId])
   @@map("users")
 }
 
 enum Role {
   ADMIN // SENUM/MCTN
   INSTITUTION // Administrations sectorielles
+  BAILLEUR // Partenaires Techniques et Financiers (libellé UI : PTF)
 }
 
 // ============================================================================
@@ -765,6 +772,7 @@ model PTF {
   contactEmail String?
   contactTel   String?
   programmes   Programme[]
+  users        User[] // Comptes BAILLEUR rattachés à ce PTF (phase 1)
   createdAt    DateTime    @default(now())
   updatedAt    DateTime    @updatedAt
 

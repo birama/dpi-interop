@@ -2,7 +2,7 @@
 // USER & AUTH
 // ============================================================================
 
-export type Role = 'ADMIN' | 'INSTITUTION';
+export type Role = 'ADMIN' | 'INSTITUTION' | 'BAILLEUR';
 
 export interface User {
   id: string;
@@ -10,6 +10,8 @@ export interface User {
   role: Role;
   institutionId: string | null;
   institution?: Institution;
+  ptfId?: string | null;
+  cguAccepted?: boolean;
   lastLoginAt: string | null;
   createdAt: string;
   updatedAt: string;
@@ -315,6 +317,7 @@ export const SUBMISSION_STATUS_COLORS: Record<SubmissionStatus, string> = {
 export const ROLE_LABELS: Record<Role, string> = {
   ADMIN: 'Administrateur',
   INSTITUTION: 'Institution',
+  BAILLEUR: 'Partenaire Technique et Financier',
 };
 
 export const QUESTIONNAIRE_STEPS = [

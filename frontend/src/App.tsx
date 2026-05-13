@@ -42,9 +42,21 @@ import { ParcoursMetierPage, ServicesTechniquesPage } from '@/modules/vue360/cat
 import { AdoptionRequestsPage } from '@/modules/vue360/du/AdoptionRequestsPage';
 import { DocumentsPage } from '@/pages/DocumentsPage';
 import { NotFoundPage } from '@/pages/NotFoundPage';
+import { CguAcceptancePage } from '@/pages/partenaire/CguAcceptancePage';
+import { PartenaireDashboardPage } from '@/pages/partenaire/PartenaireDashboardPage';
+import { CreatePartenaireUserPage } from '@/pages/partenaire/CreatePartenaireUserPage';
 
 // Protected Route wrapper
-function ProtectedRoute({ children, adminOnly = false }: { children: React.ReactNode; adminOnly?: boolean }) {
+type AllowedRole = 'ADMIN' | 'INSTITUTION' | 'BAILLEUR';
+function ProtectedRoute({
+  children,
+  adminOnly = false,
+  allowedRoles,
+}: {
+  children: React.ReactNode;
+  adminOnly?: boolean;
+  allowedRoles?: AllowedRole[];
+}) {
   const { isAuthenticated, user } = useAuthStore();
 
   if (!isAuthenticated) {
@@ -55,7 +67,16 @@ function ProtectedRoute({ children, adminOnly = false }: { children: React.React
     return <Navigate to="/change-password" replace />;
   }
 
+  // PTF Phase 1 — Acceptation CGU obligatoire pour les BAILLEUR
+  if (user?.role === 'BAILLEUR' && !(user as any)?.cguAccepted) {
+    return <Navigate to="/partenaire/cgu" replace />;
+  }
+
   if (adminOnly && user?.role !== 'ADMIN') {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  if (allowedRoles && user?.role && !allowedRoles.includes(user.role as AllowedRole)) {
     return <Navigate to="/dashboard" replace />;
   }
 
@@ -87,6 +108,9 @@ function App() {
 
         {/* Change password (no layout) */}
         <Route path="/change-password" element={<ChangePasswordPage />} />
+
+        {/* PTF Phase 1 — Acceptation CGU (hors ProtectedRoute pour éviter boucle de redirect) */}
+        <Route path="/partenaire/cgu" element={<CguAcceptancePage />} />
 
         {/* Protected routes */}
         <Route element={<DashboardLayout />}>
@@ -373,6 +397,25 @@ function App() {
             element={
               <ProtectedRoute adminOnly>
                 <DocumentsPage />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* PTF Phase 1 — Espace partenaire (stub) */}
+          <Route
+            path="/partenaire"
+            element={
+              <ProtectedRoute allowedRoles={['BAILLEUR']}>
+                <PartenaireDashboardPage />
+              </ProtectedRoute>
+            }
+          />
+          {/* PTF Phase 1 — Création compte bailleur (ADMIN only) */}
+          <Route
+            path="/admin/utilisateurs/bailleur/creer"
+            element={
+              <ProtectedRoute adminOnly>
+                <CreatePartenaireUserPage />
               </ProtectedRoute>
             }
           />

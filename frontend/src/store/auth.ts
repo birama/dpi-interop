@@ -4,13 +4,15 @@ import { persist } from 'zustand/middleware';
 interface User {
   id: string;
   email: string;
-  role: 'ADMIN' | 'INSTITUTION';
+  role: 'ADMIN' | 'INSTITUTION' | 'BAILLEUR';
   institutionId?: string;
   institution?: {
     id: string;
     code: string;
     nom: string;
   };
+  ptfId?: string | null;
+  cguAccepted?: boolean;
 }
 
 interface AuthState {
