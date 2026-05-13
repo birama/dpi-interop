@@ -53,6 +53,11 @@ model User {
   adoptionRequestsTraite  AdoptionRequest[]  @relation("AdoptionRequestValideur")
   relationsCasUsageCrees  RelationCasUsage[] @relation("RelationCasUsageCree")
 
+  // PTF Phase 2 — relations inverses
+  manifestationsCreees   ManifestationInteret[] @relation("ManifestationCreator")
+  manifestationsValidees ManifestationInteret[] @relation("ValidateurManifestation")
+  auditEventsPtf         JournalAuditPtf[]      @relation("AuditUserPtf")
+
   @@index([email])
   @@index([ptfId])
   @@map("users")
@@ -110,6 +115,59 @@ enum SourceProposition {
   RECOMMANDATION // Recommandation d'une autorite (CDP, ARTP, etc.)
   CADRAGE_STRATEGIQUE // Cadrage PRES, Vision Senegal 2050, etc.
   PROPOSITION_INSTITUTIONNELLE // Proposition soumise par une administration
+  BAILLEUR // PTF Phase 2 : proposition issue d'un Partenaire Technique et Financier
+}
+
+/// PTF Phase 2 — Référentiel normalisé des domaines d'interopérabilité
+/// Utilise sur CasUsageMVP.domaine et BailleurDomaineInteret.domaine.
+enum Domaine {
+  FINANCES_PUBLIQUES
+  CLIMAT_AFFAIRES
+  PROTECTION_SOCIALE
+  SANTE_NUMERIQUE
+  EDUCATION
+  IDENTITE_NUMERIQUE
+  JUSTICE_ETAT_CIVIL
+  FONCIER_CADASTRE
+  AGRICULTURE_NUMERIQUE
+  EMPLOI_FORMATION
+  SERVICES_CITOYENS
+  GOUVERNANCE_DONNEES
+  CYBERSECURITE
+  TRANSVERSAL
+}
+
+/// PTF Phase 2 — Type de manifestation d'un partenaire sur un cas
+enum ManifestationType {
+  INTERET // Intention sans engagement financier
+  FINANCEMENT // Proposition de financement chiffree
+}
+
+/// PTF Phase 2 — Cycle de vie d'une manifestation
+enum ManifestationStatus {
+  DRAFT // Brouillon, modifiable par le partenaire
+  EN_VALIDATION // Soumise, en attente de validation MCTN
+  PUBLIE // Validee, publique sur le tableau de bord coordination
+  REJETE // Refusee par la DU
+  RETIRE // Retiree par le partenaire
+}
+
+/// PTF Phase 2 — Actions traces dans le journal d'audit dedie
+enum AuditAction {
+  CONSULTATION_FICHE
+  CREATION_MANIFESTATION
+  MODIFICATION_MANIFESTATION
+  SOUMISSION_MANIFESTATION
+  RETRAIT_MANIFESTATION
+  VALIDATION_MANIFESTATION
+  REJET_MANIFESTATION
+  DEMANDE_COMPLEMENT
+  CREATION_PROPOSITION
+  MODIFICATION_DOMAINES_PTF
+  EXPORT_DONNEES
+  TELECHARGEMENT_DOCUMENT
+  CONNEXION
+  ACCEPTATION_CGU
 }
 
 /// Niveau de maturite d'une proposition (P8)
@@ -773,10 +831,93 @@ model PTF {
   contactTel   String?
   programmes   Programme[]
   users        User[] // Comptes BAILLEUR rattachés à ce PTF (phase 1)
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime    @updatedAt
+
+  // PTF Phase 2
+  domainesInteret BailleurDomaineInteret[]
+  manifestations  ManifestationInteret[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@map("ptf")
+}
+
+// ============================================================================
+// PTF Phase 2 — Domaines d'interet declares par un PTF
+// ============================================================================
+
+model BailleurDomaineInteret {
+  id          String   @id @default(cuid())
+  ptfId       String
+  ptf         PTF      @relation(fields: [ptfId], references: [id], onDelete: Cascade)
+  domaine     Domaine
+  declaresPar String? // userId admin ayant declare le rattachement
+  createdAt   DateTime @default(now())
+
+  @@unique([ptfId, domaine])
+  @@index([ptfId])
+  @@index([domaine])
+  @@map("bailleur_domaine_interet")
+}
+
+// ============================================================================
+// PTF Phase 2 — Manifestations d'interet ou de financement par un PTF
+// ============================================================================
+
+model ManifestationInteret {
+  id String @id @default(cuid())
+
+  casUsageId String
+  casUsage   CasUsageMVP @relation(fields: [casUsageId], references: [id])
+
+  ptfId String
+  ptf   PTF    @relation(fields: [ptfId], references: [id])
+
+  userId String
+  user   User   @relation("ManifestationCreator", fields: [userId], references: [id])
+
+  type   ManifestationType
+  statut ManifestationStatus @default(DRAFT)
+
+  commentaire         String? @db.Text
+  montantEstime       Float?
+  devise              String? // EUR, USD, XOF, ...
+  instrumentFinancier String? // DON, PRET_CONCESSIONNEL, ASSISTANCE_TECHNIQUE, ...
+
+  valideParUserId String?
+  valideParUser   User?     @relation("ValidateurManifestation", fields: [valideParUserId], references: [id])
+  dateValidation  DateTime?
+  motifRejet      String?   @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([casUsageId])
+  @@index([ptfId])
+  @@index([statut])
+  @@map("manifestation_interet")
+}
+
+// ============================================================================
+// PTF Phase 2 — Journal d'audit dedie au module PTF
+// ============================================================================
+
+model JournalAuditPtf {
+  id        String      @id @default(cuid())
+  userId    String
+  user      User        @relation("AuditUserPtf", fields: [userId], references: [id])
+  action    AuditAction
+  objetType String? // "manifestation", "cas_usage", "ptf", "user", ...
+  objetId   String?
+  details   Json? // Diff avant/apres pour les modifications
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime    @default(now())
+
+  @@index([userId])
+  @@index([action])
+  @@index([createdAt])
+  @@map("journal_audit_ptf")
 }
 
 enum PTFType {
@@ -933,6 +1074,13 @@ model CasUsageMVP {
   relationsMetier    RelationCasUsage[] @relation("RelationMetier")
   relationsTechnique RelationCasUsage[] @relation("RelationTechnique")
 
+  // PTF Phase 2 — Eligibilite appui partenaire + domaine normalise
+  aFinancer Boolean  @default(false)
+  domaine   Domaine?
+
+  // PTF Phase 2 — Relations vers les manifestations partenaires
+  manifestations ManifestationInteret[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -942,6 +1090,8 @@ model CasUsageMVP {
   @@index([statutVueSection])
   @@index([typologie])
   @@index([adopteParInstitutionId])
+  @@index([aFinancer])
+  @@index([domaine])
   @@map("cas_usage_mvp")
 }
 
