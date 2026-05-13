@@ -585,6 +585,214 @@ export async function catalogueRoutes(app: FastifyInstance) {
     });
     return reply.send({ ok: true });
   });
+
+  // =========================================================================
+  // PATCH /propositions/:id/demander-complement (DU only)
+  // Le statut reste PROPOSE — l'admin demande un complement d'info au proposeur
+  // =========================================================================
+  app.patch('/propositions/:id/demander-complement', { onRequest: [app.authenticateAdmin] }, async (req: any, reply: any) => {
+    const { id } = req.params;
+    const { commentaire } = req.body as any;
+    const user = req.user;
+
+    if (!commentaire || commentaire.trim().length < MIN_MOTIF_ARCHIVE) {
+      return reply.status(400).send({ error: `Commentaire requis, min ${MIN_MOTIF_ARCHIVE} caracteres.` });
+    }
+    const cu = await app.prisma.casUsageMVP.findUnique({
+      where: { id },
+      include: {
+        institutionsPressenties: {
+          include: { institution: { select: { id: true, users: { select: { id: true } } } } },
+        },
+      },
+    });
+    if (!cu) return reply.status(404).send({ error: 'Proposition non trouvee' });
+    if (cu.statutVueSection !== 'PROPOSE') {
+      return reply.status(409).send({ error: 'Demande de complement uniquement sur proposition active' });
+    }
+
+    const timestamp = new Date().toISOString().substring(0, 16).replace('T', ' ');
+    const appendNote = `\n\n[${timestamp} — ${user.email}] Demande de complement DU :\n${commentaire.trim()}`;
+    const newNotes = (cu.notes || '') + appendNote;
+
+    await app.prisma.$transaction(async (tx: any) => {
+      await tx.casUsageMVP.update({ where: { id }, data: { notes: newNotes } });
+      // Notifier les institutions pressenties
+      for (const ip of cu.institutionsPressenties) {
+        for (const u of ip.institution.users) {
+          try {
+            await tx.notification.create({
+              data: {
+                userId: u.id,
+                institutionId: ip.institution.id,
+                type: 'ARBITRAGE',
+                titre: `Complement demande — ${cu.titre}`,
+                message: `La Delivery Unit demande un complement d'information : ${commentaire.substring(0, 150)}`,
+                lienUrl: `/catalogue/propositions/${id}`,
+                refType: 'CAS_USAGE',
+                refId: id,
+              },
+            });
+          } catch {}
+        }
+      }
+    });
+
+    try {
+      await app.prisma.auditLog.create({
+        data: {
+          userId: user.id, userEmail: user.email, userRole: user.role,
+          action: 'UPDATE', resource: 'proposition', resourceId: id, resourceLabel: `demander-complement: ${cu.code}`,
+          ipAddress: req.headers['x-forwarded-for']?.toString() || req.ip,
+          userAgent: req.headers['user-agent'],
+        },
+      });
+    } catch {}
+
+    return reply.send({ ok: true });
+  });
+
+  // =========================================================================
+  // POST /propositions/:id/qualifier-rapide (DU only)
+  // Atomique : adopter + transition jusqu'a QUALIFIE
+  // Reserve aux cas de demonstration et arbitrages DU rapides
+  // =========================================================================
+  app.post('/propositions/:id/qualifier-rapide', { onRequest: [app.authenticateAdmin] }, async (req: any, reply: any) => {
+    const { id } = req.params;
+    const { institutionChefId, motif } = req.body as any;
+    const user = req.user;
+
+    if (!institutionChefId) return reply.status(400).send({ error: 'institutionChefId requis (institution cheffe de file)' });
+    if (!motif || motif.trim().length < MIN_MOTIF_ARCHIVE) {
+      return reply.status(400).send({ error: `Motif requis, min ${MIN_MOTIF_ARCHIVE} caracteres.` });
+    }
+    const cu = await app.prisma.casUsageMVP.findUnique({ where: { id } });
+    if (!cu) return reply.status(404).send({ error: 'Proposition non trouvee' });
+    if (cu.statutVueSection !== 'PROPOSE') {
+      return reply.status(409).send({ error: 'Qualification rapide uniquement sur proposition active' });
+    }
+
+    // 1. Adoption (PROPOSE -> DECLARE ou EN_CONSULTATION selon stakeholders)
+    const adoptionResult = await executeAdoption(app, {
+      casUsageId: id,
+      institutionInitiatriceId: institutionChefId,
+      userId: user.id,
+      ajustements: null,
+    });
+
+    // 2. Forcer les transitions vers QUALIFIE (toutes les intermediaires)
+    await app.prisma.$transaction(async (tx: any) => {
+      const cuAfterAdoption = await tx.casUsageMVP.findUnique({ where: { id } });
+      const fromStatus = cuAfterAdoption!.statutVueSection; // DECLARE ou EN_CONSULTATION
+
+      // Forcer EN_CONSULTATION -> VALIDATION_CONJOINTE -> QUALIFIE (ou DECLARE -> ... -> QUALIFIE)
+      const path = fromStatus === 'EN_CONSULTATION'
+        ? ['VALIDATION_CONJOINTE', 'QUALIFIE']
+        : ['EN_CONSULTATION', 'VALIDATION_CONJOINTE', 'QUALIFIE'];
+
+      let prev = fromStatus;
+      for (const next of path) {
+        await tx.casUsageMVP.update({ where: { id }, data: { statutVueSection: next } });
+        await tx.useCaseStatusHistory.create({
+          data: {
+            casUsageId: id,
+            statusFrom: prev as any,
+            statusTo: next as any,
+            motif: `Qualification rapide DU — ${motif.substring(0, 150)}`,
+            auteurUserId: user.id,
+            auteurNom: user.email,
+            auteurInstitution: 'SENUM SA',
+          },
+        });
+        prev = next;
+      }
+    });
+
+    try {
+      await app.prisma.auditLog.create({
+        data: {
+          userId: user.id, userEmail: user.email, userRole: user.role,
+          action: 'UPDATE', resource: 'proposition', resourceId: id, resourceLabel: `qualifier-rapide: ${cu.code}`,
+          ipAddress: req.headers['x-forwarded-for']?.toString() || req.ip,
+          userAgent: req.headers['user-agent'],
+        },
+      });
+    } catch {}
+
+    return reply.send({ ok: true, newCode: adoptionResult.newCode, finalStatus: 'QUALIFIE' });
+  });
+
+  // =========================================================================
+  // POST /propositions/:id/prioriser-rapide (DU only)
+  // Atomique : adopter + transition jusqu'a PRIORISE
+  // Action exceptionnelle, reservee aux cas de demonstration ou raccourcis DU
+  // =========================================================================
+  app.post('/propositions/:id/prioriser-rapide', { onRequest: [app.authenticateAdmin] }, async (req: any, reply: any) => {
+    const { id } = req.params;
+    const { institutionChefId, motif } = req.body as any;
+    const user = req.user;
+
+    if (!institutionChefId) return reply.status(400).send({ error: 'institutionChefId requis (institution cheffe de file)' });
+    if (!motif || motif.trim().length < MIN_MOTIF_ARCHIVE) {
+      return reply.status(400).send({ error: `Motif requis, min ${MIN_MOTIF_ARCHIVE} caracteres.` });
+    }
+    const cu = await app.prisma.casUsageMVP.findUnique({ where: { id } });
+    if (!cu) return reply.status(404).send({ error: 'Proposition non trouvee' });
+    if (cu.statutVueSection !== 'PROPOSE') {
+      return reply.status(409).send({ error: 'Priorisation rapide uniquement sur proposition active' });
+    }
+
+    // 1. Adoption (PROPOSE -> DECLARE ou EN_CONSULTATION)
+    const adoptionResult = await executeAdoption(app, {
+      casUsageId: id,
+      institutionInitiatriceId: institutionChefId,
+      userId: user.id,
+      ajustements: null,
+    });
+
+    // 2. Transitions jusqu'a PRIORISE
+    await app.prisma.$transaction(async (tx: any) => {
+      const cuAfterAdoption = await tx.casUsageMVP.findUnique({ where: { id } });
+      const fromStatus = cuAfterAdoption!.statutVueSection;
+
+      const path = fromStatus === 'EN_CONSULTATION'
+        ? ['VALIDATION_CONJOINTE', 'QUALIFIE', 'PRIORISE']
+        : ['EN_CONSULTATION', 'VALIDATION_CONJOINTE', 'QUALIFIE', 'PRIORISE'];
+
+      let prev = fromStatus;
+      for (const next of path) {
+        await tx.casUsageMVP.update({ where: { id }, data: { statutVueSection: next } });
+        await tx.useCaseStatusHistory.create({
+          data: {
+            casUsageId: id,
+            statusFrom: prev as any,
+            statusTo: next as any,
+            motif: `Priorisation rapide DU — ${motif.substring(0, 150)}`,
+            auteurUserId: user.id,
+            auteurNom: user.email,
+            auteurInstitution: 'SENUM SA',
+          },
+        });
+        prev = next;
+      }
+
+      // Aligner statutImpl
+      await tx.casUsageMVP.update({ where: { id }, data: { statutImpl: 'PRIORISE' } });
+    });
+
+    try {
+      await app.prisma.auditLog.create({
+        data: {
+          userId: user.id, userEmail: user.email, userRole: user.role,
+          action: 'UPDATE', resource: 'proposition', resourceId: id, resourceLabel: `prioriser-rapide: ${cu.code}`,
+          ipAddress: req.headers['x-forwarded-for']?.toString() || req.ip,
+          userAgent: req.headers['user-agent'],
+        },
+      });
+    } catch {}
+
+    return reply.send({ ok: true, newCode: adoptionResult.newCode, finalStatus: 'PRIORISE' });
+  });
 }
 
 // ===========================================================================

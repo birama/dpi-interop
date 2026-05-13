@@ -1,0 +1,37 @@
+========================================================
+COMPTES DEMO PINS — IDENTIFIANTS HORS DOCUMENTATION
+========================================================
+Les credentials ne sont plus stockés dans ce fichier.
+Voir le gestionnaire de mots de passe sécurisé du PFNI.
+========================================================
+
+Emails utilisés pour la démo :
+- dsi@dgid.sn, dsi@ansd.sn, dsi@dgcpt.sn
+- dsi@mj.sn, dsi@dgpsn.sn, dsi@apix.sn, dsi@cdp.sn
+
+DÉMO VUE 360° PINS — M. DIABY
+Durée cible : 15 minutes
+
+4 COMPTES À GARDER PRÊTS :
+- dsi@dgid.sn (initiateur)
+- dsi@ansd.sn (fournisseur désigné)
+- dsi@dgcpt.sn ou dsi@dgpsn.sn (non stakeholder pour Acte 4 et 5)
+- admin@senum.sn (pilotage DU)
+
+ORDRE DES 6 ACTES :
+1. Déclaration CU (DGID) → 2 min
+2. Consultation reçue (ANSD) → 2 min
+3. Avis + amendement (ANSD) → 3 min
+4. Auto-saisine motivée (DGCPT) → 3 min
+5. Transparence contrôlée (DGPSN) → 2 min
+6. Pilotage DU + référentiels (Admin) → 3 min
+
+URL CLÉ :
+https://dpi-interop.senum.sn/admin/cas-usage/9d4a786f-119d-4b89-8c64-b06e1ad27f35
+
+BACKUP SI RÉSEAU FLANCHE :
+docs/vue-360/captures-recette/
+
+BACKLOG OUVERT :
+docs/vue-360/ux-backlog.md
+(à montrer si on le demande "et ensuite ?")

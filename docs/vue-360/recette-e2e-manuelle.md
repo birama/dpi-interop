@@ -17,15 +17,15 @@ Conduite de la recette fonctionnelle des 8 scénarios définis en section 6.3 du
 
 ### Comptes de test
 
-| Persona | Email | Mot de passe | Rôle | Institution |
-|---------|-------|-------------|------|-------------|
-| Admin DU / SENUM | `admin@senum.sn` | `Admin@2026` | ADMIN | — |
-| Agent DGID | `dsi@dgid.sn` | `P@ssw0rd` (ou `Password@123` après reset) | INSTITUTION | DGID |
-| Agent ANSD | `dsi@ansd.sn` | `Password@123` | INSTITUTION | ANSD |
-| Agent DGCPT | `informatique@dgcpt.sn` | `Password@123` | INSTITUTION | DGCPT |
-| Agent DGD (hors scenarios) | `informatique@douanes.sn` | `Password@123` | INSTITUTION | DGD |
+| Persona | Email | Rôle | Institution |
+|---------|-------|------|-------------|
+| Admin DU / SENUM | `admin@senum.sn` | ADMIN | — |
+| Agent DGID | `dsi@dgid.sn` | INSTITUTION | DGID |
+| Agent ANSD | `dsi@ansd.sn` | INSTITUTION | ANSD |
+| Agent DGCPT | `informatique@dgcpt.sn` | INSTITUTION | DGCPT |
+| Agent DGD (hors scenarios) | `informatique@douanes.sn` | INSTITUTION | DGD |
 
-> Si un login échoue avec `Password@123`, tester `P@ssw0rd` (compte avec mot de passe personnalisé) — sinon réinitialiser depuis le compte admin via `/admin/utilisateurs`.
+> Les mots de passe ne sont plus listés dans ce document. Voir le gestionnaire sécurisé du PFNI ou réinitialiser depuis `/admin/utilisateurs` (mustChangePassword=true à la création).
 
 ### Cas d'usage du seed Vue 360° (références stables)
 

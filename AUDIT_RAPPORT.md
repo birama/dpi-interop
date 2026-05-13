@@ -156,8 +156,8 @@ cd frontend && npm install && npm run dev
 - Swagger: http://localhost:3000/documentation
 
 **Comptes test**:
-- Admin: admin@senum.sn / Admin@2026
-- Institution: dsi@dgid.sn / Password@123
+- Admin: admin@senum.sn — credentials hors documentation (voir gestionnaire PFNI)
+- Institution: dsi@dgid.sn — credentials hors documentation
 
 ---
 

@@ -104,18 +104,15 @@ npm run dev
 
 ## Comptes de Test
 
-### Administrateur
-- **Email**: admin@senum.sn
-- **Password**: Admin@2026
+Les identifiants ne sont plus listés en clair dans les docs partagés.
+Voir le gestionnaire de mots de passe sécurisé tenu par le PFNI (Birama Diop).
 
-### Institutions
-| Institution | Email | Password |
-|------------|-------|----------|
-| DGID | dsi@dgid.sn | Password@123 |
-| DGD | informatique@douanes.sn | Password@123 |
-| ANSD | dsi@ansd.sn | Password@123 |
-| DGCPT | informatique@dgcpt.sn | Password@123 |
-| ANEC | si@anec.sn | Password@123 |
+Comptes seedés par défaut (passwords appliqués via `prisma/seed*.ts`) :
+- `admin@senum.sn` — rôle ADMIN
+- `demo@senum.sn` — rôle ADMIN (compte démo, expiration 31/07/2026)
+- `dsi@dgid.sn`, `informatique@douanes.sn`, `dsi@ansd.sn`, `informatique@dgcpt.sn`, `si@anec.sn` — rôle INSTITUTION
+
+En cas de besoin, reset via `/admin/utilisateurs` (mustChangePassword=true).
 
 ## Scripts Backend
 

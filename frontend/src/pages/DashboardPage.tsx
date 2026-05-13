@@ -108,10 +108,10 @@ export function DashboardPage() {
         <div>
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-navy">Tableau de bord SENUM</h1>
-              <p className="text-gray-500 mt-1">Suivi des questionnaires d'interopérabilité</p>
+              <h1 className="text-2xl font-bold text-navy">Tableau de bord PINS</h1>
+              <p className="text-gray-500 mt-1">Pilotage national de l'interopérabilité — Delivery Unit MCTN</p>
             </div>
-            <ExportPDFButton targetId="dashboard-content" filename="dashboard-senum" />
+            <ExportPDFButton targetId="dashboard-content" filename="dashboard-pins" />
           </div>
         </div>
 

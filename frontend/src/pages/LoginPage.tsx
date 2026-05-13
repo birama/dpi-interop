@@ -75,7 +75,7 @@ export function LoginPage() {
       <CardHeader className="space-y-1">
         <CardTitle className="text-2xl text-center">Connexion</CardTitle>
         <CardDescription className="text-center">
-          Entrez vos identifiants pour accéder au questionnaire
+          Entrez vos identifiants pour accéder à PINS
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -122,7 +122,7 @@ export function LoginPage() {
 
         <div className="mt-6 text-center text-sm text-gray-500">
           <p>Vous n'avez pas de compte ?</p>
-          <p>Contactez l'administrateur SENUM</p>
+          <p>Contactez l'administrateur PINS (MCTN / SENUM SA)</p>
         </div>
       </CardContent>
     </Card>

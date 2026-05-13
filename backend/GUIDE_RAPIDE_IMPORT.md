@@ -261,7 +261,7 @@ curl http://localhost:3000/api/submissions
 
 Si votre frontend tourne (port 5173) :
 - Ouvrir http://localhost:5173
-- Se connecter (admin@senum.sn / Admin@2026)
+- Se connecter (admin@senum.sn — credentials voir gestionnaire sécurisé)
 - Aller dans "Institutions" → Voir les 65 institutions
 - Aller dans "Soumissions" → Voir la soumission template
 - Aller dans "Rapports" → Générer une matrice des flux

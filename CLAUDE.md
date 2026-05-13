@@ -90,11 +90,9 @@ questionnaire-interop/
 - /login — Connexion
 
 ## Comptes
-- Admin : admin@senum.sn / Admin@2026
-- DGID : dsi@dgid.sn / Password@123
-- DGD : informatique@douanes.sn / Password@123
-- ANSD : dsi@ansd.sn / Password@123
-- APIX : dsi@apix.sn / Password@123
+- Admin : admin@senum.sn — credentials dans le gestionnaire sécurisé Birama
+- Demo : demo@senum.sn — credentials dans le gestionnaire sécurisé Birama (compte usage atelier, expiration 31/07/2026)
+- Institutions (DGID, DGD, ANSD, APIX, etc.) : credentials transmis individuellement par canal sécurisé (mustChangePassword=true à la création)
 
 ## Données seedées
 - 201 institutions (décret 2025-1431)

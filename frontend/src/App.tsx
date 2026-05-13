@@ -378,8 +378,8 @@ function App() {
           />
         </Route>
 
-        {/* Redirect root to dashboard */}
-        <Route path="/" element={<Navigate to="/dashboard" replace />} />
+        {/* Landing page publique — AboutPage sert d'accueil avant authentification */}
+        <Route path="/" element={<AboutPage />} />
 
         {/* 404 Page */}
         <Route path="*" element={<NotFoundPage />} />
