@@ -56,9 +56,19 @@ export function LoginPage() {
 
       toast({
         title: 'Connexion réussie',
-        description: 'Bienvenue sur le questionnaire d\'interopérabilité',
+        description: 'Bienvenue sur PINS',
       });
-      navigate('/dashboard');
+
+      // Redirection par rôle (PTF Phase 1)
+      const role = response.data.user.role as 'ADMIN' | 'INSTITUTION' | 'BAILLEUR';
+      const cguAccepted = (response.data.user as any).cguAccepted;
+      if (role === 'BAILLEUR' && !cguAccepted) {
+        navigate('/partenaire/cgu');
+      } else if (role === 'BAILLEUR') {
+        navigate('/partenaire');
+      } else {
+        navigate('/dashboard');
+      }
     } catch (error: any) {
       toast({
         variant: 'destructive',

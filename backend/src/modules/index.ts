@@ -11,6 +11,7 @@ import { useCasesWriteRoutes, consultationRoutes, feedbackRoutes, duArbitrageRou
 import { registresCouvertureRoutes, registresUseCaseRoutes } from './vue360/registres.routes.js';
 import { notificationsMeRoutes, notificationsRoutes } from './vue360/notifications.routes.js';
 import { catalogueRoutes, suggestionsRoutes } from './vue360/catalogue.routes.js';
+import { adminBailleurRoutes, partenaireRoutes } from './partenaire/routes.js';
 
 // Inline routes for conventions and xroad
 async function conventionsRoutes(app: FastifyInstance) {
@@ -1063,6 +1064,10 @@ export async function registerRoutes(app: FastifyInstance) {
       api.register(searchRoutes, { prefix: '/search' });
       api.register(casUsageDetailRoutes, { prefix: '/cas-usage-detail' });
       api.register(documentsRoutes, { prefix: '/documents' });
+
+      // PTF Phase 1 — RBAC
+      api.register(adminBailleurRoutes, { prefix: '/admin/users/bailleur' });
+      api.register(partenaireRoutes, { prefix: '/partenaire' });
 
       // Vue 360°
       api.register(useCasesRoutes, { prefix: '/use-cases' });

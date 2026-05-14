@@ -85,7 +85,14 @@ export class AuthService {
     });
 
     // Generate access token (2h) and refresh token (7d)
-    const payload = { id: user.id, email: user.email, role: user.role, institutionId: user.institutionId || undefined };
+    const payload = {
+      id: user.id,
+      email: user.email,
+      role: user.role,
+      institutionId: user.institutionId || undefined,
+      ptfId: (user as any).ptfId || undefined,
+      cguAccepted: !!(user as any).cguAccepteesAt,
+    };
     const token = this.app.jwt.sign(payload, { expiresIn: '2h' });
     const refreshToken = this.app.jwt.sign({ ...payload, type: 'refresh' } as any, { expiresIn: '7d' });
 
