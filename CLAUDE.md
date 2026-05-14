@@ -109,8 +109,10 @@ Deux enums parallèles, sémantiques distinctes :
 - 18 building blocks DPI (4 couches)
 - 34 registres nationaux (10 canoniques + 24 e-senegal en `domaine=TRANSVERSAL` par défaut)
 - **537 cas d'usage MVP** (76 historiques + 408 métier + 53 techniques injectés DEPLOY-02)
-  - 512 PROPOSE, 7 DECLARE, 8 EN_CONSULTATION, 9 PRIORISE, 1 EN_PRODUCTION_360
-  - 9 cas avec `aFinancer=true` (panel démo atelier 19/05) : PINS-METIER-001, PINS-TECH-0001/0002/0004/0014/0015/0021/0022/0029
+  - 503 PROPOSE, 7 DECLARE, 8 EN_CONSULTATION, **18 PRIORISE**, 1 EN_PRODUCTION_360
+  - **18 cas avec `aFinancer=true`** (panel démo atelier 19/05) — 11 domaines couverts :
+    - METIER : PINS-METIER-001/008/009/010/011/012/013 (Création entreprise, B3, CMU, CAMPUSEN, ANPEJ, titre foncier, SénégalConnect)
+    - TECH : PINS-TECH-0001/0002/0004/0014/0015/0021/0022/0029/0055/0056/0057
   - Répartition par domaine (528/537 renseignés) : FINANCES_PUBLIQUES=113, SERVICES_CITOYENS=102, JUSTICE_ETAT_CIVIL=67, IDENTITE_NUMERIQUE=53, PROTECTION_SOCIALE=47, CLIMAT_AFFAIRES=39, TRANSVERSAL=36, FONCIER_CADASTRE=30, EDUCATION=20, SANTE_NUMERIQUE=10, EMPLOI_FORMATION=6, CYBERSECURITE=5 (GOUVERNANCE_DONNEES et AGRICULTURE_NUMERIQUE absents du seed v4)
   - Répartition par source : PROPOSITION_INSTITUTIONNELLE=464, ETUDE_SENUM=49, autres=24
 - 137 relations métier↔technique (5 historiques + 132 mapping seed v4)
