@@ -120,6 +120,7 @@ Deux enums parallèles, sémantiques distinctes :
 - 8+ conventions (ANEC-DAF, APIX-ANSD, APIX-DGD...)
 - 86 users (3 ADMIN dont admin@senum.sn + demo@senum.sn, 83 INSTITUTION, 0 BAILLEUR)
 - Backups encadrant DEPLOY-02 : `prod_avant_seed_v4_20260514_1643.sql` (880K) / `prod_apres_seed_v4_20260514_1650.sql` (1.1M)
+- 12 cas legacy `PINS-CU-001/007/008/019/026/027/002/009/011/012/014/015` renommés en `PINS-TECH-0043` à `0054` (14/05 17:20). Backups : `prod_avant_rename_20260514_1718.sql` / `prod_apres_rename_20260514_1720.sql`. Plus aucun `PINS-CU-*` adopté en DB.
 
 ## Conventions de nommage
 - Ministère : MCTN (jamais MCTEN)
