@@ -38,15 +38,16 @@ questionnaire-interop/
 ```
 
 ## Modèles Prisma principaux
-- User (email, role ADMIN/INSTITUTION, institutionId, ptfId — branche ptf-phase1)
+- User (email, role ADMIN/INSTITUTION/BAILLEUR, institutionId, ptfId, cguAccepteesAt)
 - Institution (code, nom, ministereTutelle — 213 seedées en prod)
 - Submission (questionnaire 8 étapes, status DRAFT/SUBMITTED/VALIDATED)
 - Application, Registre, InfrastructureItem (liés à Submission)
 - DonneeConsommer, DonneeFournir, FluxExistant (liés à Submission)
 - NiveauInterop, ConformitePrincipe (liés à Submission)
-- CasUsageMVP (code PINS-TECH/PINS-METIER, statutVueSection, statutImpl, axePrioritaire, codeHistorique)
+- CasUsageMVP (code PINS-TECH/PINS-METIER, statutVueSection, statutImpl, axePrioritaire, codeHistorique, domaine enum, aFinancer bool)
 - PhaseMVP (MVP-1.0, MVP-2.0, MVP-3.0)
-- PTF, Programme, Financement (chaîne de financement, statuts IDENTIFIE→DEMANDE→ACCORDE→EN_COURS→CLOTURE)
+- PTF, Programme, Financement (chaîne de financement, statuts IDENTIFIE→DEMANDE→ACCORDE→EN_COURS→CLOTURE ; Financement.manifestationOrigineId → ManifestationInteret)
+- BailleurDomaineInteret, ManifestationInteret, JournalAuditPtf (module PTF Phase 2)
 - Convention (institutionA ↔ institutionB, statut, dates)
 - XRoadReadiness (6 jalons par institution, modeConnexion)
 - RegistreNational (10 registres de base, 5 domaines)
@@ -55,6 +56,7 @@ questionnaire-interop/
 - DemandeInterop (demandes des institutions)
 - AuditLog, UserSession (traçabilité)
 - DocumentReference (documents téléchargeables)
+- Enums clés : Role (ADMIN/INSTITUTION/BAILLEUR), Domaine (14 valeurs), ManifestationType, ManifestationStatus, AuditAction, SourceProposition (...+BAILLEUR)
 
 ## Dualité des statuts CasUsageMVP
 Deux enums parallèles, sémantiques distinctes :
@@ -102,18 +104,22 @@ Deux enums parallèles, sémantiques distinctes :
 - Demo : demo@senum.sn — credentials dans le gestionnaire sécurisé Birama (compte usage atelier, expiration 31/07/2026)
 - Institutions (DGID, DGD, ANSD, APIX, etc.) : credentials transmis individuellement par canal sécurisé (mustChangePassword=true à la création)
 
-## Données seedées (état prod 13/05/2026)
-- 213 institutions (décret 2025-1431 + ACBEP créée 13/05)
+## Données seedées (état prod 14/05/2026 — post DEPLOY-02)
+- 238 institutions (213 N2 + 25 nouvelles via seed v4 e-senegal, avec placeholders responsable* à compléter)
 - 18 building blocks DPI (4 couches)
-- 10 registres nationaux (5 domaines)
-- 76 cas d'usage MVP (codes PINS-TECH/PINS-METIER après N2)
-  - 57 PROPOSE, 7 DECLARE, 8 EN_CONSULTATION, 3 PRIORISE, 1 EN_PRODUCTION_360
-  - 59/76 (77,6 %) sont orphelins (aucun Financement actif)
+- 34 registres nationaux (10 canoniques + 24 e-senegal en `domaine=TRANSVERSAL` par défaut)
+- **537 cas d'usage MVP** (76 historiques + 408 métier + 53 techniques injectés DEPLOY-02)
+  - 512 PROPOSE, 7 DECLARE, 8 EN_CONSULTATION, 9 PRIORISE, 1 EN_PRODUCTION_360
+  - 9 cas avec `aFinancer=true` (panel démo atelier 19/05) : PINS-METIER-001, PINS-TECH-0001/0002/0004/0014/0015/0021/0022/0029
+  - Répartition par domaine (528/537 renseignés) : FINANCES_PUBLIQUES=113, SERVICES_CITOYENS=102, JUSTICE_ETAT_CIVIL=67, IDENTITE_NUMERIQUE=53, PROTECTION_SOCIALE=47, CLIMAT_AFFAIRES=39, TRANSVERSAL=36, FONCIER_CADASTRE=30, EDUCATION=20, SANTE_NUMERIQUE=10, EMPLOI_FORMATION=6, CYBERSECURITE=5 (GOUVERNANCE_DONNEES et AGRICULTURE_NUMERIQUE absents du seed v4)
+  - Répartition par source : PROPOSITION_INSTITUTIONNELLE=464, ETUDE_SENUM=49, autres=24
+- 137 relations métier↔technique (5 historiques + 132 mapping seed v4)
 - 46+ flux d'interopérabilité
 - 5 PTF (JICA, GIZ, BM, ETAT-SN, GATES) — 17 financements
 - 5 agences pilotes X-Road (DGPSN, SEN-CSU, DGD, DGID, APIX)
 - 8+ conventions (ANEC-DAF, APIX-ANSD, APIX-DGD...)
-- 86 users (3 ADMIN dont admin@senum.sn + demo@senum.sn, 83 INSTITUTION)
+- 86 users (3 ADMIN dont admin@senum.sn + demo@senum.sn, 83 INSTITUTION, 0 BAILLEUR)
+- Backups encadrant DEPLOY-02 : `prod_avant_seed_v4_20260514_1643.sql` (880K) / `prod_apres_seed_v4_20260514_1650.sql` (1.1M)
 
 ## Conventions de nommage
 - Ministère : MCTN (jamais MCTEN)
@@ -157,10 +163,17 @@ plink -pw <pwd> deploy@178.16.129.222 "docker cp /tmp/<changed>.js pins-api:/app
 ```
 
 ## État du repo (branches)
-- `main` — état déployé en prod (PRE-01/02/03 complets, PRE-04 à 30 %)
-- `ptf-phase1` — RBAC role BAILLEUR + ptfId + CGU. Non déployé. Migration additive prête.
-- `ptf-phase2` — Modèle PTF (enum Domaine 14 valeurs, 3 tables manifestation_*, FK Financement.manifestationOrigineId). Non déployé. Migration additive prête.
-- À merger post-atelier 19/05 dans l'ordre : ptf-phase1 → main, ptf-phase2 → main.
+- `main` — état déployé en prod (commit `ea50b6f` du 14/05/2026 — DEPLOY-01 inclus PTF Phase 1+2 mergées)
+- `feature/vue-360` — branche historique conservée, hors scope atelier 19/05
+- Branches `ptf-phase1` et `ptf-phase2` supprimées local + remote après merge (DEPLOY-01).
+
+## Dette technique connue
+- **Bug `POST /catalogue/propositions/:id/prioriser-rapide`** : la route écrase le code source (`PINS-TECH-XXXX` / `PINS-METIER-XXX`) par un format legacy `PINS-CU-XXX` au lieu de le préserver. Constaté le 14/05 sur 6 cas démo. Contournement : `UPDATE cas_usage_mvp SET code='<originel>' WHERE id='<uuid>'` après promotion (UUIDs stables). Fix à planifier post-atelier : ajouter `if (oldCode startsWith 'PINS-TECH-' || 'PINS-METIER-') keep oldCode`.
+- **Module PTF UI partiel** : RBAC + tables OK en prod, mais `/partenaire` et `/admin/utilisateurs/bailleur/creer` sont des stubs. PTF-03 à PTF-06 (catalogue partenaire, manifestation, propositions BAILLEUR, audit) à faire S2-S6 (juin 2026).
+- **9 cas démo `domaine=NULL`** : `axePrioritaire` était vide à la source. À compléter via UI admin.
+- **25 institutions seed v4 avec placeholders** : ministere/responsableNom/responsableFonction = "À compléter", responsableEmail = `seed-<code-slug>@placeholder.pins.sn`, responsableTel = "+221000000000". À compléter via UI admin.
+- **24 registres nationaux seed v4 en `domaine="TRANSVERSAL"`** par défaut (champ String, pas l'enum Domaine). À reclassifier manuellement.
+- **2 domaines absents du portefeuille** (côté CasUsageMVP.domaine) : GOUVERNANCE_DONNEES, AGRICULTURE_NUMERIQUE. À enrichir lors des prochains ateliers métier.
 
 ## Atelier stratégique 19 mai 2026
 - Réf : MCTN/DU/PLAN-PINS-STAB-2026-01
