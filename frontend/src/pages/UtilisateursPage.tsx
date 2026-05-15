@@ -14,6 +14,13 @@ import { cn } from '@/lib/utils';
 const ROLE_COLORS: Record<string, string> = {
   ADMIN: 'bg-red-100 text-red-700',
   INSTITUTION: 'bg-teal-50 text-teal-700',
+  BAILLEUR: 'bg-gold/15 text-gold border border-gold/30',
+};
+
+const ROLE_LABELS: Record<string, string> = {
+  ADMIN: 'Admin',
+  INSTITUTION: 'Institution',
+  BAILLEUR: 'PTF (Partenaire Technique et Financier)',
 };
 
 type UserItem = {
@@ -59,8 +66,8 @@ export function UtilisateursPage() {
   const [bulkResults, setBulkResults] = useState<BulkResult[] | null>(null);
 
   // Forms
-  const [createForm, setCreateForm] = useState({ email: '', password: '', role: 'INSTITUTION', institutionId: '', mustChangePassword: true });
-  const [editForm, setEditForm] = useState({ email: '', role: '', institutionId: '', mustChangePassword: false });
+  const [createForm, setCreateForm] = useState({ email: '', password: '', role: 'INSTITUTION', institutionId: '', ptfId: '', mustChangePassword: true });
+  const [editForm, setEditForm] = useState({ email: '', role: '', institutionId: '', ptfId: '', mustChangePassword: false });
   const [newPassword, setNewPassword] = useState('');
   const [bulkSelectedInstitutions, setBulkSelectedInstitutions] = useState('');
   const [bulkDefaultPassword, setBulkDefaultPassword] = useState('Atelier@2026');
@@ -78,13 +85,23 @@ export function UtilisateursPage() {
     queryFn: () => api.get('/institutions', { params: { limit: 500 } }),
   });
 
+  // PTF list pour création/édition de comptes BAILLEUR
+  const { data: ptfData } = useQuery({
+    queryKey: ['ptf-list-users'],
+    queryFn: () => api.get('/ptf'),
+  });
+  const ptfOptions = ((ptfData?.data || []) as any[]).map((p: any) => ({
+    value: p.id,
+    label: `${p.code} — ${p.nom}`,
+  }));
+
   // Mutations
   const createUserMut = useMutation({
     mutationFn: (data: any) => api.post('/users', data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-users'] });
       setShowCreateModal(false);
-      setCreateForm({ email: '', password: '', role: 'INSTITUTION', institutionId: '', mustChangePassword: true });
+      setCreateForm({ email: '', password: '', role: 'INSTITUTION', institutionId: '', ptfId: '', mustChangePassword: true });
       toast({ title: 'Utilisateur cree' });
     },
     onError: (err: any) => toast({ variant: 'destructive', title: 'Erreur', description: err.response?.data?.error || err.message }),
@@ -143,7 +160,13 @@ export function UtilisateursPage() {
 
   const handleOpenEdit = (user: UserItem) => {
     setEditingUser(user);
-    setEditForm({ email: user.email, role: user.role, institutionId: user.institutionId || '', mustChangePassword: user.mustChangePassword });
+    setEditForm({
+      email: user.email,
+      role: user.role,
+      institutionId: user.institutionId || '',
+      ptfId: (user as any).ptfId || '',
+      mustChangePassword: user.mustChangePassword,
+    });
   };
 
   const handleBulkCreate = () => {
@@ -253,7 +276,7 @@ export function UtilisateursPage() {
                   </td>
                   <td className="px-4 py-2">
                     <span className={cn('text-xs px-2 py-0.5 rounded-full font-medium', ROLE_COLORS[user.role] || 'bg-gray-100 text-gray-600')}>
-                      {user.role}
+                      {user.role === 'BAILLEUR' ? 'PTF' : (ROLE_LABELS[user.role] || user.role)}
                     </span>
                   </td>
                   <td className="px-4 py-2 text-gray-600">
@@ -322,6 +345,7 @@ export function UtilisateursPage() {
                 >
                   <option value="INSTITUTION">Institution</option>
                   <option value="ADMIN">Admin</option>
+                  <option value="BAILLEUR">PTF (Partenaire Technique et Financier)</option>
                 </select>
               </div>
               {createForm.role === 'INSTITUTION' && (
@@ -332,6 +356,17 @@ export function UtilisateursPage() {
                     value={createForm.institutionId}
                     onChange={val => setCreateForm(f => ({ ...f, institutionId: val }))}
                     placeholder="Selectionner une institution..."
+                  />
+                </div>
+              )}
+              {createForm.role === 'BAILLEUR' && (
+                <div>
+                  <Label className="text-xs">Partenaire Technique et Financier</Label>
+                  <SearchableSelect
+                    options={ptfOptions}
+                    value={createForm.ptfId}
+                    onChange={val => setCreateForm(f => ({ ...f, ptfId: val }))}
+                    placeholder="Selectionner un PTF..."
                   />
                 </div>
               )}
@@ -384,6 +419,7 @@ export function UtilisateursPage() {
                 >
                   <option value="INSTITUTION">Institution</option>
                   <option value="ADMIN">Admin</option>
+                  <option value="BAILLEUR">PTF (Partenaire Technique et Financier)</option>
                 </select>
               </div>
               {editForm.role === 'INSTITUTION' && (
@@ -394,6 +430,17 @@ export function UtilisateursPage() {
                     value={editForm.institutionId}
                     onChange={val => setEditForm(f => ({ ...f, institutionId: val }))}
                     placeholder="Selectionner une institution..."
+                  />
+                </div>
+              )}
+              {editForm.role === 'BAILLEUR' && (
+                <div>
+                  <Label className="text-xs">Partenaire Technique et Financier</Label>
+                  <SearchableSelect
+                    options={ptfOptions}
+                    value={editForm.ptfId}
+                    onChange={val => setEditForm(f => ({ ...f, ptfId: val }))}
+                    placeholder="Selectionner un PTF..."
                   />
                 </div>
               )}

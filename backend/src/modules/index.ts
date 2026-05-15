@@ -694,12 +694,22 @@ async function usersAdminRoutes(app: FastifyInstance) {
 
   // POST / — create user
   app.post('/', { onRequest: [app.authenticateAdmin] }, async (req: any, reply: any) => {
-    const { email, password, role, institutionId, mustChangePassword } = req.body as any;
+    const { email, password, role, institutionId, ptfId, mustChangePassword } = req.body as any;
     const bcrypt = await import('bcrypt');
     const hashedPassword = await bcrypt.hash(password, 10);
+    const finalRole = role || 'INSTITUTION';
     const user = await app.prisma.user.create({
-      data: { email, password: hashedPassword, role: role || 'INSTITUTION', institutionId: institutionId || null, mustChangePassword: mustChangePassword !== false },
-      select: { id: true, email: true, role: true, institutionId: true, institution: { select: { code: true, nom: true } }, mustChangePassword: true },
+      data: {
+        email,
+        password: hashedPassword,
+        role: finalRole,
+        // Lien institution uniquement pour role=INSTITUTION (cohérence)
+        institutionId: finalRole === 'INSTITUTION' ? (institutionId || null) : null,
+        // Lien PTF uniquement pour role=BAILLEUR (ptf-phase1)
+        ptfId: finalRole === 'BAILLEUR' ? (ptfId || null) : null,
+        mustChangePassword: mustChangePassword !== false,
+      },
+      select: { id: true, email: true, role: true, institutionId: true, ptfId: true, institution: { select: { code: true, nom: true } }, mustChangePassword: true },
     });
     try { await app.prisma.auditLog.create({ data: { userId: req.user.id, userEmail: req.user.email, userRole: req.user.role, action: 'CREATE', resource: 'user', resourceId: user.id, resourceLabel: user.email, ipAddress: req.headers['x-forwarded-for']?.toString() || req.ip, userAgent: req.headers['user-agent'] } }); } catch {}
     return reply.status(201).send(user);
@@ -707,11 +717,17 @@ async function usersAdminRoutes(app: FastifyInstance) {
 
   // PATCH /:id — update user
   app.patch('/:id', { onRequest: [app.authenticateAdmin] }, async (req: any, reply: any) => {
-    const { email, role, institutionId, mustChangePassword } = req.body as any;
+    const { email, role, institutionId, ptfId, mustChangePassword } = req.body as any;
     const user = await app.prisma.user.update({
       where: { id: req.params.id },
-      data: { ...(email && { email }), ...(role && { role }), ...(institutionId !== undefined && { institutionId: institutionId || null }), ...(mustChangePassword !== undefined && { mustChangePassword }) },
-      select: { id: true, email: true, role: true, institutionId: true, institution: { select: { code: true, nom: true } }, mustChangePassword: true },
+      data: {
+        ...(email && { email }),
+        ...(role && { role }),
+        ...(institutionId !== undefined && { institutionId: institutionId || null }),
+        ...(ptfId !== undefined && { ptfId: ptfId || null }),
+        ...(mustChangePassword !== undefined && { mustChangePassword }),
+      },
+      select: { id: true, email: true, role: true, institutionId: true, ptfId: true, institution: { select: { code: true, nom: true } }, mustChangePassword: true },
     });
     try { await app.prisma.auditLog.create({ data: { userId: req.user.id, userEmail: req.user.email, userRole: req.user.role, action: 'UPDATE', resource: 'user', resourceId: req.params.id, ipAddress: req.headers['x-forwarded-for']?.toString() || req.ip, userAgent: req.headers['user-agent'] } }); } catch {}
     return reply.send(user);
