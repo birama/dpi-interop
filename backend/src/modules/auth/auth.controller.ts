@@ -74,7 +74,16 @@ export class AuthController {
   ) {
     try {
       const input = changePasswordSchema.parse(request.body);
-      const result = await this.authService.changePassword(request.user.id, input);
+      // Calcul du tokenHash courant pour préserver la session de la requête
+      // (les AUTRES sessions actives du user seront invalidées).
+      const authHeader = (request.headers as any).authorization || '';
+      const token = String(authHeader).replace(/^Bearer\s+/i, '');
+      let currentTokenHash: string | undefined;
+      if (token) {
+        const crypto = await import('crypto');
+        currentTokenHash = crypto.createHash('sha256').update(token).digest('hex');
+      }
+      const result = await this.authService.changePassword(request.user.id, input, currentTokenHash);
       return reply.send(result);
     } catch (error: any) {
       if (error.statusCode) {

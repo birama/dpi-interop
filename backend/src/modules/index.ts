@@ -723,6 +723,11 @@ async function usersAdminRoutes(app: FastifyInstance) {
     const bcrypt = await import('bcrypt');
     const hashedPassword = await bcrypt.hash(newPassword, 10);
     await app.prisma.user.update({ where: { id: req.params.id }, data: { password: hashedPassword, mustChangePassword: true } });
+    // Sécurité : révoque toutes les sessions actives du user cible — il devra se relogger avec le nouveau password.
+    await app.prisma.userSession.updateMany({
+      where: { userId: req.params.id, isActive: true },
+      data: { isActive: false, logoutAt: new Date() },
+    });
     try { await app.prisma.auditLog.create({ data: { userId: req.user.id, userEmail: req.user.email, userRole: req.user.role, action: 'UPDATE', resource: 'user', resourceId: req.params.id, resourceLabel: 'reset-password', ipAddress: req.headers['x-forwarded-for']?.toString() || req.ip, userAgent: req.headers['user-agent'] } }); } catch {}
     return reply.send({ success: true });
   });

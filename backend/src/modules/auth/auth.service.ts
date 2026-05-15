@@ -160,7 +160,7 @@ export class AuthService {
     return user;
   }
 
-  async changePassword(userId: string, input: ChangePasswordInput) {
+  async changePassword(userId: string, input: ChangePasswordInput, currentTokenHash?: string) {
     const { currentPassword, newPassword } = input;
 
     const user = await this.app.prisma.user.findUnique({
@@ -184,6 +184,18 @@ export class AuthService {
     await this.app.prisma.user.update({
       where: { id: userId },
       data: { password: hashedPassword, mustChangePassword: false },
+    });
+
+    // Sécurité : invalider toutes les sessions actives du user SAUF celle qui vient
+    // de faire la requête (le user a déjà prouvé qu'il connaît l'ancien password).
+    // Toutes les autres sessions (autres navigateurs, anciens devices) sont fermées.
+    await this.app.prisma.userSession.updateMany({
+      where: {
+        userId,
+        isActive: true,
+        ...(currentTokenHash ? { NOT: { tokenHash: currentTokenHash } } : {}),
+      },
+      data: { isActive: false, logoutAt: new Date() },
     });
 
     return { message: 'Mot de passe modifié avec succès' };
