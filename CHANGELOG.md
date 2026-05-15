@@ -1,5 +1,46 @@
 # Journal des déploiements PINS
 
+## PTF-SEED — 6 comptes démo atelier nominatifs (2026-05-15 vendredi 22h05)
+
+Complément au PTF-MVP : seeding de 6 comptes BAILLEUR avec leurs domaines d'intérêt propres, pour démontrer la spécialisation sectorielle lors de l'atelier 19/05.
+
+### PTF & domaines seedés (script SQL idempotent)
+
+| PTF | Code | Nb domaines | Domaines |
+|---|---|---|---|
+| Banque Mondiale | BM | 4 | IDENTITE_NUMERIQUE, FONCIER_CADASTRE, JUSTICE_ETAT_CIVIL, PROTECTION_SOCIALE |
+| GIZ Sénégal | GIZ | 3 | CLIMAT_AFFAIRES, EMPLOI_FORMATION, FINANCES_PUBLIQUES |
+| JICA Sénégal | JICA | 3 | IDENTITE_NUMERIQUE, EDUCATION, TRANSVERSAL |
+| Fondation Gates | GATES | 3 | SANTE_NUMERIQUE, IDENTITE_NUMERIQUE, PROTECTION_SOCIALE |
+| État du Sénégal | ETAT-SN | 14 | tous les domaines enum |
+| PTF Démonstration | DEMO (nouveau) | 11 | les 11 domaines couverts par le portefeuille |
+
+### 6 comptes créés (password initial : `Atelier19Mai!`)
+
+| Compte | PTF | mustChangePassword | cguAccepteesAt |
+|---|---|---|---|
+| ptf-demo-bm@senum.sn | BM | false (skip pour démo) | maintenant |
+| ptf-demo-giz@senum.sn | GIZ | false | maintenant |
+| ptf-demo-jica@senum.sn | JICA | false | maintenant |
+| ptf-demo-gates@senum.sn | GATES | false | maintenant |
+| ptf-demo-etat@senum.sn | ETAT-SN | false | maintenant |
+| ptf-demo@senum.sn (existant, repositionné) | DEMO | false | maintenant |
+
+### Validation périmètres (smoke prod)
+
+| Compte | Domaines | Cas vus | Cible Birama |
+|---|---|---|---|
+| ptf-demo-bm | 4 | **6** | ~6 ✅ |
+| ptf-demo-giz | 3 | **8** | ~8 ✅ |
+| ptf-demo-jica | 3 | **4** | ~4 ✅ |
+| ptf-demo-gates | 3 | **5** | ~5 ✅ |
+| ptf-demo-etat | 14 | **18** | 18 ✅ |
+| ptf-demo (générique) | 11 | **18** | 18 ✅ |
+
+### Backups encadrants
+- `prod_avant_ptf_seed_6comptes_20260515_2203.sql` (1.2M)
+- `prod_apres_ptf_seed_6comptes_20260515_2205.sql` (1.2M)
+
 ## PTF-MVP — Parcours BAILLEUR pour atelier 19/05/2026 (2026-05-15 vendredi soir)
 
 Sprint complet livré : un compte BAILLEUR a désormais un parcours utilisateur cohérent et cloisonné pour la démo de l'atelier stratégique mardi 19/05.
