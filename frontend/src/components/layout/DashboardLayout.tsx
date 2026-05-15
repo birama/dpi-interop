@@ -10,6 +10,7 @@ import {
   PanelLeftClose,
   PanelLeft,
   Search,
+  KeyRound,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { CommandPalette } from '@/components/CommandPalette';
@@ -317,13 +318,21 @@ export function DashboardLayout() {
                   className="fixed inset-0 z-40"
                   onClick={() => setUserMenuOpen(false)}
                 />
-                <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
+                <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
                   <div className="px-4 py-2 border-b border-gray-100">
                     <p className="text-sm font-medium text-gray-900">{user?.email}</p>
                     <p className="text-xs text-gray-500">
                       {user?.institution?.nom || (user?.role === 'ADMIN' ? 'SENUM' : '')}
                     </p>
                   </div>
+                  <button
+                    onClick={() => { setUserMenuOpen(false); navigate('/change-password'); }}
+                    className="w-full flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                  >
+                    <KeyRound className="w-4 h-4 mr-2 text-teal-700" />
+                    Changer mon mot de passe
+                  </button>
+                  <div className="border-t border-gray-100 my-1" />
                   <button
                     onClick={handleLogout}
                     className="w-full flex items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50"
