@@ -11,6 +11,10 @@ import {
   PanelLeft,
   Search,
   KeyRound,
+  LayoutDashboard,
+  Library,
+  Calendar as CalendarIcon,
+  UserCircle,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { CommandPalette } from '@/components/CommandPalette';
@@ -23,6 +27,14 @@ import { useInactivityLogout } from '@/hooks/useInactivityLogout';
 
 // Aligné avec le TTL backend (cleanup automatique des sessions > 10 min sans activité)
 const INACTIVITY_TIMEOUT_MS = 10 * 60 * 1000;
+
+// Menu BAILLEUR — 4 items, indépendant des MENU_SECTIONS (INSTITUTION/ADMIN)
+const PARTENAIRE_MENU = [
+  { name: 'Tableau de bord', href: '/partenaire/dashboard', icon: LayoutDashboard },
+  { name: 'Catalogue partenaire', href: '/partenaire/catalogue', icon: Library },
+  { name: 'Mes manifestations', href: '/partenaire/manifestations', icon: CalendarIcon },
+  { name: 'Mon profil PTF', href: '/partenaire/profil', icon: UserCircle },
+];
 
 export function DashboardLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -45,8 +57,10 @@ export function DashboardLayout() {
     navigate('/login');
   });
 
-  // Filtrage des rubriques selon le role
-  const visibleSections = MENU_SECTIONS
+  const isBailleur = user?.role === 'BAILLEUR';
+
+  // Filtrage des rubriques selon le role (vide pour BAILLEUR qui a son menu dédié)
+  const visibleSections = isBailleur ? [] : MENU_SECTIONS
     .filter(s => user?.role && s.roles.includes(user.role as 'ADMIN' | 'INSTITUTION'))
     .map(s => ({
       ...s,
@@ -157,8 +171,8 @@ export function DashboardLayout() {
 
         {/* Navigation — 5 rubriques collapsibles + Tableau de bord en tete */}
         <nav className="flex-1 px-2 py-3 space-y-1 overflow-y-auto">
-          {/* Lien tableau de bord en tete */}
-          {(() => {
+          {/* Lien tableau de bord en tete (route différente pour BAILLEUR) */}
+          {!isBailleur && (() => {
             const isActive = location.pathname === MENU_TOP.href;
             const Icon = MENU_TOP.icon;
             return (
@@ -177,6 +191,29 @@ export function DashboardLayout() {
               </Link>
             );
           })()}
+
+          {/* Menu BAILLEUR dédié — 4 items */}
+          {isBailleur && PARTENAIRE_MENU.map((item) => {
+            const isActive = location.pathname === item.href
+              || (item.href !== '/partenaire/dashboard' && location.pathname.startsWith(item.href));
+            const Icon = item.icon;
+            return (
+              <Link
+                key={item.href}
+                to={item.href}
+                onClick={() => setSidebarOpen(false)}
+                title={sidebarCollapsed ? item.name : undefined}
+                className={cn(
+                  'flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors mb-0.5',
+                  isActive ? 'bg-teal text-white' : 'text-gray-300 hover:bg-navy-light hover:text-white',
+                  sidebarCollapsed && 'justify-center px-2'
+                )}
+              >
+                <Icon className={cn('w-5 h-5 flex-shrink-0', !sidebarCollapsed && 'mr-3', isActive ? 'text-white' : 'text-gray-400')} />
+                {!sidebarCollapsed && item.name}
+              </Link>
+            );
+          })}
 
           {/* Rubriques collapsibles — accordeon : une seule ouverte a la fois */}
           {visibleSections.map(section => {
@@ -270,7 +307,11 @@ export function DashboardLayout() {
             {!sidebarCollapsed && (
               <div className="ml-3 flex-1 min-w-0">
                 <p className="text-sm font-medium text-gray-200 truncate">{user?.email}</p>
-                <p className="text-xs text-gray-400">{user?.role === 'ADMIN' ? 'Administrateur' : 'Institution'}</p>
+                <p className="text-xs text-gray-400">{
+                  user?.role === 'ADMIN'    ? 'Administrateur' :
+                  user?.role === 'BAILLEUR' ? 'Partenaire Technique et Financier' :
+                                              'Institution'
+                }</p>
               </div>
             )}
           </div>

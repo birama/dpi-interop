@@ -1,5 +1,46 @@
 # Journal des déploiements PINS
 
+## PTF-MVP — Parcours BAILLEUR pour atelier 19/05/2026 (2026-05-15 vendredi soir)
+
+Sprint complet livré : un compte BAILLEUR a désormais un parcours utilisateur cohérent et cloisonné pour la démo de l'atelier stratégique mardi 19/05.
+
+### Backend
+- 4 routes `/api/partenaire/*` ajoutées :
+  - `GET /dashboard` — KPIs (cas éligibles, domaines couverts, nouveautés 7j) + 5 derniers cas + domaines d'intérêt
+  - `GET /catalogue` — liste filtrée `aFinancer=true AND statut PRIORISE/EN_PROD AND domaine IN (domaines PTF)`, recherche, filtres
+  - `GET /cas/:id` — Vue 360° partenaire, projection masquant champs sensibles (notes, observations, statusHistory, feedbacks, manifestations d'autres PTF)
+  - `GET /profil` — informations PTF + domaines d'intérêt déclarés (lecture seule)
+- Toutes vérifient `role=BAILLEUR` + `ptfId` non-null
+
+### Frontend
+- 5 pages créées sous `frontend/src/pages/partenaire/` :
+  - `PartenaireDashboardPage` (refonte du stub)
+  - `PartenaireCataloguePage` (cards par cas + filtres domaines)
+  - `PartenaireCasDetailPage` (Vue 360° partenaire)
+  - `PartenaireManifestationsPage` (placeholder juin 2026)
+  - `PartenaireProfilPage` (compte + organisation + domaines)
+- `DashboardLayout.tsx` : menu BAILLEUR dédié 4 items (pas de MENU_SECTIONS institution/admin), badge user role corrigé "Partenaire Technique et Financier"
+- `App.tsx` : 5 routes `/partenaire/*` protégées `allowedRoles=['BAILLEUR']`, cloisonnement BAILLEUR ↔ autres rôles via `useLocation` dans `ProtectedRoute`
+
+### Seed
+- 4 domaines d'intérêt seedés pour PTF BM (compte `ptf-demo@senum.sn`) :
+  IDENTITE_NUMERIQUE, PROTECTION_SOCIALE, FONCIER_CADASTRE, JUSTICE_ETAT_CIVIL
+- Donne accès à 6 cas filtrés : PINS-METIER-008/012/013 + PINS-TECH-0001/0022/0057
+
+### Effet RBAC complet
+- BAILLEUR `/dashboard` → redirect `/partenaire/dashboard`
+- BAILLEUR `/questionnaire/*` → redirect `/partenaire/dashboard`
+- BAILLEUR `/admin/*` → 403 (déjà OK)
+- INSTITUTION/ADMIN `/partenaire/*` → redirect `/dashboard`
+
+### Tests prod validés
+- API : 3 routes HTTP 200 avec payload conforme (6 cas, 4 domaines, KPIs)
+- Filtrage backend strict : un BAILLEUR ne peut accéder qu'aux cas dans ses domaines d'intérêt déclarés
+- Non-régression ADMIN/INSTITUTION confirmée par les tests précédents
+
+### Backups
+- Avant : `prod_avant_ptf_mvp_20260515_2157.sql` (1.2M)
+
 ## Hotfix DASH — /dashboard ErrorBoundary (2026-05-15 vendredi soir)
 
 - Bug : `/dashboard` admin affichait l'ErrorBoundary React après les 25 nouvelles institutions seed v4

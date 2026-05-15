@@ -44,7 +44,12 @@ import { DocumentsPage } from '@/pages/DocumentsPage';
 import { NotFoundPage } from '@/pages/NotFoundPage';
 import { CguAcceptancePage } from '@/pages/partenaire/CguAcceptancePage';
 import { PartenaireDashboardPage } from '@/pages/partenaire/PartenaireDashboardPage';
+import { PartenaireCataloguePage } from '@/pages/partenaire/PartenaireCataloguePage';
+import { PartenaireCasDetailPage } from '@/pages/partenaire/PartenaireCasDetailPage';
+import { PartenaireManifestationsPage } from '@/pages/partenaire/PartenaireManifestationsPage';
+import { PartenaireProfilPage } from '@/pages/partenaire/PartenaireProfilPage';
 import { CreatePartenaireUserPage } from '@/pages/partenaire/CreatePartenaireUserPage';
+import { useLocation } from 'react-router-dom';
 
 // Protected Route wrapper
 type AllowedRole = 'ADMIN' | 'INSTITUTION' | 'BAILLEUR';
@@ -58,6 +63,7 @@ function ProtectedRoute({
   allowedRoles?: AllowedRole[];
 }) {
   const { isAuthenticated, user } = useAuthStore();
+  const location = useLocation();
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
@@ -70,6 +76,21 @@ function ProtectedRoute({
   // PTF Phase 1 — Acceptation CGU obligatoire pour les BAILLEUR
   if (user?.role === 'BAILLEUR' && !(user as any)?.cguAccepted) {
     return <Navigate to="/partenaire/cgu" replace />;
+  }
+
+  // PTF MVP — Cloisonnement BAILLEUR : ne peut accéder qu'à /partenaire/*
+  // Toute autre route protégée renvoie sur le dashboard partenaire.
+  if (user?.role === 'BAILLEUR' && !location.pathname.startsWith('/partenaire')) {
+    return <Navigate to="/partenaire/dashboard" replace />;
+  }
+
+  // Inversement : un non-BAILLEUR ne peut accéder à /partenaire/* (sauf admin pour création de comptes)
+  if (
+    user?.role !== 'BAILLEUR' &&
+    location.pathname.startsWith('/partenaire') &&
+    !location.pathname.startsWith('/partenaire/cgu') // CGU est public
+  ) {
+    return <Navigate to="/dashboard" replace />;
   }
 
   if (adminOnly && user?.role !== 'ADMIN') {
@@ -401,12 +422,48 @@ function App() {
             }
           />
 
-          {/* PTF Phase 1 — Espace partenaire (stub) */}
+          {/* PTF MVP — Espace partenaire BAILLEUR */}
           <Route
             path="/partenaire"
+            element={<Navigate to="/partenaire/dashboard" replace />}
+          />
+          <Route
+            path="/partenaire/dashboard"
             element={
               <ProtectedRoute allowedRoles={['BAILLEUR']}>
                 <PartenaireDashboardPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/partenaire/catalogue"
+            element={
+              <ProtectedRoute allowedRoles={['BAILLEUR']}>
+                <PartenaireCataloguePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/partenaire/cas/:id"
+            element={
+              <ProtectedRoute allowedRoles={['BAILLEUR']}>
+                <PartenaireCasDetailPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/partenaire/manifestations"
+            element={
+              <ProtectedRoute allowedRoles={['BAILLEUR']}>
+                <PartenaireManifestationsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/partenaire/profil"
+            element={
+              <ProtectedRoute allowedRoles={['BAILLEUR']}>
+                <PartenaireProfilPage />
               </ProtectedRoute>
             }
           />
