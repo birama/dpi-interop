@@ -4,7 +4,7 @@ import { ChevronLeft, ChevronRight, Save, Send, Loader2 } from 'lucide-react';
 import { useAuthStore } from '@/store/auth';
 import { StepperVisuel } from '@/components/forms/StepperVisuel';
 import { SaveIndicator } from '@/components/forms/SaveIndicator';
-import { useParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 
 import { STEPS, StepProps } from './lib/questionnaireTypes';
 import { useQuestionnaireData } from './hooks/useQuestionnaireData';
@@ -17,6 +17,7 @@ import { Step5Interop } from './steps/Step5Interop';
 import { Step6Principes } from './steps/Step6Principes';
 import { Step7Maturite } from './steps/Step7Maturite';
 import { Step8Attentes } from './steps/Step8Attentes';
+import { QuestionnaireReadOnlyView } from './QuestionnaireReadOnlyView';
 
 // Orchestrateur leger du module questionnaire (V1 — Lot 1).
 // Conserve fonctionnellement le comportement du monolithe :
@@ -25,6 +26,8 @@ import { Step8Attentes } from './steps/Step8Attentes';
 export function QuestionnairePage() {
   const { id } = useParams();
   const { user } = useAuthStore();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const mode = searchParams.get('mode'); // 'edit' ou null/autre
 
   const {
     submission,
@@ -49,6 +52,23 @@ export function QuestionnairePage() {
       <div className="flex items-center justify-center h-64">
         <Loader2 className="w-8 h-8 animate-spin text-teal" />
       </div>
+    );
+  }
+
+  // P10-MVP — Vue lecture par défaut. Bascule édition via ?mode=edit + RBAC.
+  // L'API GET /submissions/:id gère déjà le RBAC (ADMIN OK, INSTITUTION matching uniquement).
+  // Si l'utilisateur arrive ici, il a déjà l'accès lecture validé côté backend.
+  if (id && submission && mode !== 'edit') {
+    const isOwner = !!user?.institutionId && user.institutionId === submission.institutionId;
+    const isAdmin = user?.role === 'ADMIN';
+    const canEdit = isOwner || isAdmin;
+    return (
+      <QuestionnaireReadOnlyView
+        submission={submission}
+        canEdit={canEdit}
+        isAdmin={isAdmin && !isOwner}
+        onEdit={() => setSearchParams({ mode: 'edit' })}
+      />
     );
   }
 

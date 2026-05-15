@@ -24,6 +24,17 @@
 - 6 cas démo promus en PRIORISE + aFinancer (PINS-TECH-0004/0014/0015/0021/0022/0029) — contournement bug `prioriser-rapide` via UPDATE SQL direct
 - Backups : `prod_avant_merges_ptf_*.sql` / `prod_post_merges_ptf_*.sql`
 
+## Roadmap post-atelier (mai-juin 2026)
+
+- **P10 — Vue lecture/édition questionnaire** (1 semaine dev) :
+  - P10.1 `<QuestionnaireReadOnlyView>` synthèse exécutive (cards par chapitre, pictogrammes, export PDF)
+  - P10.2 Refactor route `/questionnaire/:uuid` : lecture par défaut, `?mode=edit` bascule
+  - P10.3 Correction admin champ-par-champ (modal + motif obligatoire + audit `journal_questionnaire_corrections`)
+  - P10.4 Notification mail + in-app contact référent institution
+- **PTF-03 à PTF-06** — UI complète module PTF (catalogue partenaire, manifestation, propositions BAILLEUR, audit)
+- **Bug `prioriser-rapide`** : fix génération code conditionnel selon préfixe source
+- **Compléter placeholders** : 25 institutions seed v4 (responsable*) + 9 cas `domaine=NULL` + 24 registres `domaine="TRANSVERSAL"`
+
 ## Atelier stratégique — 19 mai 2026
 
 - Lieu : Bâtiment Administratif
