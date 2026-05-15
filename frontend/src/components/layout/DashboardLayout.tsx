@@ -19,6 +19,10 @@ import { NotificationsBell } from '@/modules/vue360/notifications/NotificationsB
 import { useQuery } from '@tanstack/react-query';
 import { api } from '@/services/api';
 import { MENU_SECTIONS, MENU_TOP, findSectionForPath, type MenuItem } from '@/config/menuConfig';
+import { useInactivityLogout } from '@/hooks/useInactivityLogout';
+
+// Aligné avec le TTL backend (cleanup automatique des sessions > 10 min sans activité)
+const INACTIVITY_TIMEOUT_MS = 10 * 60 * 1000;
 
 export function DashboardLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -32,6 +36,14 @@ export function DashboardLayout() {
     logout();
     navigate('/login');
   };
+
+  // Auto-logout après 10 min d'inactivité (mousemove/keydown/click/scroll/touchstart).
+  // Aligné avec le cleanup serveur. Au timeout : flag sessionStorage + logout + redirect /login.
+  useInactivityLogout(INACTIVITY_TIMEOUT_MS, () => {
+    try { sessionStorage.setItem('auth-expired-reason', 'expired'); } catch {}
+    logout();
+    navigate('/login');
+  });
 
   // Filtrage des rubriques selon le role
   const visibleSections = MENU_SECTIONS
