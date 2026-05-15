@@ -87,16 +87,33 @@ export function DashboardPage() {
     : [];
 
   // Bar chart data by ministère
-  const barData = instStats?.byMinistere
-    ? Object.entries(instStats.byMinistere)
-        .sort((a, b) => (b[1] as number) - (a[1] as number))
-        .slice(0, 10)
-        .map(([ministere, count]) => ({
-          name: ministere.length > 15 ? ministere.substring(0, 15) + '...' : ministere,
-          fullName: ministere,
-          count: count as number,
-        }))
-    : [];
+  // Le backend renvoie byMinistere au format Prisma groupBy : Array<{ministere, _count}>
+  // (anciennement supposé être un objet {ministere: count}). Tolérant aux 2 formats.
+  const byMinistere: any = instStats?.byMinistere;
+  let barData: Array<{ name: string; fullName: string; count: number }> = [];
+  if (Array.isArray(byMinistere)) {
+    barData = byMinistere
+      .map((item: any) => ({ ministere: item?.ministere ?? 'Non renseigné', count: Number(item?._count ?? 0) }))
+      .filter(x => x.count > 0)
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 10)
+      .map(({ ministere, count }) => ({
+        name: ministere.length > 15 ? ministere.substring(0, 15) + '...' : ministere,
+        fullName: ministere,
+        count,
+      }));
+  } else if (byMinistere && typeof byMinistere === 'object') {
+    barData = Object.entries(byMinistere)
+      .map(([ministere, count]) => ({ ministere, count: Number(count) }))
+      .filter(x => x.count > 0)
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 10)
+      .map(({ ministere, count }) => ({
+        name: ministere.length > 15 ? ministere.substring(0, 15) + '...' : ministere,
+        fullName: ministere,
+        count,
+      }));
+  }
 
   // ======================================================================
   // ADMIN DASHBOARD

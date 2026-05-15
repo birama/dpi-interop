@@ -1,5 +1,13 @@
 # Journal des déploiements PINS
 
+## Hotfix DASH — /dashboard ErrorBoundary (2026-05-15 vendredi soir)
+
+- Bug : `/dashboard` admin affichait l'ErrorBoundary React après les 25 nouvelles institutions seed v4
+- Cause : `instStats.byMinistere` est un Array Prisma `groupBy` `[{ministere, _count}]`, mais `DashboardPage.tsx:90` faisait `Object.entries()` qui renvoie `[["0", obj]]` → recharts reçoit un objet où il attend un nombre → crash au render
+- Fix : refactor `barData` tolérant aux 2 formats (Array Prisma OU object {ministere: count}). Filtre count > 0, protection `null/undefined`
+- Aucune migration Prisma, aucune action SQL
+- Commit : voir `git log --grep=hotfix-dashboard`
+
 ## DEPLOY-03 — Promotion cas démo atelier (2026-05-14)
 
 - 9 cas promus en PRIORISE + aFinancer=true (6 métier + 3 technique)
