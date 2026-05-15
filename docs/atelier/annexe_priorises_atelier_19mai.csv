@@ -1,0 +1,19 @@
+code;titre;domaine;statut_vue;statut_impl;inst_cheffe_code;inst_cheffe_nom;base_legale
+PINS-TECH-0002;Consultation des declarations douanieres via Douanes.GetDeclarations;FINANCES_PUBLIQUES;PRIORISE;PRIORISE;"";"";""
+PINS-TECH-0004;Consultation NINEA pour controles inter-administrations;FINANCES_PUBLIQUES;PRIORISE;PRIORISE;ANSD;Agence Nationale de la Statistique et de la Démographie;""
+PINS-TECH-0014;Transmission des quittances du Tresor vers la DGID;FINANCES_PUBLIQUES;PRIORISE;PRIORISE;DGCPT;Direction Générale de la Comptabilité Publique et du Trésor;""
+PINS-TECH-0015;Transmission de l etat des recouvrements du Tresor vers les Douanes;FINANCES_PUBLIQUES;PRIORISE;PRIORISE;DGCPT;Direction Générale de la Comptabilité Publique et du Trésor;""
+PINS-TECH-0056;Notification de paiement / encaissement DGCPT;FINANCES_PUBLIQUES;PRIORISE;IDENTIFIE;DGCPT;Direction Générale de la Comptabilité Publique et du Trésor;Règlement général comptabilité publique
+PINS-METIER-001;Creation d entreprise au guichet unique APIX;CLIMAT_AFFAIRES;PRIORISE;PRIORISE;"";"";Acte uniforme OHADA sur le droit commercial, Loi 2008-08 sur le creation d'entreprise au Senegal
+PINS-TECH-0021;Transmission des informations RCCM du Greffe vers l ANSD;CLIMAT_AFFAIRES;PRIORISE;PRIORISE;ANSD;Agence Nationale de la Statistique et de la Démographie;""
+PINS-TECH-0001;Verification d eligibilite aux programmes de protection sociale via RNU;PROTECTION_SOCIALE;PRIORISE;PRIORISE;"";"";""
+PINS-TECH-0022;Transmission des informations RNU vers la Couverture Maladie Universelle;PROTECTION_SOCIALE;PRIORISE;PRIORISE;DGPSN;Délégation Générale à la Protection Sociale et à la Solidarité Nationale;""
+PINS-METIER-009;Inscription à la Couverture Maladie Universelle (CMU);SANTE_NUMERIQUE;PRIORISE;IDENTIFIE;INST-CMU;Agence de la Couverture Maladie Universelle;Loi instituant la CMU
+PINS-METIER-010;Orientation et inscription universitaire (CAMPUSEN);EDUCATION;PRIORISE;IDENTIFIE;INST-CAMPUSEN;Plateforme nationale CAMPUSEN;Décret sur l'orientation universitaire
+PINS-METIER-013;Authentification SénégalConnect (FranceConnect-like);IDENTITE_NUMERIQUE;PRIORISE;IDENTIFIE;INST-DGNUM;Direction Générale du Numérique - SENUM SA;Décret identité numérique
+PINS-TECH-0057;Authentification SénégalConnect;IDENTITE_NUMERIQUE;PRIORISE;IDENTIFIE;INST-DGNUM;Direction Générale du Numérique - SENUM SA;Décret identité numérique
+PINS-METIER-008;Demande d'extrait de casier judiciaire (B3);JUSTICE_ETAT_CIVIL;PRIORISE;IDENTIFIE;INST-MJ-CASIER;Casier Judiciaire National - Ministère de la Justice;Code de procédure pénale
+PINS-METIER-012;Demande de titre foncier (immatriculation foncière);FONCIER_CADASTRE;PRIORISE;IDENTIFIE;DGID;Direction Générale des Impôts et des Domaines;Code domanial
+PINS-METIER-011;Inscription au registre des demandeurs d'emploi (ANPEJ);EMPLOI_FORMATION;PRIORISE;IDENTIFIE;ANPEJ;Agence Nationale pour la Promotion de l'Emploi des Jeunes;Loi sur l'emploi
+PINS-TECH-0029;Transmission du fichier electoral DAF vers la DGE-ELEC;SERVICES_CITOYENS;PRIORISE;PRIORISE;DAF;Direction de l'Automatisation des Fichiers;""
+PINS-TECH-0055;Consultation d'acte de naissance;TRANSVERSAL;PRIORISE;IDENTIFIE;INST-DGEC;Direction Générale de l'État Civil;Code de la famille
