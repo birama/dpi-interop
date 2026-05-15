@@ -832,10 +832,11 @@ async function auditRoutes(app: FastifyInstance) {
   });
 
   // GET /api/audit/sessions/active — Active sessions with user info
+  // Seuil d'inactivité : 10 minutes (cohérent avec cleanup automatique server-side)
   app.get('/sessions/active', { onRequest: [app.authenticateAdmin] }, async (_req: any, reply: any) => {
-    const thirtyMinAgo = new Date(Date.now() - 30 * 60 * 1000);
+    const tenMinAgo = new Date(Date.now() - 10 * 60 * 1000);
     const sessions = await app.prisma.userSession.findMany({
-      where: { isActive: true, lastActivityAt: { gte: thirtyMinAgo } },
+      where: { isActive: true, lastActivityAt: { gte: tenMinAgo } },
       include: { user: { select: { email: true, role: true, institution: { select: { code: true, nom: true } } } } },
       orderBy: { lastActivityAt: 'desc' },
     });
@@ -846,13 +847,13 @@ async function auditRoutes(app: FastifyInstance) {
   app.get('/stats', { onRequest: [app.authenticateAdmin] }, async (_req: any, reply: any) => {
     const now = new Date();
     const h24ago = new Date(now.getTime() - 24 * 60 * 60 * 1000);
-    const thirtyMinAgo = new Date(now.getTime() - 30 * 60 * 1000);
+    const tenMinAgo = new Date(now.getTime() - 10 * 60 * 1000);
 
     const [totalLogins24h, failedLogins24h, modifications24h, activeSessionsNow] = await Promise.all([
       app.prisma.auditLog.count({ where: { action: 'LOGIN_SUCCESS', createdAt: { gte: h24ago } } }),
       app.prisma.auditLog.count({ where: { action: 'LOGIN_FAILED', createdAt: { gte: h24ago } } }),
       app.prisma.auditLog.count({ where: { action: { in: ['CREATE', 'UPDATE', 'DELETE'] }, createdAt: { gte: h24ago } } }),
-      app.prisma.userSession.count({ where: { isActive: true, lastActivityAt: { gte: thirtyMinAgo } } }),
+      app.prisma.userSession.count({ where: { isActive: true, lastActivityAt: { gte: tenMinAgo } } }),
     ]);
 
     return reply.send({ totalLogins24h, activeSessionsNow, failedLogins24h, modifications24h });
@@ -1035,6 +1036,23 @@ export async function registerRoutes(app: FastifyInstance) {
       });
     } catch {}
   });
+
+  // Cleanup automatique des sessions inactives : toutes les 60s, désactive
+  // les sessions dont lastActivityAt < now - 10min. Idempotent.
+  const INACTIVITY_TIMEOUT_MS = 10 * 60 * 1000;
+  setInterval(async () => {
+    try {
+      await app.prisma.userSession.updateMany({
+        where: {
+          isActive: true,
+          lastActivityAt: { lt: new Date(Date.now() - INACTIVITY_TIMEOUT_MS) },
+        },
+        data: { isActive: false, logoutAt: new Date() },
+      });
+    } catch (err) {
+      app.log.error({ err }, 'session-cleanup failed');
+    }
+  }, 60 * 1000);
 
   app.register(
     async function (api) {

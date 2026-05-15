@@ -99,6 +99,12 @@ export class AuthService {
     // Audit log for successful login
     await this.app.prisma.auditLog.create({ data: { userId: user.id, userEmail: user.email, userRole: user.role, action: 'LOGIN_SUCCESS', resource: 'auth', resourceLabel: user.email } });
 
+    // Invalider toutes les sessions actives précédentes du user (évite l'accumulation)
+    await this.app.prisma.userSession.updateMany({
+      where: { userId: user.id, isActive: true },
+      data: { isActive: false, logoutAt: new Date() },
+    });
+
     // Create session
     const crypto = await import('crypto');
     const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
