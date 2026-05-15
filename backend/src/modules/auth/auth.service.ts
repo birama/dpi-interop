@@ -99,17 +99,18 @@ export class AuthService {
     // Audit log for successful login
     await this.app.prisma.auditLog.create({ data: { userId: user.id, userEmail: user.email, userRole: user.role, action: 'LOGIN_SUCCESS', resource: 'auth', resourceLabel: user.email } });
 
-    // Invalider toutes les sessions actives précédentes du user (évite l'accumulation)
-    await this.app.prisma.userSession.updateMany({
-      where: { userId: user.id, isActive: true },
-      data: { isActive: false, logoutAt: new Date() },
-    });
-
-    // Create session
+    // Invalider toutes les sessions actives précédentes du user (évite l'accumulation).
+    // upsert protège du cas où le même JWT serait régénéré dans la même seconde (iat identique).
     const crypto = await import('crypto');
     const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
-    await this.app.prisma.userSession.create({
-      data: {
+    await this.app.prisma.userSession.updateMany({
+      where: { userId: user.id, isActive: true, NOT: { tokenHash } },
+      data: { isActive: false, logoutAt: new Date() },
+    });
+    await this.app.prisma.userSession.upsert({
+      where: { tokenHash },
+      update: { isActive: true, lastActivityAt: new Date(), logoutAt: null, expiresAt: new Date(Date.now() + 2 * 60 * 60 * 1000) },
+      create: {
         userId: user.id,
         tokenHash,
         expiresAt: new Date(Date.now() + 2 * 60 * 60 * 1000), // 2h

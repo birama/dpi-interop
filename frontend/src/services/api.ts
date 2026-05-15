@@ -55,6 +55,11 @@ const processQueue = (error: any, token: string | null = null) => {
   failedQueue = [];
 };
 
+// Avant tout redirect /login, on flag le motif pour que la LoginPage affiche un toast clair.
+function flagSessionExpired(reason: 'expired' | 'forced' = 'expired') {
+  try { sessionStorage.setItem('auth-expired-reason', reason); } catch {}
+}
+
 api.interceptors.response.use(
   (response) => response,
   async (error: AxiosError<{ error?: string; message?: string }>) => {
@@ -62,8 +67,12 @@ api.interceptors.response.use(
 
     if (error.response?.status === 401 && !originalRequest._retry) {
       const { refreshToken } = useAuthStore.getState();
+      // Identifier le motif côté backend pour affiner l'UX
+      const errCode = (error.response.data as any)?.error;
+      const isSessionExpired = errCode === 'SessionExpired';
 
       if (!refreshToken || originalRequest.url?.includes('/auth/refresh')) {
+        flagSessionExpired(isSessionExpired ? 'expired' : 'forced');
         useAuthStore.getState().logout();
         window.location.href = '/login';
         return Promise.reject(error);
@@ -90,6 +99,7 @@ api.interceptors.response.use(
         return api(originalRequest);
       } catch (refreshError) {
         processQueue(refreshError, null);
+        flagSessionExpired('expired');
         useAuthStore.getState().logout();
         window.location.href = '/login';
         return Promise.reject(refreshError);

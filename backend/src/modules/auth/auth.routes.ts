@@ -37,7 +37,9 @@ export async function authRoutes(app: FastifyInstance) {
     handler: authController.getProfile.bind(authController),
   });
 
-  // Refresh token
+  // Refresh token — génère un nouveau access JWT ET crée une UserSession active
+  // associée. Préserve les invariants du module audit (toute activité authentifiée
+  // doit être tracée par une session).
   app.post('/refresh', {
     schema: { tags: ['Auth'], description: 'Renouveler le token JWT' },
     handler: async (request: any, reply: any) => {
@@ -48,10 +50,33 @@ export async function authRoutes(app: FastifyInstance) {
         const decoded = app.jwt.verify(refreshToken) as any;
         if (decoded.type !== 'refresh') return reply.status(401).send({ error: 'Token invalide' });
 
-        const newToken = app.jwt.sign(
-          { id: decoded.id, email: decoded.email, role: decoded.role, institutionId: decoded.institutionId },
-          { expiresIn: '2h' }
-        );
+        const payload: any = { id: decoded.id, email: decoded.email, role: decoded.role };
+        if (decoded.institutionId) payload.institutionId = decoded.institutionId;
+        if (decoded.ptfId) payload.ptfId = decoded.ptfId;
+        if (decoded.cguAccepted !== undefined) payload.cguAccepted = decoded.cguAccepted;
+
+        const newToken = app.jwt.sign(payload, { expiresIn: '2h' });
+
+        // Désactive les sessions précédentes et crée la nouvelle (dedup).
+        // upsert protège du cas où le même JWT serait régénéré dans la même seconde
+        // (iat identique → tokenHash identique).
+        const crypto = await import('crypto');
+        const tokenHash = crypto.createHash('sha256').update(newToken).digest('hex');
+        await app.prisma.userSession.updateMany({
+          where: { userId: decoded.id, isActive: true, NOT: { tokenHash } },
+          data: { isActive: false, logoutAt: new Date() },
+        });
+        await app.prisma.userSession.upsert({
+          where: { tokenHash },
+          update: { isActive: true, lastActivityAt: new Date(), logoutAt: null, expiresAt: new Date(Date.now() + 2 * 60 * 60 * 1000) },
+          create: {
+            userId: decoded.id,
+            tokenHash,
+            expiresAt: new Date(Date.now() + 2 * 60 * 60 * 1000),
+            isActive: true,
+          },
+        });
+
         return reply.send({ token: newToken });
       } catch {
         return reply.status(401).send({ error: 'Refresh token expiré ou invalide' });

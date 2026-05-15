@@ -27,7 +27,24 @@ export function LoginPage() {
   const logout = useAuthStore((state) => state.logout);
 
   // Clear any existing session when login page is displayed
-  useEffect(() => { logout(); }, []);
+  useEffect(() => {
+    logout();
+    // Toast d'info si l'utilisateur arrive ici à cause d'une session expirée
+    try {
+      const reason = sessionStorage.getItem('auth-expired-reason');
+      if (reason) {
+        sessionStorage.removeItem('auth-expired-reason');
+        toast({
+          variant: 'destructive',
+          title: 'Session expirée',
+          description:
+            reason === 'forced'
+              ? 'Votre session a été fermée. Veuillez vous reconnecter.'
+              : 'Votre session a expiré après 10 minutes d\'inactivité. Veuillez vous reconnecter.',
+        });
+      }
+    } catch {}
+  }, []);
 
   const {
     register,
