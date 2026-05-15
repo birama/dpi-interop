@@ -45,6 +45,12 @@ export class SubmissionsController {
     reply: FastifyReply
   ) {
     try {
+      // PTF Phase 2 — restriction BAILLEUR : un partenaire n'a pas vocation à
+      // consulter les questionnaires d'auto-évaluation des institutions.
+      // Confidentialité documentée note PTF v0.4 §3.2.
+      if (request.user.role === 'BAILLEUR') {
+        return reply.send({ data: [], total: 0, page: 1, limit: 0, totalPages: 0 });
+      }
       const query = submissionQuerySchema.parse(request.query);
       const result = await this.submissionsService.findAll(
         query,
@@ -63,6 +69,10 @@ export class SubmissionsController {
     reply: FastifyReply
   ) {
     try {
+      // PTF Phase 2 — BAILLEUR n'accède pas aux questionnaires individuels.
+      if (request.user.role === 'BAILLEUR') {
+        return reply.status(403).send({ error: 'Accès non autorisé pour le rôle PTF' });
+      }
       const submission = await this.submissionsService.findOne(
         request.params.id,
         request.user.role,

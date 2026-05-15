@@ -94,6 +94,13 @@ export async function useCasesRoutes(app: FastifyInstance) {
     } else if (includePropose !== 'true') {
       where.statutVueSection = { notIn: ['PROPOSE', 'ARCHIVE', 'FUSIONNE'] };
     }
+    // PTF Phase 2 — restriction BAILLEUR : portefeuille national filtré PRIORISE/EN_PROD + aFinancer.
+    // Cohérent avec la note PTF v0.4 §3.1 : un partenaire ne voit que les cas
+    // explicitement priorisés et marqués éligibles à un financement.
+    if (req.user.role === 'BAILLEUR') {
+      where.aFinancer = true;
+      where.statutVueSection = { in: ['PRIORISE', 'EN_PRODUCTION_360'] };
+    }
     if (typologie && ['METIER', 'TECHNIQUE'].includes(typologie)) {
       where.typologie = typologie;
     }
