@@ -13,7 +13,7 @@ import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { api } from '@/services/api';
-import { Loader2, Search, Users, Cog, Link2 } from 'lucide-react';
+import { Loader2, Search, Users, Cog, Link2, Coins } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { VUE360_STATUT_COLORS } from '../constants';
 
@@ -37,17 +37,24 @@ function critByCount(n: number): keyof typeof CRITICITE_BADGE {
 
 export function TypologieListPage({ typologie }: Props) {
   const [q, setQ] = useState('');
+  const [onlyFinancer, setOnlyFinancer] = useState(false);
   const isMetier = typologie === 'METIER';
 
   const { data, isLoading } = useQuery({
-    queryKey: ['typologie-list', typologie, q],
+    queryKey: ['typologie-list', typologie, q, onlyFinancer],
     queryFn: () => api.get('/use-cases/catalog', {
-      params: { typologie, search: q || undefined, limit: 50 },
+      params: {
+        typologie,
+        search: q || undefined,
+        limit: 50,
+        ...(onlyFinancer ? { aFinancer: 'true' } : {}),
+      },
     }).then((r: any) => r.data),
     placeholderData: (prev: any) => prev,
   });
 
   const items = (data?.data || []) as any[];
+  const nbAFinancer = items.filter((cu: any) => cu.aFinancer).length;
 
   return (
     <div className="space-y-5 max-w-6xl mx-auto">
@@ -74,8 +81,8 @@ export function TypologieListPage({ typologie }: Props) {
         </div>
       </div>
 
-      {/* Recherche */}
-      <div className="bg-white rounded-lg border shadow-sm p-4">
+      {/* Recherche + filtre À financer */}
+      <div className="bg-white rounded-lg border shadow-sm p-4 space-y-3">
         <div className="relative">
           <Search className="absolute left-2.5 top-2.5 w-4 h-4 text-gray-400" />
           <input
@@ -84,6 +91,27 @@ export function TypologieListPage({ typologie }: Props) {
             placeholder={`Rechercher un ${isMetier ? 'parcours metier' : 'service technique'}...`}
             className="w-full pl-8 pr-3 py-2 text-sm border border-gray-300 rounded-md focus:border-teal focus:ring-1 focus:ring-teal outline-none"
           />
+        </div>
+        <div className="flex items-center justify-between flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={() => setOnlyFinancer(!onlyFinancer)}
+            className={cn(
+              'inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-md border transition-colors',
+              onlyFinancer
+                ? 'bg-gold text-white border-gold shadow-sm'
+                : 'bg-white text-gold border-gold/40 hover:bg-gold/5'
+            )}
+            title="Filtrer les cas éligibles à un financement PTF (aFinancer=true)"
+          >
+            <Coins className="w-3.5 h-3.5" />
+            {onlyFinancer ? 'À financer uniquement' : 'Tous les cas'}
+          </button>
+          {!onlyFinancer && nbAFinancer > 0 && (
+            <span className="text-[11px] text-gray-500">
+              {nbAFinancer} cas éligible(s) au financement parmi les résultats
+            </span>
+          )}
         </div>
       </div>
 
@@ -139,6 +167,20 @@ function CasUsageLine({ cu, typologie }: { cu: any; typologie: 'METIER' | 'TECHN
             <span className={cn('inline-flex items-center text-[10px] font-semibold px-2 py-0.5 rounded', statusBadge.chip)}>
               {statusBadge.label}
             </span>
+            {cu.aFinancer && (
+              <span
+                className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded bg-gold/15 text-gold border border-gold/30"
+                title="Éligible à un financement PTF"
+              >
+                <Coins className="w-2.5 h-2.5" />
+                À financer
+              </span>
+            )}
+            {cu.domaine && (
+              <span className="inline-flex items-center text-[10px] font-medium px-1.5 py-0.5 rounded bg-teal/10 text-teal border border-teal/20">
+                {cu.domaine.replace(/_/g, ' ').toLowerCase()}
+              </span>
+            )}
             {!isMetier && critBadge && total > 0 && (
               <span className={cn('inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded ml-auto', critBadge.bg)}>
                 <Link2 className="w-2.5 h-2.5" />

@@ -30,6 +30,9 @@ export function projectUseCase(casUsage: any, level: VisibilityLevel): any {
       statutImpl: casUsage.statutImpl,
       impact: casUsage.impact,
       axePrioritaire: casUsage.axePrioritaire,
+      // PTF Phase 2 — exposition du domaine et de l'éligibilité au financement (panel démo)
+      domaine: casUsage.domaine,
+      aFinancer: casUsage.aFinancer,
       dateIdentification: casUsage.dateIdentification,
       createdAt: casUsage.createdAt,
       updatedAt: casUsage.updatedAt,

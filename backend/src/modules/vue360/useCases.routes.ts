@@ -64,7 +64,7 @@ export async function useCasesRoutes(app: FastifyInstance) {
   // GET /catalog — Liste paginée de tous les cas d'usage
   // =========================================================================
   app.get('/catalog', { onRequest: [app.authenticate] }, async (req: any, reply: any) => {
-    const { limit = '20', cursor, status, search, typologie, includePropose } = req.query as any;
+    const { limit = '20', cursor, status, search, typologie, includePropose, aFinancer, domaine } = req.query as any;
     const take = Math.min(parseInt(limit) || 20, 100);
 
     // Resoudre le code de l'institution de l'utilisateur (pour reconnaissance initiateur robuste)
@@ -105,6 +105,13 @@ export async function useCasesRoutes(app: FastifyInstance) {
         { institutionSourceCode: { contains: search, mode: 'insensitive' } },
         { institutionCibleCode: { contains: search, mode: 'insensitive' } },
       ];
+    }
+    // PTF Phase 2 — filtres sur les nouveaux champs
+    if (aFinancer === 'true') where.aFinancer = true;
+    if (aFinancer === 'false') where.aFinancer = false;
+    if (domaine) {
+      const domaines = Array.isArray(domaine) ? domaine : [domaine];
+      where.domaine = { in: domaines };
     }
 
     // Pagination par curseur
