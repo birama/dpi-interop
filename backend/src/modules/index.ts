@@ -11,6 +11,7 @@ import { useCasesWriteRoutes, consultationRoutes, feedbackRoutes, duArbitrageRou
 import { registresCouvertureRoutes, registresUseCaseRoutes } from './vue360/registres.routes.js';
 import { notificationsMeRoutes, notificationsRoutes } from './vue360/notifications.routes.js';
 import { catalogueRoutes, suggestionsRoutes } from './vue360/catalogue.routes.js';
+import { liaisonsGuichetRoutes } from './vue360/liaisonsGuichet.routes.js';
 import { newDealRoutes } from './vue360/newDeal.routes.js';
 import { adminBailleurRoutes, adminManifestationsRoutes, adminPtfRoutes, partenaireRoutes } from './partenaire/routes.js';
 import { partenaireTechniqueRoutes, adminOrganisationRoutes } from './partenaire-technique/routes.js';
@@ -1142,6 +1143,7 @@ export async function registerRoutes(app: FastifyInstance) {
       api.register(feedbackRoutes, { prefix: '/feedback' });
       api.register(duArbitrageRoutes, { prefix: '/du/arbitrage' });
       api.register(catalogueRoutes, { prefix: '/catalogue' });
+      api.register(liaisonsGuichetRoutes, { prefix: '/catalogue' });
       api.register(suggestionsRoutes, { prefix: '/catalogue/suggestions' });
       api.register(registresCouvertureRoutes, { prefix: '/registres' });
       api.register(registresUseCaseRoutes, { prefix: '/use-cases' });
