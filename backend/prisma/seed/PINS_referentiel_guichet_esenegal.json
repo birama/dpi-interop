@@ -1,0 +1,2840 @@
+{
+ "source": "Seminaire dematerialisation - Guichet unique, listes des demarches prioritaires - 16/06/2026",
+ "note_integration": "Referentiel des services guichet grand public (e-senegal), cote 'UC guichet' de CONC-2026-06. Une demarche = un service citoyen/entreprise expose ou exposable sur e-senegal, rattache a un evenement de vie. Le statut_exposition_teledac reflete l'etat actuel (en ligne / pas en ligne / Nekkal...). besoin_si_tiers et mecanisme_integration marquent les demarches mobilisant l'interoperabilite (a lier a un UC interop PINS). public_cible_propose est une heuristique par secteur, a valider. Pas de code PINS dans la source : le rattachement au catalogue se fait par secteur + intitule, a reconcilier.",
+ "recap": {
+  "nb_demarches_uniques": 100,
+  "par_secteur": {
+   "Transport": 15,
+   "Éducation": 13,
+   "État Civil Consulaire": 9,
+   "Vie Associative": 9,
+   "Citoyenneté": 9,
+   "Urbanisme": 8,
+   "Travail et Sécurité Sociale": 7,
+   "Fiscalités et domaine": 5,
+   "État Civil": 4,
+   "Sante / protection sociale": 4,
+   "Commerce": 4,
+   "Création d'entreprise": 3,
+   "Exportation / douane": 2,
+   "Justice": 2,
+   "entreprenariat": 1,
+   "Services aux Étrangers": 1,
+   "Environnement": 1,
+   "Tourisme": 1,
+   "Formation professsonnelle": 1
+  },
+  "par_evenement_de_vie": {
+   "Je cherche des piéces d'identité": 18,
+   "Je me déplace": 15,
+   "Je me forme": 10,
+   "Je crée une organisation": 9,
+   "Je construis ou j'emménage": 8,
+   "Je cherche du travail": 6,
+   "Je régularise un titre": 4,
+   "Je me soigne": 4,
+   "Je cherche une école": 3,
+   "Je crée mon entreprise": 3,
+   "Je gére mes démarche administratifs": 3,
+   "J'exporte un bien": 2,
+   "J'ai un enfant": 2,
+   "Je veux vendre": 2,
+   "Je veux créer une entreprise": 1,
+   "J'ai un décés": 1,
+   "Je cherche une carte de circulation": 1,
+   "Je certifie mes diplomes": 1,
+   "Je paye mes impôts": 1,
+   "Je voyage": 1,
+   "J'amenage ou je loue": 1
+  },
+  "par_statut_exposition": {
+   "None": 52,
+   "Pas en ligne": 33,
+   "En ligne mais Non utilisée": 7,
+   "En ligne": 4,
+   "Désactivée": 3,
+   "Pas disponible sur teledac": 1
+  },
+  "public_cible_propose": {
+   "citoyen": 84,
+   "entreprise": 15,
+   "à valider": 1
+  },
+  "avec_besoin_si_tiers_renseigne": 41
+ },
+ "demarches_guichet": [
+  {
+   "code_priorisation_2026": "P-033",
+   "code_priorisation_v1": "P-032",
+   "intitule": "Extrait d'acte de naissance",
+   "evenement_de_vie": "Je cherche des piéces d'identité",
+   "secteur": "État Civil Consulaire",
+   "public_cible_propose": "citoyen",
+   "statut_exposition_teledac": "Pas en ligne",
+   "besoin_si_tiers": null,
+   "mecanisme_integration": null,
+   "point_focal_si_tiers": "MAESE - DAJC",
+   "ministere": "Ministère de MIAAE",
+   "structure": null,
+   "priorisation": {
+    "impact": null,
+    "volumetrie": null,
+    "maturite_technique": null,
+    "complexite_admin": null,
+    "delais": null,
+    "impact_usager_v1": "Très Fort",
+    "complexite_v1": "Haute",
+    "total_v1": 13
+   },
+   "present_dans": [
+    "PRIORISATION_2026",
+    "PRIORISATION"
+   ]
+  },
+  {
+   "code_priorisation_2026": "P-034",
+   "code_priorisation_v1": "P-033",
+   "intitule": "Extrait d'acte de mariage",
+   "evenement_de_vie": "Je cherche des piéces d'identité",
+   "secteur": "État Civil Consulaire",
+   "public_cible_propose": "citoyen",
+   "statut_exposition_teledac": "Pas en ligne",
+   "besoin_si_tiers": null,
+   "mecanisme_integration": null,
+   "point_focal_si_tiers": "MAESE - DAJC",
+   "ministere": "Ministère de MIAAE",
+   "structure": null,
+   "priorisation": {
+    "impact": null,
+    "volumetrie": null,
+    "maturite_technique": null,
+    "complexite_admin": null,
+    "delais": null,
+    "impact_usager_v1": "Très Fort",
+    "complexite_v1": "Haute",
+    "total_v1": null
+   },
+   "present_dans": [
+    "PRIORISATION_2026",
+    "PRIORISATION"
+   ]
+  },
+  {
+   "code_priorisation_2026": "P-035",
+   "code_priorisation_v1": "P-034",
+   "intitule": "Extrait d'acte de décès",
+   "evenement_de_vie": "Je cherche des piéces d'identité",
+   "secteur": "État Civil Consulaire",
+   "public_cible_propose": "citoyen",
+   "statut_exposition_teledac": "Pas en ligne",
+   "besoin_si_tiers": null,
+   "mecanisme_integration": null,
+   "point_focal_si_tiers": "MAESE - DAJC",
+   "ministere": "Ministère de MIAAE",
+   "structure": null,
+   "priorisation": {
+    "impact": null,
+    "volumetrie": null,
+    "maturite_technique": null,
+    "complexite_admin": null,
+    "delais": null,
+    "impact_usager_v1": "Très Fort",
+    "complexite_v1": "Haute",
+    "total_v1": null
+   },
+   "present_dans": [
+    "PRIORISATION_2026",
+    "PRIORISATION"
+   ]
+  },
+  {
+   "code_priorisation_2026": "P-036",
+   "code_priorisation_v1": "P-035",
+   "intitule": "Certificat de divorce",
+   "evenement_de_vie": "Je cherche des piéces d'identité",
+   "secteur": "État Civil Consulaire",
+   "public_cible_propose": "citoyen",
+   "statut_exposition_teledac": "Pas en ligne",
+   "besoin_si_tiers": null,
+   "mecanisme_integration": null,
+   "point_focal_si_tiers": "MAESE - DAJC",
+   "ministere": "Ministère de MIAAE",
+   "structure": null,
+   "priorisation": {
+    "impact": null,
+    "volumetrie": null,
+    "maturite_technique": null,
+    "complexite_admin": null,
+    "delais": null,
+    "impact_usager_v1": "Très Fort",
+    "complexite_v1": "Haute",
+    "total_v1": null
+   },
+   "present_dans": [
+    "PRIORISATION_2026",
+    "PRIORISATION"
+   ]
+  },
+  {
+   "code_priorisation_2026": "P-037",
+   "code_priorisation_v1": "P-036",
+   "intitule": "Certificat de conformité(mariage )",
+   "evenement_de_vie": "Je cherche des piéces d'identité",
+   "secteur": "État Civil Consulaire",
+   "public_cible_propose": "citoyen",
+   "statut_exposition_teledac": "Pas en ligne",
+   "besoin_si_tiers": null,
+   "mecanisme_integration": null,
+   "point_focal_si_tiers": "MAESE - DAJC",
+   "ministere": "Ministère de MIAAE",
+   "structure": null,
+   "priorisation": {
+    "impact": null,
+    "volumetrie": null,
+    "maturite_technique": null,
+    "complexite_admin": null,
+    "delais": null,
+    "impact_usager_v1": "Très Fort",
+    "complexite_v1": "Haute",
+    "total_v1": null
+   },
+   "present_dans": [
+    "PRIORISATION_2026",
+    "PRIORISATION"
+   ]
+  },
+  {
+   "code_priorisation_2026": "P-038",
+   "code_priorisation_v1": "P-037",
+   "intitule": "Certificat de célibat",
+   "evenement_de_vie": "Je cherche des piéces d'identité",
+   "secteur": "État Civil Consulaire",
+   "public_cible_propose": "citoyen",
+   "statut_exposition_teledac": "Pas en ligne",
+   "besoin_si_tiers": null,
+   "mecanisme_integration": null,
+   "point_focal_si_tiers": "MAESE - DAJC",
+   "ministere": "Ministère de MIAAE",
+   "structure": null,
+   "priorisation": {
+    "impact": null,
+    "volumetrie": null,
+    "maturite_technique": null,
+    "complexite_admin": null,
+    "delais": null,
+    "impact_usager_v1": "Très Fort",
+    "complexite_v1": "Haute",
+    "total_v1": null
+   },
+   "present_dans": [
+    "PRIORISATION_2026",
+    "PRIORISATION"
+   ]
+  },
+  {
+   "code_priorisation_2026": "P-039",
+   "code_priorisation_v1": "P-038",
+   "intitule": "Certificat de vie individuel",
+   "evenement_de_vie": "Je cherche des piéces d'identité",
+   "secteur": "État Civil Consulaire",
+   "public_cible_propose": "citoyen",
+   "statut_exposition_teledac": "Pas en ligne",
+   "besoin_si_tiers": null,
+   "mecanisme_integration": null,
+   "point_focal_si_tiers": "MAESE - DAJC",
+   "ministere": "Ministère de MIAAE",
+   "structure": null,
+   "priorisation": {
+    "impact": null,
+    "volumetrie": null,
+    "maturite_technique": null,
+    "complexite_admin": null,
+    "delais": null,
+    "impact_usager_v1": "Très Fort",
+    "complexite_v1": "Haute",
+    "total_v1": null
+   },
+   "present_dans": [
+    "PRIORISATION_2026",
+    "PRIORISATION"
+   ]
+  },
+  {
+   "code_priorisation_2026": "P-040",
+   "code_priorisation_v1": "P-039",
+   "intitule": "Copie littérale d'acte de naissance",
+   "evenement_de_vie": "Je cherche des piéces d'identité",
+   "secteur": "État Civil Consulaire",
+   "public_cible_propose": "citoyen",
+   "statut_exposition_teledac": "Pas en ligne",
+   "besoin_si_tiers": null,
+   "mecanisme_integration": null,
+   "point_focal_si_tiers": "MAESE - DAJC",
+   "ministere": "Ministère de MIAAE",
+   "structure": null,
+   "priorisation": {
+    "impact": null,
+    "volumetrie": null,
+    "maturite_technique": null,
+    "complexite_admin": null,
+    "delais": null,
+    "impact_usager_v1": "Très Fort",
+    "complexite_v1": "Haute",
+    "total_v1": null
+   },
+   "present_dans": [
+    "PRIORISATION_2026",
+    "PRIORISATION"
+   ]
+  },
+  {
+   "code_priorisation_2026": "P-041",
+   "code_priorisation_v1": "P-042",
+   "intitule": "Copie littérale d'acte de mariage",
+   "evenement_de_vie": "Je cherche des piéces d'identité",
+   "secteur": "État Civil Consulaire",
+   "public_cible_propose": "citoyen",
+   "statut_exposition_teledac": "Pas en ligne",
+   "besoin_si_tiers": null,
+   "mecanisme_integration": null,
+   "point_focal_si_tiers": "Collectivités locales",
+   "ministere": "Ministère de MIAAE",
+   "structure": "Collectivité locales",
+   "priorisation": {
+    "impact": null,
+    "volumetrie": null,
+    "maturite_technique": null,
+    "complexite_admin": null,
+    "delais": null,
+    "impact_usager_v1": "Très Fort",
+    "complexite_v1": "Haute",
+    "total_v1": null
+   },
+   "present_dans": [
+    "PRIORISATION_2026",
+    "PRIORISATION"
+   ]
+  },
+  {
+   "code_priorisation_2026": "P-067",
+   "code_priorisation_v1": "P-070",
+   "intitule": "Demander un permis de conduire",
+   "evenement_de_vie": "Je me déplace",
+   "secteur": "Transport",
+   "public_cible_propose": "citoyen",
+   "statut_exposition_teledac": null,
+   "besoin_si_tiers": "DTGR",
+   "mecanisme_integration": null,
+   "point_focal_si_tiers": null,
+   "ministere": "Ministère des Transports terrestres et transport Aérien : DGTR",
+   "structure": "DGTR",
+   "priorisation": {
+    "impact": null,
+    "volumetrie": null,
+    "maturite_technique": null,
+    "complexite_admin": null,
+    "delais": null,
+    "impact_usager_v1": "Fort ",
+    "complexite_v1": "Moyenne",
+    "total_v1": null
+   },
+   "present_dans": [
+    "PRIORISATION_2026",
+    "PRIORISATION"
+   ]
+  },
+  {
+   "code_priorisation_2026": "P-068",
+   "code_priorisation_v1": "P-071",
+   "intitule": "Demander le duplicata du permis de conduire ;",
+   "evenement_de_vie": "Je me déplace",
+   "secteur": "Transport",
+   "public_cible_propose": "citoyen",
+   "statut_exposition_teledac": null,
+   "besoin_si_tiers": "DTGR",
+   "mecanisme_integration": null,
+   "point_focal_si_tiers": null,
+   "ministere": "Ministère des Transports terrestres et transport Aérien : DGTR",
+   "structure": "DGTR",
+   "priorisation": {
+    "impact": null,
+    "volumetrie": null,
+    "maturite_technique": null,
+    "complexite_admin": null,
+    "delais": null,
+    "impact_usager_v1": "Fort ",
+    "complexite_v1": "Moyenne",
+    "total_v1": null
+   },
+   "present_dans": [
+    "PRIORISATION_2026",
+    "PRIORISATION"
+   ]
+  },
+  {
+   "code_priorisation_2026": "P-069",
+   "code_priorisation_v1": "P-072",
+   "intitule": "Demander le renouvellement du permis de conduire",
+   "evenement_de_vie": "Je me déplace",
+   "secteur": "Transport",
+   "public_cible_propose": "citoyen",
+   "statut_exposition_teledac": null,
+   "besoin_si_tiers": "DTGR",
+   "mecanisme_integration": null,
+   "point_focal_si_tiers": null,
+   "ministere": "Ministère des Transports terrestres et transport Aérien : DGTR",
+   "structure": "DGTR",
+   "priorisation": {
+    "impact": null,
+    "volumetrie": null,
+    "maturite_technique": null,
+    "complexite_admin": null,
+    "delais": null,
+    "impact_usager_v1": "Fort ",
+    "complexite_v1": "Moyenne",
+    "total_v1": null
+   },
+   "present_dans": [
+    "PRIORISATION_2026",
+    "PRIORISATION"
+   ]
+  },
+  {
+   "code_priorisation_2026": "P-070",
+   "code_priorisation_v1": "P-073",
+   "intitule": "Demander une attestation d’authenticité d’un permis de conduire",
+   "evenement_de_vie": "Je me déplace",
+   "secteur": "Transport",
+   "public_cible_propose": "citoyen",
+   "statut_exposition_teledac": null,
+   "besoin_si_tiers": "DTGR",
+   "mecanisme_integration": null,
+   "point_focal_si_tiers": null,
+   "ministere": "Ministère des Transports terrestres et transport Aérien : DGTR",
+   "structure": "DGTR",
+   "priorisation": {
+    "impact": null,
+    "volumetrie": null,
+    "maturite_technique": null,
+    "complexite_admin": null,
+    "delais": null,
+    "impact_usager_v1": "Fort ",
+    "complexite_v1": "Moyenne",
+    "total_v1": null
+   },
+   "present_dans": [
+    "PRIORISATION_2026",
+    "PRIORISATION"
+   ]
+  },
+  {
+   "code_priorisation_2026": "P-071",
+   "code_priorisation_v1": "P-074",
+   "intitule": "Proroger un permis de conduire",
+   "evenement_de_vie": "Je me déplace",
+   "secteur": "Transport",
+   "public_cible_propose": "citoyen",
+   "statut_exposition_teledac": null,
+   "besoin_si_tiers": "DTGR",
+   "mecanisme_integration": null,
+   "point_focal_si_tiers": null,
+   "ministere": "Ministère des Transports terrestres et transport Aérien : DGTR",
+   "structure": "DGTR",
+   "priorisation": {
+    "impact": null,
+    "volumetrie": null,
+    "maturite_technique": null,
+    "complexite_admin": null,
+    "delais": null,
+    "impact_usager_v1": "Fort ",
+    "complexite_v1": "Moyenne",
+    "total_v1": null
+   },
+   "present_dans": [
+    "PRIORISATION_2026",
+    "PRIORISATION"
+   ]
+  },
+  {
+   "code_priorisation_2026": "P-072",
+   "code_priorisation_v1": "P-075",
+   "intitule": "Passer l’examen de moniteur d’auto-école",
+   "evenement_de_vie": "Je me déplace",
+   "secteur": "Transport",
+   "public_cible_propose": "citoyen",
+   "statut_exposition_teledac": null,
+   "besoin_si_tiers": "DTGR",
+   "mecanisme_integration": null,
+   "point_focal_si_tiers": null,
+   "ministere": "Ministère des Transports terrestres et transport Aérien : DGTR",
+   "structure": "DGTR",
+   "priorisation": {
+    "impact": null,
+    "volumetrie": null,
+    "maturite_technique": null,
+    "complexite_admin": null,
+    "delais": null,
+    "impact_usager_v1": "Fort ",
+    "complexite_v1": "Moyenne",
+    "total_v1": null
+   },
+   "present_dans": [
+    "PRIORISATION_2026",
+    "PRIORISATION"
+   ]
+  },
+  {
+   "code_priorisation_2026": "P-073",
+   "code_priorisation_v1": "P-076",
+   "intitule": "Demander un agrément de transport routier",
+   "evenement_de_vie": "Je me déplace",
+   "secteur": "Transport",
+   "public_cible_propose": "citoyen",
+   "statut_exposition_teledac": null,
+   "besoin_si_tiers": "DTGR",
+   "mecanisme_integration": null,
+   "point_focal_si_tiers": null,
+   "ministere": "Ministère des Transports terrestres et transport Aérien : DGTR",
+   "structure": "DGTR",
+   "priorisation": {
+    "impact": null,
+    "volumetrie": null,
+    "maturite_technique": null,
+    "complexite_admin": null,
+    "delais": null,
+    "impact_usager_v1": "Fort ",
+    "complexite_v1": "Moyenne",
+    "total_v1": null
+   },
+   "present_dans": [
+    "PRIORISATION_2026",
+    "PRIORISATION"
+   ]
+  },
+  {
+   "code_priorisation_2026": "P-074",
+   "code_priorisation_v1": "P-077",
+   "intitule": "Effectuer le remplacement d’un agrément de transport routier",
+   "evenement_de_vie": "Je me déplace",
+   "secteur": "Transport",
+   "public_cible_propose": "citoyen",
+   "statut_exposition_teledac": null,
+   "besoin_si_tiers": "DTGR",
+   "mecanisme_integration": null,
+   "point_focal_si_tiers": null,
+   "ministere": "Ministère des Transports terrestres et transport Aérien : DGTR",
+   "structure": "DGTR",
+   "priorisation": {
+    "impact": null,
+    "volumetrie": null,
+    "maturite_technique": null,
+    "complexite_admin": null,
+    "delais": null,
+    "impact_usager_v1": "Fort ",
+    "complexite_v1": "Moyenne",
+    "total_v1": null
+   },
+   "present_dans": [
+    "PRIORISATION_2026",
+    "PRIORISATION"
+   ]
+  },
+  {
+   "code_priorisation_2026": "P-075",
+   "code_priorisation_v1": "P-078",
+   "intitule": "Effectuer le renouvellement d’un agrément de transport routier",
+   "evenement_de_vie": "Je me déplace",
+   "secteur": "Transport",
+   "public_cible_propose": "citoyen",
+   "statut_exposition_teledac": null,
+   "besoin_si_tiers": "DTGR",
+   "mecanisme_integration": null,
+   "point_focal_si_tiers": null,
+   "ministere": "Ministère des Transports terrestres et transport Aérien : DGTR",
+   "structure": "DGTR",
+   "priorisation": {
+    "impact": null,
+    "volumetrie": null,
+    "maturite_technique": null,
+    "complexite_admin": null,
+    "delais": null,
+    "impact_usager_v1": "Fort ",
+    "complexite_v1": "Moyenne",
+    "total_v1": null
+   },
+   "present_dans": [
+    "PRIORISATION_2026",
+    "PRIORISATION"
+   ]
+  },
+  {
+   "code_priorisation_2026": "P-076",
+   "code_priorisation_v1": "P-079",
+   "intitule": "Effectuer une demande de licence de transport",
+   "evenement_de_vie": "Je me déplace",
+   "secteur": "Transport",
+   "public_cible_propose": "citoyen",
+   "statut_exposition_teledac": null,
+   "besoin_si_tiers": "DTGR",
+   "mecanisme_integration": null,
+   "point_focal_si_tiers": null,
+   "ministere": "Ministère des Transports terrestres et transport Aérien : DGTR",
+   "structure": "DGTR",
+   "priorisation": {
+    "impact": null,
+    "volumetrie": null,
+    "maturite_technique": null,
+    "complexite_admin": null,
+    "delais": null,
+    "impact_usager_v1": "Fort ",
+    "complexite_v1": "Moyenne",
+    "total_v1": null
+   },
+   "present_dans": [
+    "PRIORISATION_2026",
+    "PRIORISATION"
+   ]
+  },
+  {
+   "code_priorisation_2026": "P-077",
+   "code_priorisation_v1": "P-080",
+   "intitule": "Effectuer le remplacement d’une licence",
+   "evenement_de_vie": "Je me déplace",
+   "secteur": "Transport",
+   "public_cible_propose": "citoyen",
+   "statut_exposition_teledac": null,
+   "besoin_si_tiers": "DTGR",
+   "mecanisme_integration": null,
+   "point_focal_si_tiers": null,
+   "ministere": "Ministère des Transports terrestres et transport Aérien : DGTR",
+   "structure": "DGTR",
+   "priorisation": {
+    "impact": null,
+    "volumetrie": null,
+    "maturite_technique": null,
+    "complexite_admin": null,
+    "delais": null,
+    "impact_usager_v1": "Fort ",
+    "complexite_v1": "Moyenne",
+    "total_v1": null
+   },
+   "present_dans": [
+    "PRIORISATION_2026",
+    "PRIORISATION"
+   ]
+  },
+  {
+   "code_priorisation_2026": "P-078",
+   "code_priorisation_v1": "P-081",
+   "intitule": "Immatriculer un véhicule",
+   "evenement_de_vie": "Je me déplace",
+   "secteur": "Transport",
+   "public_cible_propose": "citoyen",
+   "statut_exposition_teledac": null,
+   "besoin_si_tiers": "DGTR",
+   "mecanisme_integration": null,
+   "point_focal_si_tiers": null,
+   "ministere": "Ministère des Transports terrestres et transport Aérien : DGTR",
+   "structure": "DGTR",
+   "priorisation": {
+    "impact": null,
+    "volumetrie": null,
+    "maturite_technique": null,
+    "complexite_admin": null,
+    "delais": null,
+    "impact_usager_v1": "Fort ",
+    "complexite_v1": "Moyenne",
+    "total_v1": null
+   },
+   "present_dans": [
+    "PRIORISATION_2026",
+    "PRIORISATION"
+   ]
+  },
+  {
+   "code_priorisation_2026": "P-079",
+   "code_priorisation_v1": "P-082",
+   "intitule": "Effectuer la visite technique",
+   "evenement_de_vie": "Je me déplace",
+   "secteur": "Transport",
+   "public_cible_propose": "citoyen",
+   "statut_exposition_teledac": null,
+   "besoin_si_tiers": "DTGR",
+   "mecanisme_integration": null,
+   "point_focal_si_tiers": null,
+   "ministere": "Ministère des Transports terrestres et transport Aérien : DGTR",
+   "structure": "DGTR",
+   "priorisation": {
+    "impact": null,
+    "volumetrie": null,
+    "maturite_technique": null,
+    "complexite_admin": null,
+    "delais": null,
+    "impact_usager_v1": "Fort ",
+    "complexite_v1": "Moyenne",
+    "total_v1": null
+   },
+   "present_dans": [
+    "PRIORISATION_2026",
+    "PRIORISATION"
+   ]
+  },
+  {
+   "code_priorisation_2026": "P-080",
+   "code_priorisation_v1": "P-083",
+   "intitule": "Demander la mutation d’un véhicule (prendre en compte tous les cas) la mutation peut être considéré comme un changement de nom, de région ou de département.)",
+   "evenement_de_vie": "Je me déplace",
+   "secteur": "Transport",
+   "public_cible_propose": "citoyen",
+   "statut_exposition_teledac": null,
+   "besoin_si_tiers": "DGTR",
+   "mecanisme_integration": null,
+   "point_focal_si_tiers": null,
+   "ministere": "Ministère des Transports terrestres et transport Aérien : DGTR",
+   "structure": "DGTR",
+   "priorisation": {
+    "impact": null,
+    "volumetrie": null,
+    "maturite_technique": null,
+    "complexite_admin": null,
+    "delais": null,
+    "impact_usager_v1": "Fort ",
+    "complexite_v1": "Moyenne",
+    "total_v1": null
+   },
+   "present_dans": [
+    "PRIORISATION_2026",
+    "PRIORISATION"
+   ]
+  },
+  {
+   "code_priorisation_2026": "P-081",
+   "code_priorisation_v1": "P-084",
+   "intitule": "Demander le remplacement d’une carte grise (L’opération permet de changer une carte grise format papier en une carte numérisée sécurisée à puce)",
+   "evenement_de_vie": "Je me déplace",
+   "secteur": "Transport",
+   "public_cible_propose": "citoyen",
+   "statut_exposition_teledac": null,
+   "besoin_si_tiers": "DGTR",
+   "mecanisme_integration": null,
+   "point_focal_si_tiers": null,
+   "ministere": "Ministère des Transports terrestres et transport Aérien : DGTR",
+   "structure": "DLAE",
+   "priorisation": {
+    "impact": null,
+    "volumetrie": null,
+    "maturite_technique": null,
+    "complexite_admin": null,
+    "delais": null,
+    "impact_usager_v1": "Fort ",
+    "complexite_v1": "Moyenne",
+    "total_v1": null
+   },
+   "present_dans": [
+    "PRIORISATION_2026",
+    "PRIORISATION"
+   ]
+  },
+  {
+   "code_priorisation_2026": "P-25",
+   "code_priorisation_v1": null,
+   "intitule": "Autorisation de construire",
+   "evenement_de_vie": "Je construis ou j'emménage",
+   "secteur": "Urbanisme",
+   "public_cible_propose": "citoyen",
+   "statut_exposition_teledac": "En ligne",
+   "besoin_si_tiers": null,
+   "mecanisme_integration": null,
+   "point_focal_si_tiers": null,
+   "ministere": "Ministère de l'Urbanisle et des collectivités locales",
+   "structure": null,
+   "priorisation": {
+    "impact": null,
+    "volumetrie": null,
+    "maturite_technique": null,
+    "complexite_admin": null,
+    "delais": null,
+    "impact_usager_v1": null,
+    "complexite_v1": null,
+    "total_v1": null
+   },
+   "present_dans": [
+    "PRIORISATION_2026"
+   ]
+  },
+  {
+   "code_priorisation_2026": "P-26",
+   "code_priorisation_v1": null,
+   "intitule": "certificat d'urbanisme",
+   "evenement_de_vie": "Je construis ou j'emménage",
+   "secteur": "Urbanisme",
+   "public_cible_propose": "citoyen",
+   "statut_exposition_teledac": "En ligne",
+   "besoin_si_tiers": null,
+   "mecanisme_integration": null,
+   "point_focal_si_tiers": null,
+   "ministere": "Ministère de l'Urbanisle et des collectivités locales",
+   "structure": null,
+   "priorisation": {
+    "impact": null,
+    "volumetrie": null,
+    "maturite_technique": null,
+    "complexite_admin": null,
+    "delais": null,
+    "impact_usager_v1": null,
+    "complexite_v1": null,
+    "total_v1": null
+   },
+   "present_dans": [
+    "PRIORISATION_2026"
+   ]
+  },
+  {
+   "code_priorisation_2026": "P-27",
+   "code_priorisation_v1": null,
+   "intitule": "certificat de conformité",
+   "evenement_de_vie": "Je construis ou j'emménage",
+   "secteur": "Urbanisme",
+   "public_cible_propose": "citoyen",
+   "statut_exposition_teledac": "En ligne",
+   "besoin_si_tiers": null,
+   "mecanisme_integration": null,
+   "point_focal_si_tiers": null,
+   "ministere": "Ministère de l'Urbanisle et des collectivités locales",
+   "structure": null,
+   "priorisation": {
+    "impact": null,
+    "volumetrie": null,
+    "maturite_technique": null,
+    "complexite_admin": null,
+    "delais": null,
+    "impact_usager_v1": null,
+    "complexite_v1": null,
+    "total_v1": null
+   },
+   "present_dans": [
+    "PRIORISATION_2026"
+   ]
+  },
+  {
+   "code_priorisation_2026": "P-28",
+   "code_priorisation_v1": "P-001",
+   "intitule": "Autorisation de lotir",
+   "evenement_de_vie": "Je construis ou j'emménage",
+   "secteur": "Urbanisme",
+   "public_cible_propose": "citoyen",
+   "statut_exposition_teledac": "Pas en ligne",
+   "besoin_si_tiers": null,
+   "mecanisme_integration": null,
+   "point_focal_si_tiers": "Dir. Générale de l'Urbanisme",
+   "ministere": "Ministère de l'Urbanisle et des collectivités locales",
+   "structure": "Direction de de l hurbanisme",
+   "priorisation": {
+    "impact": null,
+    "volumetrie": null,
+    "maturite_technique": null,
+    "complexite_admin": null,
+    "delais": null,
+    "impact_usager_v1": "Moyen",
+    "complexite_v1": "Moyenne",
+    "total_v1": 6
+   },
+   "present_dans": [
+    "PRIORISATION_2026",
+    "PRIORISATION"
+   ]
+  },
+  {
+   "code_priorisation_2026": "P-29",
+   "code_priorisation_v1": "P-002",
+   "intitule": "Renouvellement autorisation de construire",
+   "evenement_de_vie": "Je construis ou j'emménage",
+   "secteur": "Urbanisme",
+   "public_cible_propose": "citoyen",
+   "statut_exposition_teledac": "Pas en ligne",
+   "besoin_si_tiers": null,
+   "mecanisme_integration": null,
+   "point_focal_si_tiers": null,
+   "ministere": "Ministère de l'Urbanisle et des collectivités locales",
+   "structure": "Direction de de l hurbanisme",
+   "priorisation": {
+    "impact": null,
+    "volumetrie": null,
+    "maturite_technique": null,
+    "complexite_admin": null,
+    "delais": null,
+    "impact_usager_v1": "Moyen",
+    "complexite_v1": "Moyenne",
+    "total_v1": null
+   },
+   "present_dans": [
+    "PRIORISATION_2026",
+    "PRIORISATION"
+   ]
+  },
+  {
+   "code_priorisation_2026": "P-30",
+   "code_priorisation_v1": "P-003",
+   "intitule": "Permis de démolir",
+   "evenement_de_vie": "Je construis ou j'emménage",
+   "secteur": "Urbanisme",
+   "public_cible_propose": "citoyen",
+   "statut_exposition_teledac": "Pas en ligne",
+   "besoin_si_tiers": null,
+   "mecanisme_integration": null,
+   "point_focal_si_tiers": null,
+   "ministere": "Ministère de l'Urbanisle et des collectivités locales",
+   "structure": "Direction de de l hurbanisme",
+   "priorisation": {
+    "impact": null,
+    "volumetrie": null,
+    "maturite_technique": null,
+    "complexite_admin": null,
+    "delais": null,
+    "impact_usager_v1": "Moyen",
+    "complexite_v1": "Moyenne",
+    "total_v1": null
+   },
+   "present_dans": [
+    "PRIORISATION_2026",
+    "PRIORISATION"
+   ]
+  },
+  {
+   "code_priorisation_2026": "P-31",
+   "code_priorisation_v1": "P-004",
+   "intitule": "Certificat de conformité de l'autorisation de lotir",
+   "evenement_de_vie": "Je construis ou j'emménage",
+   "secteur": "Urbanisme",
+   "public_cible_propose": "citoyen",
+   "statut_exposition_teledac": "Pas en ligne",
+   "besoin_si_tiers": null,
+   "mecanisme_integration": null,
+   "point_focal_si_tiers": null,
+   "ministere": "Ministère de l'Urbanisle et des collectivités locales",
+   "structure": "Direction de de l hurbanisme",
+   "priorisation": {
+    "impact": null,
+    "volumetrie": null,
+    "maturite_technique": null,
+    "complexite_admin": null,
+    "delais": null,
+    "impact_usager_v1": "Moyen",
+    "complexite_v1": "Moyenne",
+    "total_v1": null
+   },
+   "present_dans": [
+    "PRIORISATION_2026",
+    "PRIORISATION"
+   ]
+  },
+  {
+   "code_priorisation_2026": "P-32",
+   "code_priorisation_v1": "P-005",
+   "intitule": "Certificat de démolir",
+   "evenement_de_vie": "Je construis ou j'emménage",
+   "secteur": "Urbanisme",
+   "public_cible_propose": "citoyen",
+   "statut_exposition_teledac": "Pas en ligne",
+   "besoin_si_tiers": null,
+   "mecanisme_integration": null,
+   "point_focal_si_tiers": null,
+   "ministere": "Ministère de l'Urbanisle et des collectivités locales",
+   "structure": "Direction de de l hurbanisme",
+   "priorisation": {
+    "impact": null,
+    "volumetrie": null,
+    "maturite_technique": null,
+    "complexite_admin": null,
+    "delais": null,
+    "impact_usager_v1": "Moyen",
+    "complexite_v1": "Moyenne",
+    "total_v1": null
+   },
+   "present_dans": [
+    "PRIORISATION_2026",
+    "PRIORISATION"
+   ]
+  },
+  {
+   "code_priorisation_2026": "P-33",
+   "code_priorisation_v1": "P-006",
+   "intitule": "Enregistrement du contrat de travail",
+   "evenement_de_vie": "Je cherche du travail",
+   "secteur": "Travail et Sécurité Sociale",
+   "public_cible_propose": "citoyen",
+   "statut_exposition_teledac": "En ligne",
+   "besoin_si_tiers": null,
+   "mecanisme_integration": null,
+   "point_focal_si_tiers": null,
+   "ministere": "Ministère de la Fonction publique, du travail et la reforme du service public",
+   "structure": "Direction Général DGTR",
+   "priorisation": {
+    "impact": null,
+    "volumetrie": null,
+    "maturite_technique": null,
+    "complexite_admin": null,
+    "delais": null,
+    "impact_usager_v1": "Moyen",
+    "complexite_v1": "Moyenne",
+    "total_v1": 5
+   },
+   "present_dans": [
+    "PRIORISATION_2026",
+    "PRIORISATION"
+   ]
+  },
+  {
+   "code_priorisation_2026": "P-34",
+   "code_priorisation_v1": "P-009",
+   "intitule": "Déclaration annuelle de la situation de la main d'œuvre",
+   "evenement_de_vie": "Je cherche du travail",
+   "secteur": "Travail et Sécurité Sociale",
+   "public_cible_propose": "citoyen",
+   "statut_exposition_teledac": "Pas en ligne",
+   "besoin_si_tiers": "Dir. Générale du Travail",
+   "mecanisme_integration": null,
+   "point_focal_si_tiers": "Dir. Générale du Travail",
+   "ministere": "Ministère de la Fonction publique, du travail et la reforme du service public",
+   "structure": null,
+   "priorisation": {
+    "impact": null,
+    "volumetrie": null,
+    "maturite_technique": null,
+    "complexite_admin": null,
+    "delais": null,
+    "impact_usager_v1": "Fort ",
+    "complexite_v1": "Moyenne",
+    "total_v1": null
+   },
+   "present_dans": [
+    "PRIORISATION_2026",
+    "PRIORISATION"
+   ]
+  },
+  {
+   "code_priorisation_2026": "P-35",
+   "code_priorisation_v1": "P-010",
+   "intitule": "Bilan social",
+   "evenement_de_vie": "Je cherche du travail",
+   "secteur": "Travail et Sécurité Sociale",
+   "public_cible_propose": "citoyen",
+   "statut_exposition_teledac": "Pas en ligne",
+   "besoin_si_tiers": "Dir. Générale du Travail",
+   "mecanisme_integration": null,
+   "point_focal_si_tiers": "Dir. Générale du Travail",
+   "ministere": "Ministère de la Fonction publique, du travail et la reforme du service public",
+   "structure": null,
+   "priorisation": {
+    "impact": null,
+    "volumetrie": null,
+    "maturite_technique": null,
+    "complexite_admin": null,
+    "delais": null,
+    "impact_usager_v1": "Fort ",
+    "complexite_v1": "Moyenne",
+    "total_v1": null
+   },
+   "present_dans": [
+    "PRIORISATION_2026",
+    "PRIORISATION"
+   ]
+  },
+  {
+   "code_priorisation_2026": "P-36",
+   "code_priorisation_v1": "P-011",
+   "intitule": "Attestation de régularité",
+   "evenement_de_vie": "Je cherche du travail",
+   "secteur": "Travail et Sécurité Sociale",
+   "public_cible_propose": "citoyen",
+   "statut_exposition_teledac": "Pas en ligne",
+   "besoin_si_tiers": "Dir. Générale du Travail",
+   "mecanisme_integration": null,
+   "point_focal_si_tiers": "Dir. Générale du Travail",
+   "ministere": "Ministère de la Fonction publique, du travail et la reforme du service public",
+   "structure": null,
+   "priorisation": {
+    "impact": null,
+    "volumetrie": null,
+    "maturite_technique": null,
+    "complexite_admin": null,
+    "delais": null,
+    "impact_usager_v1": "Fort ",
+    "complexite_v1": "Moyenne",
+    "total_v1": null
+   },
+   "present_dans": [
+    "PRIORISATION_2026",
+    "PRIORISATION"
+   ]
+  },
+  {
+   "code_priorisation_2026": "P-013",
+   "code_priorisation_v1": null,
+   "intitule": "Demander la création Syndicat",
+   "evenement_de_vie": "Je crée une organisation",
+   "secteur": "Vie Associative",
+   "public_cible_propose": "citoyen",
+   "statut_exposition_teledac": "Pas en ligne",
+   "besoin_si_tiers": null,
+   "mecanisme_integration": null,
+   "point_focal_si_tiers": null,
+   "ministere": "Ministère de l'Intérieur",
+   "structure": null,
+   "priorisation": {
+    "impact": null,
+    "volumetrie": null,
+    "maturite_technique": null,
+    "complexite_admin": null,
+    "delais": null,
+    "impact_usager_v1": null,
+    "complexite_v1": null,
+    "total_v1": null
+   },
+   "present_dans": [
+    "PRIORISATION_2026"
+   ]
+  },
+  {
+   "code_priorisation_2026": "P-014",
+   "code_priorisation_v1": "P-023",
+   "intitule": "Demander la création Parti politique",
+   "evenement_de_vie": "Je crée une organisation",
+   "secteur": "Vie Associative",
+   "public_cible_propose": "citoyen",
+   "statut_exposition_teledac": "Pas en ligne",
+   "besoin_si_tiers": null,
+   "mecanisme_integration": null,
+   "point_focal_si_tiers": null,
+   "ministere": "Ministère de l'Intérieur",
+   "structure": null,
+   "priorisation": {
+    "impact": null,
+    "volumetrie": null,
+    "maturite_technique": null,
+    "complexite_admin": null,
+    "delais": null,
+    "impact_usager_v1": null,
+    "complexite_v1": null,
+    "total_v1": null
+   },
+   "present_dans": [
+    "PRIORISATION_2026",
+    "PRIORISATION"
+   ]
+  },
+  {
+   "code_priorisation_2026": "P-015",
+   "code_priorisation_v1": "P-024",
+   "intitule": "Demander la création Association étrangère",
+   "evenement_de_vie": "Je crée une organisation",
+   "secteur": "Vie Associative",
+   "public_cible_propose": "citoyen",
+   "statut_exposition_teledac": "Pas en ligne",
+   "besoin_si_tiers": null,
+   "mecanisme_integration": null,
+   "point_focal_si_tiers": null,
+   "ministere": "Ministère de l'Intérieur",
+   "structure": null,
+   "priorisation": {
+    "impact": null,
+    "volumetrie": null,
+    "maturite_technique": null,
+    "complexite_admin": null,
+    "delais": null,
+    "impact_usager_v1": null,
+    "complexite_v1": null,
+    "total_v1": null
+   },
+   "present_dans": [
+    "PRIORISATION_2026",
+    "PRIORISATION"
+   ]
+  },
+  {
+   "code_priorisation_2026": "P-016",
+   "code_priorisation_v1": "P-025",
+   "intitule": "Demander la création ,Association locale",
+   "evenement_de_vie": "Je crée une organisation",
+   "secteur": "Vie Associative",
+   "public_cible_propose": "citoyen",
+   "statut_exposition_teledac": "Pas en ligne",
+   "besoin_si_tiers": null,
+   "mecanisme_integration": null,
+   "point_focal_si_tiers": null,
+   "ministere": "Ministère de l'Intérieur",
+   "structure": null,
+   "priorisation": {
+    "impact": null,
+    "volumetrie": null,
+    "maturite_technique": null,
+    "complexite_admin": null,
+    "delais": null,
+    "impact_usager_v1": null,
+    "complexite_v1": null,
+    "total_v1": null
+   },
+   "present_dans": [
+    "PRIORISATION_2026",
+    "PRIORISATION"
+   ]
+  },
+  {
+   "code_priorisation_2026": "P-017",
+   "code_priorisation_v1": "P-026",
+   "intitule": "Demander la création Association nationale,",
+   "evenement_de_vie": "Je crée une organisation",
+   "secteur": "Vie Associative",
+   "public_cible_propose": "citoyen",
+   "statut_exposition_teledac": "Pas en ligne",
+   "besoin_si_tiers": null,
+   "mecanisme_integration": null,
+   "point_focal_si_tiers": null,
+   "ministere": "Ministère de l'Intérieur",
+   "structure": null,
+   "priorisation": {
+    "impact": null,
+    "volumetrie": null,
+    "maturite_technique": null,
+    "complexite_admin": null,
+    "delais": null,
+    "impact_usager_v1": null,
+    "complexite_v1": null,
+    "total_v1": null
+   },
+   "present_dans": [
+    "PRIORISATION_2026",
+    "PRIORISATION"
+   ]
+  },
+  {
+   "code_priorisation_2026": "P-018",
+   "code_priorisation_v1": null,
+   "intitule": "Demande d’agrément en qualité d’organisation non gouvernementale (ONG)",
+   "evenement_de_vie": "Je crée une organisation",
+   "secteur": "Vie Associative",
+   "public_cible_propose": "citoyen",
+   "statut_exposition_teledac": "Pas en ligne",
+   "besoin_si_tiers": null,
+   "mecanisme_integration": null,
+   "point_focal_si_tiers": null,
+   "ministere": "Ministère de l'Intérieur",
+   "structure": null,
+   "priorisation": {
+    "impact": null,
+    "volumetrie": null,
+    "maturite_technique": null,
+    "complexite_admin": null,
+    "delais": null,
+    "impact_usager_v1": null,
+    "complexite_v1": null,
+    "total_v1": null
+   },
+   "present_dans": [
+    "PRIORISATION_2026"
+   ]
+  },
+  {
+   "code_priorisation_2026": "P-019",
+   "code_priorisation_v1": "P-028",
+   "intitule": "Demande d'approbation de programme d'investissement ONG",
+   "evenement_de_vie": "Je crée une organisation",
+   "secteur": "Vie Associative",
+   "public_cible_propose": "citoyen",
+   "statut_exposition_teledac": "Pas en ligne",
+   "besoin_si_tiers": null,
+   "mecanisme_integration": null,
+   "point_focal_si_tiers": "DGAT",
+   "ministere": "Ministère de l'Intérieur",
+   "structure": null,
+   "priorisation": {
+    "impact": null,
+    "volumetrie": null,
+    "maturite_technique": null,
+    "complexite_admin": null,
+    "delais": null,
+    "impact_usager_v1": "Faible",
+    "complexite_v1": "Moyenne",
+    "total_v1": null
+   },
+   "present_dans": [
+    "PRIORISATION_2026",
+    "PRIORISATION"
+   ]
+  },
+  {
+   "code_priorisation_2026": "P-020",
+   "code_priorisation_v1": "P-029",
+   "intitule": "Demande changement dénomination ou modification statuts ONG",
+   "evenement_de_vie": "Je crée une organisation",
+   "secteur": "Vie Associative",
+   "public_cible_propose": "citoyen",
+   "statut_exposition_teledac": "Pas en ligne",
+   "besoin_si_tiers": null,
+   "mecanisme_integration": null,
+   "point_focal_si_tiers": "DGAT",
+   "ministere": "Ministère de l'Intérieur",
+   "structure": null,
+   "priorisation": {
+    "impact": null,
+    "volumetrie": null,
+    "maturite_technique": null,
+    "complexite_admin": null,
+    "delais": null,
+    "impact_usager_v1": "Faible",
+    "complexite_v1": "Moyenne",
+    "total_v1": null
+   },
+   "present_dans": [
+    "PRIORISATION_2026",
+    "PRIORISATION"
+   ]
+  },
+  {
+   "code_priorisation_2026": "P-45",
+   "code_priorisation_v1": null,
+   "intitule": "Demande de transfert de restes mortels",
+   "evenement_de_vie": null,
+   "secteur": "Citoyenneté",
+   "public_cible_propose": "citoyen",
+   "statut_exposition_teledac": null,
+   "besoin_si_tiers": null,
+   "mecanisme_integration": null,
+   "point_focal_si_tiers": null,
+   "ministere": "Ministère de l'Intérieur",
+   "structure": null,
+   "priorisation": {
+    "impact": null,
+    "volumetrie": null,
+    "maturite_technique": null,
+    "complexite_admin": null,
+    "delais": null,
+    "impact_usager_v1": null,
+    "complexite_v1": null,
+    "total_v1": null
+   },
+   "present_dans": [
+    "PRIORISATION_2026"
+   ]
+  },
+  {
+   "code_priorisation_2026": "P-46",
+   "code_priorisation_v1": null,
+   "intitule": "RCCM",
+   "evenement_de_vie": "Je veux créer une entreprise",
+   "secteur": "entreprenariat",
+   "public_cible_propose": "entreprise",
+   "statut_exposition_teledac": null,
+   "besoin_si_tiers": null,
+   "mecanisme_integration": null,
+   "point_focal_si_tiers": null,
+   "ministere": "Ministère de la justice",
+   "structure": null,
+   "priorisation": {
+    "impact": null,
+    "volumetrie": null,
+    "maturite_technique": null,
+    "complexite_admin": null,
+    "delais": null,
+    "impact_usager_v1": null,
+    "complexite_v1": null,
+    "total_v1": null
+   },
+   "present_dans": [
+    "PRIORISATION_2026"
+   ]
+  },
+  {
+   "code_priorisation_2026": "P-009",
+   "code_priorisation_v1": null,
+   "intitule": "Attestation de chômage",
+   "evenement_de_vie": "Je cherche du travail",
+   "secteur": "Travail et Sécurité Sociale",
+   "public_cible_propose": "citoyen",
+   "statut_exposition_teledac": "Pas en ligne",
+   "besoin_si_tiers": null,
+   "mecanisme_integration": null,
+   "point_focal_si_tiers": null,
+   "ministere": "Ministère de la Fonction publique, du travail et la reforme du service public",
+   "structure": null,
+   "priorisation": {
+    "impact": null,
+    "volumetrie": null,
+    "maturite_technique": null,
+    "complexite_admin": null,
+    "delais": null,
+    "impact_usager_v1": null,
+    "complexite_v1": null,
+    "total_v1": null
+   },
+   "present_dans": [
+    "PRIORISATION_2026"
+   ]
+  },
+  {
+   "code_priorisation_2026": "P-010",
+   "code_priorisation_v1": "P-018",
+   "intitule": "Demande rendez-vous obtention passeport",
+   "evenement_de_vie": "Je cherche des piéces d'identité",
+   "secteur": "Citoyenneté",
+   "public_cible_propose": "citoyen",
+   "statut_exposition_teledac": "En ligne mais Non utilisée",
+   "besoin_si_tiers": null,
+   "mecanisme_integration": null,
+   "point_focal_si_tiers": "DAF / Direction des Passeports",
+   "ministere": "Ministère de l'Intérieur",
+   "structure": null,
+   "priorisation": {
+    "impact": null,
+    "volumetrie": null,
+    "maturite_technique": null,
+    "complexite_admin": null,
+    "delais": null,
+    "impact_usager_v1": "Très Fort",
+    "complexite_v1": "Haute",
+    "total_v1": null
+   },
+   "present_dans": [
+    "PRIORISATION_2026",
+    "PRIORISATION"
+   ]
+  },
+  {
+   "code_priorisation_2026": "P-011",
+   "code_priorisation_v1": "P-019",
+   "intitule": "Demande rendez-vous renouvellement passeport",
+   "evenement_de_vie": "Je cherche des piéces d'identité",
+   "secteur": "Citoyenneté",
+   "public_cible_propose": "citoyen",
+   "statut_exposition_teledac": "En ligne mais Non utilisée",
+   "besoin_si_tiers": null,
+   "mecanisme_integration": null,
+   "point_focal_si_tiers": "DAF / Direction des Passeports",
+   "ministere": "Ministère de l'Intérieur",
+   "structure": null,
+   "priorisation": {
+    "impact": null,
+    "volumetrie": null,
+    "maturite_technique": null,
+    "complexite_admin": null,
+    "delais": null,
+    "impact_usager_v1": "Très Fort",
+    "complexite_v1": "Haute",
+    "total_v1": null
+   },
+   "present_dans": [
+    "PRIORISATION_2026",
+    "PRIORISATION"
+   ]
+  },
+  {
+   "code_priorisation_2026": "P-012",
+   "code_priorisation_v1": "P-020",
+   "intitule": "Demande rendez-vous duplicata passeport",
+   "evenement_de_vie": "Je cherche des piéces d'identité",
+   "secteur": "Citoyenneté",
+   "public_cible_propose": "citoyen",
+   "statut_exposition_teledac": "En ligne mais Non utilisée",
+   "besoin_si_tiers": null,
+   "mecanisme_integration": null,
+   "point_focal_si_tiers": "DAF / Direction des Passeports",
+   "ministere": "Ministère de l'Intérieur",
+   "structure": null,
+   "priorisation": {
+    "impact": null,
+    "volumetrie": null,
+    "maturite_technique": null,
+    "complexite_admin": null,
+    "delais": null,
+    "impact_usager_v1": "Très Fort",
+    "complexite_v1": "Haute",
+    "total_v1": null
+   },
+   "present_dans": [
+    "PRIORISATION_2026",
+    "PRIORISATION"
+   ]
+  },
+  {
+   "code_priorisation_2026": "P-031",
+   "code_priorisation_v1": "P-030",
+   "intitule": "Demander un certificat de mise en circulation (CMC)",
+   "evenement_de_vie": "J'exporte un bien",
+   "secteur": "Exportation / douane",
+   "public_cible_propose": "entreprise",
+   "statut_exposition_teledac": null,
+   "besoin_si_tiers": null,
+   "mecanisme_integration": null,
+   "point_focal_si_tiers": "Douane",
+   "ministere": "Ministère des finances",
+   "structure": null,
+   "priorisation": {
+    "impact": null,
+    "volumetrie": null,
+    "maturite_technique": null,
+    "complexite_admin": null,
+    "delais": null,
+    "impact_usager_v1": "Très Fort",
+    "complexite_v1": "Haute",
+    "total_v1": null
+   },
+   "present_dans": [
+    "PRIORISATION_2026",
+    "PRIORISATION"
+   ]
+  },
+  {
+   "code_priorisation_2026": "P-032",
+   "code_priorisation_v1": "P-031",
+   "intitule": "Demander une attestation DIC",
+   "evenement_de_vie": "J'exporte un bien",
+   "secteur": "Exportation / douane",
+   "public_cible_propose": "entreprise",
+   "statut_exposition_teledac": null,
+   "besoin_si_tiers": null,
+   "mecanisme_integration": null,
+   "point_focal_si_tiers": "DPJ",
+   "ministere": "Ministère de l'Intérieur",
+   "structure": null,
+   "priorisation": {
+    "impact": null,
+    "volumetrie": null,
+    "maturite_technique": null,
+    "complexite_admin": null,
+    "delais": null,
+    "impact_usager_v1": "Très Fort",
+    "complexite_v1": "Haute",
+    "total_v1": null
+   },
+   "present_dans": [
+    "PRIORISATION_2026",
+    "PRIORISATION"
+   ]
+  },
+  {
+   "code_priorisation_2026": "P-042",
+   "code_priorisation_v1": "P-041",
+   "intitule": "Acte de mariage",
+   "evenement_de_vie": "Je cherche des piéces d'identité",
+   "secteur": "État Civil",
+   "public_cible_propose": "citoyen",
+   "statut_exposition_teledac": "Pas en ligne",
+   "besoin_si_tiers": null,
+   "mecanisme_integration": null,
+   "point_focal_si_tiers": "Collectivités locales",
+   "ministere": "Ministère de l'Urbanisle et des collectivités locales",
+   "structure": "Collectivité locales",
+   "priorisation": {
+    "impact": null,
+    "volumetrie": null,
+    "maturite_technique": null,
+    "complexite_admin": null,
+    "delais": null,
+    "impact_usager_v1": "Très Fort",
+    "complexite_v1": "Haute",
+    "total_v1": 4
+   },
+   "present_dans": [
+    "PRIORISATION_2026",
+    "PRIORISATION"
+   ]
+  },
+  {
+   "code_priorisation_2026": "P-043",
+   "code_priorisation_v1": "P-044",
+   "intitule": "Acte de naissance",
+   "evenement_de_vie": "J'ai un enfant",
+   "secteur": "État Civil",
+   "public_cible_propose": "citoyen",
+   "statut_exposition_teledac": "Pas en ligne",
+   "besoin_si_tiers": null,
+   "mecanisme_integration": null,
+   "point_focal_si_tiers": "Collectivités locales",
+   "ministere": "Ministère de l'Urbanisle et des collectivités locales",
+   "structure": "Collectivité locales",
+   "priorisation": {
+    "impact": null,
+    "volumetrie": null,
+    "maturite_technique": null,
+    "complexite_admin": null,
+    "delais": null,
+    "impact_usager_v1": "Très Fort",
+    "complexite_v1": "Haute",
+    "total_v1": null
+   },
+   "present_dans": [
+    "PRIORISATION_2026",
+    "PRIORISATION"
+   ]
+  },
+  {
+   "code_priorisation_2026": "P-044",
+   "code_priorisation_v1": "P-045",
+   "intitule": "Acte de décès",
+   "evenement_de_vie": "J'ai un décés",
+   "secteur": "État Civil",
+   "public_cible_propose": "citoyen",
+   "statut_exposition_teledac": "Pas en ligne",
+   "besoin_si_tiers": null,
+   "mecanisme_integration": null,
+   "point_focal_si_tiers": "Collectivités locales",
+   "ministere": "Ministère de l'Urbanisle et des collectivités locales",
+   "structure": "Collectivité locales",
+   "priorisation": {
+    "impact": null,
+    "volumetrie": null,
+    "maturite_technique": null,
+    "complexite_admin": null,
+    "delais": null,
+    "impact_usager_v1": "Très Fort",
+    "complexite_v1": "Haute",
+    "total_v1": null
+   },
+   "present_dans": [
+    "PRIORISATION_2026",
+    "PRIORISATION"
+   ]
+  },
+  {
+   "code_priorisation_2026": "P-045",
+   "code_priorisation_v1": "P-046",
+   "intitule": "Carte d'identité pour les étrangers",
+   "evenement_de_vie": "Je cherche une carte de circulation",
+   "secteur": "Services aux Étrangers",
+   "public_cible_propose": "citoyen",
+   "statut_exposition_teledac": "Pas en ligne",
+   "besoin_si_tiers": null,
+   "mecanisme_integration": null,
+   "point_focal_si_tiers": "Dir. Police Étrangers et Titres de Voyage",
+   "ministere": "Ministère de l'Interieur",
+   "structure": "DPTETV",
+   "priorisation": {
+    "impact": null,
+    "volumetrie": null,
+    "maturite_technique": null,
+    "complexite_admin": null,
+    "delais": null,
+    "impact_usager_v1": "Fort ",
+    "complexite_v1": "Haute",
+    "total_v1": 1
+   },
+   "present_dans": [
+    "PRIORISATION_2026",
+    "PRIORISATION"
+   ]
+  },
+  {
+   "code_priorisation_2026": "P-046",
+   "code_priorisation_v1": "P-048",
+   "intitule": "Demande de diplôme du baccalauréat",
+   "evenement_de_vie": "Je cherche une école",
+   "secteur": "Éducation",
+   "public_cible_propose": "citoyen",
+   "statut_exposition_teledac": "En ligne mais Non utilisée",
+   "besoin_si_tiers": "Office du Bac",
+   "mecanisme_integration": null,
+   "point_focal_si_tiers": "Office du Bac / ENA / CFJ / UAM",
+   "ministere": "MESRI",
+   "structure": "Office du bac",
+   "priorisation": {
+    "impact": null,
+    "volumetrie": null,
+    "maturite_technique": null,
+    "complexite_admin": null,
+    "delais": null,
+    "impact_usager_v1": "Très Fort",
+    "complexite_v1": "Moyenne",
+    "total_v1": 4
+   },
+   "present_dans": [
+    "PRIORISATION_2026",
+    "PRIORISATION"
+   ]
+  },
+  {
+   "code_priorisation_2026": "P-047",
+   "code_priorisation_v1": "P-049",
+   "intitule": "Demande de duplicata attestation Bac",
+   "evenement_de_vie": "Je cherche une école",
+   "secteur": "Éducation",
+   "public_cible_propose": "citoyen",
+   "statut_exposition_teledac": "En ligne mais Non utilisée",
+   "besoin_si_tiers": "Office du Bac",
+   "mecanisme_integration": null,
+   "point_focal_si_tiers": "Office du Bac / ENA / CFJ / UAM",
+   "ministere": "MESRI",
+   "structure": "Office du bac",
+   "priorisation": {
+    "impact": null,
+    "volumetrie": null,
+    "maturite_technique": null,
+    "complexite_admin": null,
+    "delais": null,
+    "impact_usager_v1": "Très Fort",
+    "complexite_v1": "Moyenne",
+    "total_v1": null
+   },
+   "present_dans": [
+    "PRIORISATION_2026",
+    "PRIORISATION"
+   ]
+  },
+  {
+   "code_priorisation_2026": "P-048",
+   "code_priorisation_v1": "P-050",
+   "intitule": "Demander l’authenticité du diplôme du Baccalauréat",
+   "evenement_de_vie": "Je certifie mes diplomes",
+   "secteur": "Éducation",
+   "public_cible_propose": "citoyen",
+   "statut_exposition_teledac": "En ligne mais Non utilisée",
+   "besoin_si_tiers": "Office du Bac",
+   "mecanisme_integration": null,
+   "point_focal_si_tiers": null,
+   "ministere": "MESRI",
+   "structure": "Office du bac",
+   "priorisation": {
+    "impact": null,
+    "volumetrie": null,
+    "maturite_technique": null,
+    "complexite_admin": null,
+    "delais": null,
+    "impact_usager_v1": null,
+    "complexite_v1": null,
+    "total_v1": null
+   },
+   "present_dans": [
+    "PRIORISATION_2026",
+    "PRIORISATION"
+   ]
+  },
+  {
+   "code_priorisation_2026": "P-049",
+   "code_priorisation_v1": "P-051",
+   "intitule": "Demande d'attestation spéciale",
+   "evenement_de_vie": "Je cherche une école",
+   "secteur": "Éducation",
+   "public_cible_propose": "citoyen",
+   "statut_exposition_teledac": "En ligne mais Non utilisée",
+   "besoin_si_tiers": "Office du Bac",
+   "mecanisme_integration": null,
+   "point_focal_si_tiers": "Office du Bac / ENA / CFJ / UAM",
+   "ministere": "MESRI",
+   "structure": "Office du bac",
+   "priorisation": {
+    "impact": null,
+    "volumetrie": null,
+    "maturite_technique": null,
+    "complexite_admin": null,
+    "delais": null,
+    "impact_usager_v1": "Très Fort",
+    "complexite_v1": "Moyenne",
+    "total_v1": null
+   },
+   "present_dans": [
+    "PRIORISATION_2026",
+    "PRIORISATION"
+   ]
+  },
+  {
+   "code_priorisation_2026": "P-050",
+   "code_priorisation_v1": "P-053",
+   "intitule": "inscription au Concours d'entrée ENA",
+   "evenement_de_vie": "Je me forme",
+   "secteur": "Éducation",
+   "public_cible_propose": "citoyen",
+   "statut_exposition_teledac": "Désactivée",
+   "besoin_si_tiers": null,
+   "mecanisme_integration": null,
+   "point_focal_si_tiers": null,
+   "ministere": "Primature",
+   "structure": null,
+   "priorisation": {
+    "impact": null,
+    "volumetrie": null,
+    "maturite_technique": null,
+    "complexite_admin": null,
+    "delais": null,
+    "impact_usager_v1": null,
+    "complexite_v1": null,
+    "total_v1": null
+   },
+   "present_dans": [
+    "PRIORISATION_2026",
+    "PRIORISATION"
+   ]
+  },
+  {
+   "code_priorisation_2026": "P-051",
+   "code_priorisation_v1": "P-054",
+   "intitule": "inscription au Concours d'entrée CFJ",
+   "evenement_de_vie": "Je me forme",
+   "secteur": "Éducation",
+   "public_cible_propose": "citoyen",
+   "statut_exposition_teledac": "Désactivée",
+   "besoin_si_tiers": null,
+   "mecanisme_integration": null,
+   "point_focal_si_tiers": null,
+   "ministere": "Ministère de la justice",
+   "structure": null,
+   "priorisation": {
+    "impact": null,
+    "volumetrie": null,
+    "maturite_technique": null,
+    "complexite_admin": null,
+    "delais": null,
+    "impact_usager_v1": null,
+    "complexite_v1": null,
+    "total_v1": null
+   },
+   "present_dans": [
+    "PRIORISATION_2026",
+    "PRIORISATION"
+   ]
+  },
+  {
+   "code_priorisation_2026": "P-052",
+   "code_priorisation_v1": "P-055",
+   "intitule": "Demander l’orientation à l’Université",
+   "evenement_de_vie": "Je me forme",
+   "secteur": "Éducation",
+   "public_cible_propose": "citoyen",
+   "statut_exposition_teledac": null,
+   "besoin_si_tiers": "Campusen",
+   "mecanisme_integration": null,
+   "point_focal_si_tiers": "Ministère de l’enseignement supérieur de la recherche et de l’Innovation",
+   "ministere": "MESRI",
+   "structure": "Office du bac",
+   "priorisation": {
+    "impact": null,
+    "volumetrie": null,
+    "maturite_technique": null,
+    "complexite_admin": null,
+    "delais": null,
+    "impact_usager_v1": "Très Fort",
+    "complexite_v1": "Haute",
+    "total_v1": null
+   },
+   "present_dans": [
+    "PRIORISATION_2026",
+    "PRIORISATION"
+   ]
+  },
+  {
+   "code_priorisation_2026": "P-053",
+   "code_priorisation_v1": "P-056",
+   "intitule": "S’inscrire à l’université",
+   "evenement_de_vie": "Je me forme",
+   "secteur": "Éducation",
+   "public_cible_propose": "citoyen",
+   "statut_exposition_teledac": null,
+   "besoin_si_tiers": "Campusen",
+   "mecanisme_integration": null,
+   "point_focal_si_tiers": "Ministère de l’enseignement supérieur de la recherche et de l’Innovation",
+   "ministere": "MESRI",
+   "structure": "Office du bac",
+   "priorisation": {
+    "impact": null,
+    "volumetrie": null,
+    "maturite_technique": null,
+    "complexite_admin": null,
+    "delais": null,
+    "impact_usager_v1": "Très Fort",
+    "complexite_v1": "Haute",
+    "total_v1": null
+   },
+   "present_dans": [
+    "PRIORISATION_2026",
+    "PRIORISATION"
+   ]
+  },
+  {
+   "code_priorisation_2026": "P-054",
+   "code_priorisation_v1": "P-057",
+   "intitule": "Demander l’octroie d’une allocation d’étude à l’étranger ;",
+   "evenement_de_vie": "Je me forme",
+   "secteur": "Éducation",
+   "public_cible_propose": "citoyen",
+   "statut_exposition_teledac": null,
+   "besoin_si_tiers": "Direction des Bourses",
+   "mecanisme_integration": null,
+   "point_focal_si_tiers": null,
+   "ministere": "MESRI",
+   "structure": "Direction des bourses",
+   "priorisation": {
+    "impact": null,
+    "volumetrie": null,
+    "maturite_technique": null,
+    "complexite_admin": null,
+    "delais": null,
+    "impact_usager_v1": "Très Fort",
+    "complexite_v1": "Haute",
+    "total_v1": null
+   },
+   "present_dans": [
+    "PRIORISATION_2026",
+    "PRIORISATION"
+   ]
+  },
+  {
+   "code_priorisation_2026": "P-055",
+   "code_priorisation_v1": "P-058",
+   "intitule": "Demander une bourse d’étude nationale ;",
+   "evenement_de_vie": "Je me forme",
+   "secteur": "Éducation",
+   "public_cible_propose": "citoyen",
+   "statut_exposition_teledac": null,
+   "besoin_si_tiers": "Direction des Bourses",
+   "mecanisme_integration": null,
+   "point_focal_si_tiers": null,
+   "ministere": "Direction des Bourses",
+   "structure": "Direction des bourses",
+   "priorisation": {
+    "impact": null,
+    "volumetrie": null,
+    "maturite_technique": null,
+    "complexite_admin": null,
+    "delais": null,
+    "impact_usager_v1": "Très Fort",
+    "complexite_v1": "Haute",
+    "total_v1": null
+   },
+   "present_dans": [
+    "PRIORISATION_2026",
+    "PRIORISATION"
+   ]
+  },
+  {
+   "code_priorisation_2026": "P-056",
+   "code_priorisation_v1": "P-059",
+   "intitule": "Demander une bourse sociale ;",
+   "evenement_de_vie": "Je me forme",
+   "secteur": "Éducation",
+   "public_cible_propose": "citoyen",
+   "statut_exposition_teledac": null,
+   "besoin_si_tiers": "Direction des Bourses",
+   "mecanisme_integration": null,
+   "point_focal_si_tiers": null,
+   "ministere": "Direction des Bourses",
+   "structure": "Direction des bourses",
+   "priorisation": {
+    "impact": null,
+    "volumetrie": null,
+    "maturite_technique": null,
+    "complexite_admin": null,
+    "delais": null,
+    "impact_usager_v1": "Très Fort",
+    "complexite_v1": "Haute",
+    "total_v1": null
+   },
+   "present_dans": [
+    "PRIORISATION_2026",
+    "PRIORISATION"
+   ]
+  },
+  {
+   "code_priorisation_2026": "P-057",
+   "code_priorisation_v1": "P-060",
+   "intitule": "Demander une aide ministérielle pour étudiant",
+   "evenement_de_vie": "Je me forme",
+   "secteur": "Éducation",
+   "public_cible_propose": "citoyen",
+   "statut_exposition_teledac": null,
+   "besoin_si_tiers": "Direction des Bourses",
+   "mecanisme_integration": null,
+   "point_focal_si_tiers": null,
+   "ministere": "Direction des Bourses",
+   "structure": "Direction des bourses",
+   "priorisation": {
+    "impact": null,
+    "volumetrie": null,
+    "maturite_technique": null,
+    "complexite_admin": null,
+    "delais": null,
+    "impact_usager_v1": "Très Fort",
+    "complexite_v1": "Haute",
+    "total_v1": null
+   },
+   "present_dans": [
+    "PRIORISATION_2026",
+    "PRIORISATION"
+   ]
+  },
+  {
+   "code_priorisation_2026": "P-058",
+   "code_priorisation_v1": "P-061",
+   "intitule": "Demander un NICAD",
+   "evenement_de_vie": "Je régularise un titre",
+   "secteur": "Fiscalités et domaine",
+   "public_cible_propose": "entreprise",
+   "statut_exposition_teledac": null,
+   "besoin_si_tiers": "A confirmer",
+   "mecanisme_integration": null,
+   "point_focal_si_tiers": null,
+   "ministere": "DGID",
+   "structure": "DGID",
+   "priorisation": {
+    "impact": null,
+    "volumetrie": null,
+    "maturite_technique": null,
+    "complexite_admin": null,
+    "delais": null,
+    "impact_usager_v1": "Fort ",
+    "complexite_v1": "Moyenne",
+    "total_v1": null
+   },
+   "present_dans": [
+    "PRIORISATION_2026",
+    "PRIORISATION"
+   ]
+  },
+  {
+   "code_priorisation_2026": "P-059",
+   "code_priorisation_v1": "P-062",
+   "intitule": "Demander la transformation d’un bail en Titre foncier",
+   "evenement_de_vie": "Je régularise un titre",
+   "secteur": "Fiscalités et domaine",
+   "public_cible_propose": "entreprise",
+   "statut_exposition_teledac": null,
+   "besoin_si_tiers": "A confirmer",
+   "mecanisme_integration": null,
+   "point_focal_si_tiers": null,
+   "ministere": "DGID",
+   "structure": "DGID",
+   "priorisation": {
+    "impact": null,
+    "volumetrie": null,
+    "maturite_technique": null,
+    "complexite_admin": null,
+    "delais": null,
+    "impact_usager_v1": "Fort ",
+    "complexite_v1": "Moyenne",
+    "total_v1": null
+   },
+   "present_dans": [
+    "PRIORISATION_2026",
+    "PRIORISATION"
+   ]
+  },
+  {
+   "code_priorisation_2026": "P-060",
+   "code_priorisation_v1": "P-063",
+   "intitule": "Demander un extrait du plan Cadastral",
+   "evenement_de_vie": "Je régularise un titre",
+   "secteur": "Fiscalités et domaine",
+   "public_cible_propose": "entreprise",
+   "statut_exposition_teledac": null,
+   "besoin_si_tiers": "A confirmer",
+   "mecanisme_integration": null,
+   "point_focal_si_tiers": null,
+   "ministere": "DGID",
+   "structure": "DGID",
+   "priorisation": {
+    "impact": null,
+    "volumetrie": null,
+    "maturite_technique": null,
+    "complexite_admin": null,
+    "delais": null,
+    "impact_usager_v1": "Fort ",
+    "complexite_v1": "Moyenne",
+    "total_v1": null
+   },
+   "present_dans": [
+    "PRIORISATION_2026",
+    "PRIORISATION"
+   ]
+  },
+  {
+   "code_priorisation_2026": "P-061",
+   "code_priorisation_v1": "P-064",
+   "intitule": "Demander un bail",
+   "evenement_de_vie": "Je régularise un titre",
+   "secteur": "Fiscalités et domaine",
+   "public_cible_propose": "entreprise",
+   "statut_exposition_teledac": null,
+   "besoin_si_tiers": "A confirmer",
+   "mecanisme_integration": null,
+   "point_focal_si_tiers": null,
+   "ministere": "DGID",
+   "structure": "DGID",
+   "priorisation": {
+    "impact": null,
+    "volumetrie": null,
+    "maturite_technique": null,
+    "complexite_admin": null,
+    "delais": null,
+    "impact_usager_v1": "Fort ",
+    "complexite_v1": "Moyenne",
+    "total_v1": null
+   },
+   "present_dans": [
+    "PRIORISATION_2026",
+    "PRIORISATION"
+   ]
+  },
+  {
+   "code_priorisation_2026": "P-062",
+   "code_priorisation_v1": "P-065",
+   "intitule": "Payer l’impôt sur le bail",
+   "evenement_de_vie": "Je paye mes impôts",
+   "secteur": "Fiscalités et domaine",
+   "public_cible_propose": "entreprise",
+   "statut_exposition_teledac": null,
+   "besoin_si_tiers": "A confirmer",
+   "mecanisme_integration": null,
+   "point_focal_si_tiers": null,
+   "ministere": "DGID",
+   "structure": "DGID",
+   "priorisation": {
+    "impact": null,
+    "volumetrie": null,
+    "maturite_technique": null,
+    "complexite_admin": null,
+    "delais": null,
+    "impact_usager_v1": "Fort ",
+    "complexite_v1": "Moyenne",
+    "total_v1": null
+   },
+   "present_dans": [
+    "PRIORISATION_2026",
+    "PRIORISATION"
+   ]
+  },
+  {
+   "code_priorisation_2026": "P-063",
+   "code_priorisation_v1": "P-066",
+   "intitule": "Bénéficier du plan sésame",
+   "evenement_de_vie": "Je me soigne",
+   "secteur": "Sante / protection sociale",
+   "public_cible_propose": "citoyen",
+   "statut_exposition_teledac": null,
+   "besoin_si_tiers": "Sen CSU",
+   "mecanisme_integration": "sso ?",
+   "point_focal_si_tiers": null,
+   "ministere": "Sen CSU",
+   "structure": "SEN CU",
+   "priorisation": {
+    "impact": null,
+    "volumetrie": null,
+    "maturite_technique": null,
+    "complexite_admin": null,
+    "delais": null,
+    "impact_usager_v1": "Fort ",
+    "complexite_v1": "Moyenne",
+    "total_v1": null
+   },
+   "present_dans": [
+    "PRIORISATION_2026",
+    "PRIORISATION"
+   ]
+  },
+  {
+   "code_priorisation_2026": "P-064",
+   "code_priorisation_v1": "P-067",
+   "intitule": "Bénéficier de la carte d’égalité des chances",
+   "evenement_de_vie": "Je me soigne",
+   "secteur": "Sante / protection sociale",
+   "public_cible_propose": "citoyen",
+   "statut_exposition_teledac": null,
+   "besoin_si_tiers": "Sen CSU",
+   "mecanisme_integration": null,
+   "point_focal_si_tiers": null,
+   "ministere": "Sen CSU",
+   "structure": "SEN CU",
+   "priorisation": {
+    "impact": null,
+    "volumetrie": null,
+    "maturite_technique": null,
+    "complexite_admin": null,
+    "delais": null,
+    "impact_usager_v1": "Très Fort",
+    "complexite_v1": "Haute",
+    "total_v1": null
+   },
+   "present_dans": [
+    "PRIORISATION_2026",
+    "PRIORISATION"
+   ]
+  },
+  {
+   "code_priorisation_2026": "P-065",
+   "code_priorisation_v1": "P-068",
+   "intitule": "Demander la création d’une mutuelle de santé",
+   "evenement_de_vie": "Je me soigne",
+   "secteur": "Sante / protection sociale",
+   "public_cible_propose": "citoyen",
+   "statut_exposition_teledac": null,
+   "besoin_si_tiers": "Sen CSU",
+   "mecanisme_integration": null,
+   "point_focal_si_tiers": null,
+   "ministere": "Sen CSU",
+   "structure": "SEN CU",
+   "priorisation": {
+    "impact": null,
+    "volumetrie": null,
+    "maturite_technique": null,
+    "complexite_admin": null,
+    "delais": null,
+    "impact_usager_v1": "Fort ",
+    "complexite_v1": "Moyenne",
+    "total_v1": null
+   },
+   "present_dans": [
+    "PRIORISATION_2026",
+    "PRIORISATION"
+   ]
+  },
+  {
+   "code_priorisation_2026": "P-066",
+   "code_priorisation_v1": "P-069",
+   "intitule": "Bénéficier de la Gratuité des soins : césarienne, enfant de moins de 5ans et dialyse",
+   "evenement_de_vie": "Je me soigne",
+   "secteur": "Sante / protection sociale",
+   "public_cible_propose": "citoyen",
+   "statut_exposition_teledac": null,
+   "besoin_si_tiers": "Sen CSU",
+   "mecanisme_integration": null,
+   "point_focal_si_tiers": null,
+   "ministere": "Sen CSU",
+   "structure": "SEN CU",
+   "priorisation": {
+    "impact": null,
+    "volumetrie": null,
+    "maturite_technique": null,
+    "complexite_admin": null,
+    "delais": null,
+    "impact_usager_v1": "Très Fort",
+    "complexite_v1": "Haute",
+    "total_v1": null
+   },
+   "present_dans": [
+    "PRIORISATION_2026",
+    "PRIORISATION"
+   ]
+  },
+  {
+   "code_priorisation_2026": "P-082",
+   "code_priorisation_v1": "P-085",
+   "intitule": "Demander l’autorisation FRA (autorisation de fabrication et de mise en vente)",
+   "evenement_de_vie": "Je veux vendre",
+   "secteur": "Commerce",
+   "public_cible_propose": "entreprise",
+   "statut_exposition_teledac": null,
+   "besoin_si_tiers": null,
+   "mecanisme_integration": null,
+   "point_focal_si_tiers": null,
+   "ministere": "Ministère du Commerce et de l’Industrie/ DLAE / DSCS",
+   "structure": "DLAE",
+   "priorisation": {
+    "impact": null,
+    "volumetrie": null,
+    "maturite_technique": null,
+    "complexite_admin": null,
+    "delais": null,
+    "impact_usager_v1": "Fort ",
+    "complexite_v1": "Moyenne",
+    "total_v1": null
+   },
+   "present_dans": [
+    "PRIORISATION_2026",
+    "PRIORISATION"
+   ]
+  },
+  {
+   "code_priorisation_2026": "P-083",
+   "code_priorisation_v1": "P-086",
+   "intitule": "Faire une déclaration d’importation de produits alimentaire ou DIPA",
+   "evenement_de_vie": "Je veux vendre",
+   "secteur": "Commerce",
+   "public_cible_propose": "entreprise",
+   "statut_exposition_teledac": null,
+   "besoin_si_tiers": null,
+   "mecanisme_integration": null,
+   "point_focal_si_tiers": null,
+   "ministere": "Ministère du Commerce et de l’Industrie/ DLAE / DSCS",
+   "structure": "DLAE",
+   "priorisation": {
+    "impact": null,
+    "volumetrie": null,
+    "maturite_technique": null,
+    "complexite_admin": null,
+    "delais": null,
+    "impact_usager_v1": "Fort ",
+    "complexite_v1": "Moyenne",
+    "total_v1": null
+   },
+   "present_dans": [
+    "PRIORISATION_2026",
+    "PRIORISATION"
+   ]
+  },
+  {
+   "code_priorisation_2026": "P-084",
+   "code_priorisation_v1": "P-087",
+   "intitule": "Demander une autorisation d’importation de produits alimentaires",
+   "evenement_de_vie": null,
+   "secteur": "Commerce",
+   "public_cible_propose": "entreprise",
+   "statut_exposition_teledac": null,
+   "besoin_si_tiers": null,
+   "mecanisme_integration": null,
+   "point_focal_si_tiers": null,
+   "ministere": "Ministère du Commerce et de l’Industrie/ DLAE /DSCS",
+   "structure": "DLAE",
+   "priorisation": {
+    "impact": null,
+    "volumetrie": null,
+    "maturite_technique": null,
+    "complexite_admin": null,
+    "delais": null,
+    "impact_usager_v1": "Fort ",
+    "complexite_v1": "Moyenne",
+    "total_v1": null
+   },
+   "present_dans": [
+    "PRIORISATION_2026",
+    "PRIORISATION"
+   ]
+  },
+  {
+   "code_priorisation_2026": "P-085",
+   "code_priorisation_v1": null,
+   "intitule": "Demander le Registre de commerce (RCCM)",
+   "evenement_de_vie": "Je crée mon entreprise",
+   "secteur": "Création d'entreprise",
+   "public_cible_propose": "entreprise",
+   "statut_exposition_teledac": null,
+   "besoin_si_tiers": null,
+   "mecanisme_integration": null,
+   "point_focal_si_tiers": null,
+   "ministere": "Ministère de la Justice",
+   "structure": null,
+   "priorisation": {
+    "impact": null,
+    "volumetrie": null,
+    "maturite_technique": null,
+    "complexite_admin": null,
+    "delais": null,
+    "impact_usager_v1": null,
+    "complexite_v1": null,
+    "total_v1": null
+   },
+   "present_dans": [
+    "PRIORISATION_2026"
+   ]
+  },
+  {
+   "code_priorisation_2026": "P-086",
+   "code_priorisation_v1": "P-089",
+   "intitule": "Demander la création d’un GIE (Groupement d’intérêt économique)",
+   "evenement_de_vie": "Je crée mon entreprise",
+   "secteur": "Création d'entreprise",
+   "public_cible_propose": "entreprise",
+   "statut_exposition_teledac": null,
+   "besoin_si_tiers": null,
+   "mecanisme_integration": null,
+   "point_focal_si_tiers": null,
+   "ministere": "Ministère de la Justice",
+   "structure": "Tribunale Instnace",
+   "priorisation": {
+    "impact": null,
+    "volumetrie": null,
+    "maturite_technique": null,
+    "complexite_admin": null,
+    "delais": null,
+    "impact_usager_v1": "Très Fort",
+    "complexite_v1": "Haute",
+    "total_v1": null
+   },
+   "present_dans": [
+    "PRIORISATION_2026",
+    "PRIORISATION"
+   ]
+  },
+  {
+   "code_priorisation_2026": null,
+   "code_priorisation_v1": "P-007",
+   "intitule": "Certificat de chomage",
+   "evenement_de_vie": "Je cherche du travail",
+   "secteur": "Travail et Sécurité Sociale",
+   "public_cible_propose": "citoyen",
+   "statut_exposition_teledac": "Pas disponible sur teledac",
+   "besoin_si_tiers": null,
+   "mecanisme_integration": null,
+   "point_focal_si_tiers": null,
+   "ministere": "Ministère de l'Urbanisle et des collectivités locales",
+   "structure": null,
+   "priorisation": {
+    "impact": null,
+    "volumetrie": null,
+    "maturite_technique": null,
+    "complexite_admin": null,
+    "delais": null,
+    "impact_usager_v1": null,
+    "complexite_v1": null,
+    "total_v1": null
+   },
+   "present_dans": [
+    "PRIORISATION"
+   ]
+  },
+  {
+   "code_priorisation_2026": null,
+   "code_priorisation_v1": "P-008",
+   "intitule": "Déclarer un accident du travail ou une maladie professionnelle",
+   "evenement_de_vie": null,
+   "secteur": "Travail et Sécurité Sociale",
+   "public_cible_propose": "citoyen",
+   "statut_exposition_teledac": null,
+   "besoin_si_tiers": null,
+   "mecanisme_integration": null,
+   "point_focal_si_tiers": null,
+   "ministere": "Ministère de l'Urbanisle et des collectivités locales / DGTS",
+   "structure": null,
+   "priorisation": {
+    "impact": null,
+    "volumetrie": null,
+    "maturite_technique": null,
+    "complexite_admin": null,
+    "delais": null,
+    "impact_usager_v1": null,
+    "complexite_v1": null,
+    "total_v1": null
+   },
+   "present_dans": [
+    "PRIORISATION"
+   ]
+  },
+  {
+   "code_priorisation_2026": null,
+   "code_priorisation_v1": "P-012",
+   "intitule": "Etude d'impact nvironnementale",
+   "evenement_de_vie": "Je gére mes démarche administratifs",
+   "secteur": "Environnement",
+   "public_cible_propose": "citoyen",
+   "statut_exposition_teledac": "Pas en ligne",
+   "besoin_si_tiers": null,
+   "mecanisme_integration": null,
+   "point_focal_si_tiers": "Ministère de l'Environnement",
+   "ministere": "Ministère de l'Environnement et de la transition écologique",
+   "structure": null,
+   "priorisation": {
+    "impact": null,
+    "volumetrie": null,
+    "maturite_technique": null,
+    "complexite_admin": null,
+    "delais": null,
+    "impact_usager_v1": "Moyen",
+    "complexite_v1": "Moyenne",
+    "total_v1": 1
+   },
+   "present_dans": [
+    "PRIORISATION"
+   ]
+  },
+  {
+   "code_priorisation_2026": null,
+   "code_priorisation_v1": "P-013",
+   "intitule": "Demande de carte d'identité nationale",
+   "evenement_de_vie": "Je cherche des piéces d'identité",
+   "secteur": "Citoyenneté",
+   "public_cible_propose": "citoyen",
+   "statut_exposition_teledac": null,
+   "besoin_si_tiers": "DAF",
+   "mecanisme_integration": null,
+   "point_focal_si_tiers": "DAF / Direction des Passeports",
+   "ministere": "Ministère de l'Intérieur",
+   "structure": "Ministère de l'Intérieur",
+   "priorisation": {
+    "impact": null,
+    "volumetrie": null,
+    "maturite_technique": null,
+    "complexite_admin": null,
+    "delais": null,
+    "impact_usager_v1": "Très Fort",
+    "complexite_v1": "Haute",
+    "total_v1": 8
+   },
+   "present_dans": [
+    "PRIORISATION"
+   ]
+  },
+  {
+   "code_priorisation_2026": null,
+   "code_priorisation_v1": "P-014",
+   "intitule": "Demande de renouvellement de CNI",
+   "evenement_de_vie": "Je cherche des piéces d'identité",
+   "secteur": "Citoyenneté",
+   "public_cible_propose": "citoyen",
+   "statut_exposition_teledac": null,
+   "besoin_si_tiers": "DAF",
+   "mecanisme_integration": null,
+   "point_focal_si_tiers": "DAF / Direction des Passeports",
+   "ministere": "Ministère de l'Intérieur",
+   "structure": "Ministère de l'Intérieur",
+   "priorisation": {
+    "impact": null,
+    "volumetrie": null,
+    "maturite_technique": null,
+    "complexite_admin": null,
+    "delais": null,
+    "impact_usager_v1": "Très Fort",
+    "complexite_v1": "Haute",
+    "total_v1": null
+   },
+   "present_dans": [
+    "PRIORISATION"
+   ]
+  },
+  {
+   "code_priorisation_2026": null,
+   "code_priorisation_v1": "P-015",
+   "intitule": "Demande de Duplicata de CNI",
+   "evenement_de_vie": "Je cherche des piéces d'identité",
+   "secteur": "Citoyenneté",
+   "public_cible_propose": "citoyen",
+   "statut_exposition_teledac": null,
+   "besoin_si_tiers": null,
+   "mecanisme_integration": null,
+   "point_focal_si_tiers": "DAF / Direction des Passeports",
+   "ministere": "Ministère de l'Intérieur",
+   "structure": "Ministère de l'Intérieur",
+   "priorisation": {
+    "impact": null,
+    "volumetrie": null,
+    "maturite_technique": null,
+    "complexite_admin": null,
+    "delais": null,
+    "impact_usager_v1": "Très Fort",
+    "complexite_v1": "Haute",
+    "total_v1": null
+   },
+   "present_dans": [
+    "PRIORISATION"
+   ]
+  },
+  {
+   "code_priorisation_2026": null,
+   "code_priorisation_v1": "P-016",
+   "intitule": "Demander une carte electeur",
+   "evenement_de_vie": "Je cherche des piéces d'identité",
+   "secteur": "Citoyenneté",
+   "public_cible_propose": "citoyen",
+   "statut_exposition_teledac": null,
+   "besoin_si_tiers": null,
+   "mecanisme_integration": null,
+   "point_focal_si_tiers": null,
+   "ministere": "Ministère de l'Intérieur",
+   "structure": null,
+   "priorisation": {
+    "impact": null,
+    "volumetrie": null,
+    "maturite_technique": null,
+    "complexite_admin": null,
+    "delais": null,
+    "impact_usager_v1": "Très Fort",
+    "complexite_v1": null,
+    "total_v1": null
+   },
+   "present_dans": [
+    "PRIORISATION"
+   ]
+  },
+  {
+   "code_priorisation_2026": null,
+   "code_priorisation_v1": "P-017",
+   "intitule": "Demande d'annulation de CNI",
+   "evenement_de_vie": "Je cherche des piéces d'identité",
+   "secteur": "Citoyenneté",
+   "public_cible_propose": "citoyen",
+   "statut_exposition_teledac": null,
+   "besoin_si_tiers": null,
+   "mecanisme_integration": null,
+   "point_focal_si_tiers": "DAF / Direction des Passeports",
+   "ministere": "Ministère de l'Intérieur",
+   "structure": null,
+   "priorisation": {
+    "impact": null,
+    "volumetrie": null,
+    "maturite_technique": null,
+    "complexite_admin": null,
+    "delais": null,
+    "impact_usager_v1": "Très Fort",
+    "complexite_v1": "Haute",
+    "total_v1": null
+   },
+   "present_dans": [
+    "PRIORISATION"
+   ]
+  },
+  {
+   "code_priorisation_2026": null,
+   "code_priorisation_v1": "P-022",
+   "intitule": "Demander la création ( Parti politique,Association nationale,Association locale,Association étrangère,Syndicat,ONG)",
+   "evenement_de_vie": null,
+   "secteur": null,
+   "public_cible_propose": "à valider",
+   "statut_exposition_teledac": null,
+   "besoin_si_tiers": null,
+   "mecanisme_integration": null,
+   "point_focal_si_tiers": null,
+   "ministere": null,
+   "structure": null,
+   "priorisation": {
+    "impact": null,
+    "volumetrie": null,
+    "maturite_technique": null,
+    "complexite_admin": null,
+    "delais": null,
+    "impact_usager_v1": null,
+    "complexite_v1": null,
+    "total_v1": null
+   },
+   "present_dans": [
+    "PRIORISATION"
+   ]
+  },
+  {
+   "code_priorisation_2026": null,
+   "code_priorisation_v1": "P-027",
+   "intitule": "Demande d'agrément ONG",
+   "evenement_de_vie": "Je crée une organisation",
+   "secteur": "Vie Associative",
+   "public_cible_propose": "citoyen",
+   "statut_exposition_teledac": "Pas en ligne",
+   "besoin_si_tiers": null,
+   "mecanisme_integration": null,
+   "point_focal_si_tiers": "DGAT",
+   "ministere": "Ministère de l'Intérieur",
+   "structure": null,
+   "priorisation": {
+    "impact": null,
+    "volumetrie": null,
+    "maturite_technique": null,
+    "complexite_admin": null,
+    "delais": null,
+    "impact_usager_v1": "Faible",
+    "complexite_v1": "Moyenne",
+    "total_v1": null
+   },
+   "present_dans": [
+    "PRIORISATION"
+   ]
+  },
+  {
+   "code_priorisation_2026": null,
+   "code_priorisation_v1": "P-043",
+   "intitule": "Demander une copie littérale d’acte de naissance",
+   "evenement_de_vie": "J'ai un enfant",
+   "secteur": "État Civil",
+   "public_cible_propose": "citoyen",
+   "statut_exposition_teledac": null,
+   "besoin_si_tiers": null,
+   "mecanisme_integration": null,
+   "point_focal_si_tiers": null,
+   "ministere": "Ministère de l'Urbanisle et des collectivités locales",
+   "structure": "Collectivité locales",
+   "priorisation": {
+    "impact": null,
+    "volumetrie": null,
+    "maturite_technique": null,
+    "complexite_admin": null,
+    "delais": null,
+    "impact_usager_v1": null,
+    "complexite_v1": null,
+    "total_v1": null
+   },
+   "present_dans": [
+    "PRIORISATION"
+   ]
+  },
+  {
+   "code_priorisation_2026": null,
+   "code_priorisation_v1": "P-047",
+   "intitule": "Imatriculasation touristiques",
+   "evenement_de_vie": "Je voyage",
+   "secteur": "Tourisme",
+   "public_cible_propose": "citoyen",
+   "statut_exposition_teledac": "Pas en ligne",
+   "besoin_si_tiers": null,
+   "mecanisme_integration": null,
+   "point_focal_si_tiers": "Dir. Réglementation touristique",
+   "ministere": "Ministère de l'Urbanisle et des collectivités locales",
+   "structure": "Direction reglementaire touristique",
+   "priorisation": {
+    "impact": null,
+    "volumetrie": null,
+    "maturite_technique": null,
+    "complexite_admin": null,
+    "delais": null,
+    "impact_usager_v1": "Moyen",
+    "complexite_v1": "Faible",
+    "total_v1": 1
+   },
+   "present_dans": [
+    "PRIORISATION"
+   ]
+  },
+  {
+   "code_priorisation_2026": null,
+   "code_priorisation_v1": "P-052",
+   "intitule": "Organisation Concours d'entré( ENA,douanes,CFJ Greffiers,Magistrat)",
+   "evenement_de_vie": "Je me forme",
+   "secteur": "Éducation",
+   "public_cible_propose": "citoyen",
+   "statut_exposition_teledac": "Désactivée",
+   "besoin_si_tiers": "Office du Bac",
+   "mecanisme_integration": null,
+   "point_focal_si_tiers": "Office du Bac / ENA / CFJ / UAM",
+   "ministere": "Ministère de l'Urbanisle et des collectivités locales",
+   "structure": "Office du bac",
+   "priorisation": {
+    "impact": null,
+    "volumetrie": null,
+    "maturite_technique": null,
+    "complexite_admin": null,
+    "delais": null,
+    "impact_usager_v1": "Très Fort",
+    "complexite_v1": "Moyenne",
+    "total_v1": null
+   },
+   "present_dans": [
+    "PRIORISATION"
+   ]
+  },
+  {
+   "code_priorisation_2026": null,
+   "code_priorisation_v1": "P-088",
+   "intitule": "Demander le Régis de commerce ou RCCM",
+   "evenement_de_vie": "Je crée mon entreprise",
+   "secteur": "Création d'entreprise",
+   "public_cible_propose": "entreprise",
+   "statut_exposition_teledac": null,
+   "besoin_si_tiers": null,
+   "mecanisme_integration": null,
+   "point_focal_si_tiers": null,
+   "ministere": "Ministère de la Justice",
+   "structure": null,
+   "priorisation": {
+    "impact": null,
+    "volumetrie": null,
+    "maturite_technique": null,
+    "complexite_admin": null,
+    "delais": null,
+    "impact_usager_v1": "Très Fort",
+    "complexite_v1": "Haute",
+    "total_v1": null
+   },
+   "present_dans": [
+    "PRIORISATION"
+   ]
+  },
+  {
+   "code_priorisation_2026": null,
+   "code_priorisation_v1": "P-090",
+   "intitule": "Demander l’extrait de minute greffe",
+   "evenement_de_vie": "Je gére mes démarche administratifs",
+   "secteur": "Justice",
+   "public_cible_propose": "citoyen",
+   "statut_exposition_teledac": null,
+   "besoin_si_tiers": null,
+   "mecanisme_integration": null,
+   "point_focal_si_tiers": null,
+   "ministere": "Ministère de la Justice / Tribunal d’Instance",
+   "structure": "Tribunale Instnace",
+   "priorisation": {
+    "impact": null,
+    "volumetrie": null,
+    "maturite_technique": null,
+    "complexite_admin": null,
+    "delais": null,
+    "impact_usager_v1": "Fort ",
+    "complexite_v1": "Moyenne",
+    "total_v1": null
+   },
+   "present_dans": [
+    "PRIORISATION"
+   ]
+  },
+  {
+   "code_priorisation_2026": null,
+   "code_priorisation_v1": "P-091",
+   "intitule": "Comment procéder à l'expulsion d'un locataire",
+   "evenement_de_vie": "Je gére mes démarche administratifs",
+   "secteur": "Justice",
+   "public_cible_propose": "citoyen",
+   "statut_exposition_teledac": null,
+   "besoin_si_tiers": null,
+   "mecanisme_integration": null,
+   "point_focal_si_tiers": null,
+   "ministere": "Tribunal d’Instance",
+   "structure": "Tribunale Instnace",
+   "priorisation": {
+    "impact": null,
+    "volumetrie": null,
+    "maturite_technique": null,
+    "complexite_admin": null,
+    "delais": null,
+    "impact_usager_v1": "Fort ",
+    "complexite_v1": "Moyenne",
+    "total_v1": null
+   },
+   "present_dans": [
+    "PRIORISATION"
+   ]
+  },
+  {
+   "code_priorisation_2026": null,
+   "code_priorisation_v1": "P-092",
+   "intitule": "Enregristrer un contrat de location",
+   "evenement_de_vie": "J'amenage ou je loue",
+   "secteur": "Commerce",
+   "public_cible_propose": "entreprise",
+   "statut_exposition_teledac": null,
+   "besoin_si_tiers": null,
+   "mecanisme_integration": null,
+   "point_focal_si_tiers": null,
+   "ministere": "DGID",
+   "structure": "DGID",
+   "priorisation": {
+    "impact": null,
+    "volumetrie": null,
+    "maturite_technique": null,
+    "complexite_admin": null,
+    "delais": null,
+    "impact_usager_v1": "Fort ",
+    "complexite_v1": "Moyenne",
+    "total_v1": null
+   },
+   "present_dans": [
+    "PRIORISATION"
+   ]
+  },
+  {
+   "code_priorisation_2026": null,
+   "code_priorisation_v1": "P-093",
+   "intitule": "Demander un bon de formation à la 3FPT",
+   "evenement_de_vie": "Je me forme",
+   "secteur": "Formation professsonnelle",
+   "public_cible_propose": "citoyen",
+   "statut_exposition_teledac": null,
+   "besoin_si_tiers": "OK",
+   "mecanisme_integration": null,
+   "point_focal_si_tiers": "3FPT",
+   "ministere": "Ministère de la formation professionnelle",
+   "structure": "3FP3",
+   "priorisation": {
+    "impact": null,
+    "volumetrie": null,
+    "maturite_technique": null,
+    "complexite_admin": null,
+    "delais": null,
+    "impact_usager_v1": "Fort ",
+    "complexite_v1": "Moyenne",
+    "total_v1": null
+   },
+   "present_dans": [
+    "PRIORISATION"
+   ]
+  }
+ ]
+}
