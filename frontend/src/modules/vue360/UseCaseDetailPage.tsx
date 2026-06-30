@@ -22,6 +22,7 @@ import { RelationsBlock } from './RelationsBlock';
 import { ManifestationsPtfBlock } from './ManifestationsPtfBlock';
 import { ProjetsNationauxBlock } from './ProjetsNationauxBlock';
 import { DataContractBlock } from './DataContractBlock';
+import { LiaisonsGuichetBlock } from './LiaisonsGuichetBlock';
 
 export function UseCaseDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -133,6 +134,9 @@ export function UseCaseDetailPage() {
 
           {/* Projets New Deal Technologique associés */}
           {cu.id && <ProjetsNationauxBlock casUsageId={cu.id} />}
+
+          {/* Service guichet correspondant (e-sénégal / TELEDAC) */}
+          {cu.id && <LiaisonsGuichetBlock casUsageId={cu.id} />}
 
           {/* Fil d'avis formels */}
           <FeedbacksFeed
