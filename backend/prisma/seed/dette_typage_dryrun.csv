@@ -1,0 +1,410 @@
+code,intitule,typologieActuelle,typologieCible
+PINS-METIER-014,Attestation de régularité sociale CSS / IPRES,TECHNIQUE,METIER
+PINS-METIER-015,Déclaration d'accident du travail,TECHNIQUE,METIER
+PINS-METIER-016,Déclaration en douane (DAU import/export),TECHNIQUE,METIER
+PINS-METIER-017,Demande de carte d'importateur / exportateur,TECHNIQUE,METIER
+PINS-METIER-018,Domiciliation bancaire d'opérations d'import / export,TECHNIQUE,METIER
+PINS-METIER-019,Crédit d'enlèvement / différé de paiement douanier,TECHNIQUE,METIER
+PINS-METIER-020,Inscription au répertoire ARMP des opérateurs économiques,TECHNIQUE,METIER
+PINS-METIER-021,Soumission dématérialisée à un appel d'offres,TECHNIQUE,METIER
+PINS-METIER-022,Demande d'attestation de non-faillite,TECHNIQUE,METIER
+PINS-METIER-023,Agrément d'établissement financier,TECHNIQUE,METIER
+PINS-METIER-024,Licence opérateur télécom,TECHNIQUE,METIER
+PINS-METIER-025,Permis minier,TECHNIQUE,METIER
+PINS-METIER-026,Permis de pêche industrielle,TECHNIQUE,METIER
+PINS-METIER-027,Agrément d'exploitation forestière,TECHNIQUE,METIER
+PINS-METIER-028,Certificat de conformité ASN,TECHNIQUE,METIER
+PINS-METIER-029,Permis de construire (commercial/industriel),TECHNIQUE,METIER
+PINS-METIER-030,Demande de bail emphytéotique d'État,TECHNIQUE,METIER
+PINS-METIER-031,Inscription au tableau d'un ordre professionnel,TECHNIQUE,METIER
+PINS-METIER-032,Récépissé de déclaration d'association,TECHNIQUE,METIER
+PINS-METIER-033,Agrément ONG nationale,TECHNIQUE,METIER
+PINS-METIER-034,Demande d'acte de naissance dématérialisé,TECHNIQUE,METIER
+PINS-METIER-035,Demande d'acte de mariage,TECHNIQUE,METIER
+PINS-METIER-036,Demande d'acte de décès,TECHNIQUE,METIER
+PINS-METIER-037,Déclaration de naissance en ligne,TECHNIQUE,METIER
+PINS-METIER-038,Reconnaissance de paternité,TECHNIQUE,METIER
+PINS-METIER-039,Demande de Carte Nationale d'Identité (CNI),TECHNIQUE,METIER
+PINS-METIER-040,Demande de passeport biométrique,TECHNIQUE,METIER
+PINS-METIER-041,Demande de certificat de nationalité,TECHNIQUE,METIER
+PINS-METIER-043,Demande de certificat de résidence,TECHNIQUE,METIER
+PINS-METIER-045,Demande d'évacuation sanitaire,TECHNIQUE,METIER
+PINS-METIER-048,Demande d'équivalence de diplôme,TECHNIQUE,METIER
+PINS-METIER-049,Demande d'attestation de diplôme,TECHNIQUE,METIER
+PINS-METIER-051,Demande d'attestation de non-emploi public,TECHNIQUE,METIER
+PINS-METIER-052,Déclaration de l'impôt sur le revenu des personnes physiques (IR),TECHNIQUE,METIER
+PINS-METIER-053,Demande de quitus fiscal personne physique,TECHNIQUE,METIER
+PINS-METIER-054,Inscription au Registre National Unique (RNU),TECHNIQUE,METIER
+PINS-METIER-055,Demande de bourse de sécurité familiale,TECHNIQUE,METIER
+PINS-METIER-056,Demande de carte d'égalité des chances (handicap),TECHNIQUE,METIER
+PINS-METIER-057,Demande de permis de conduire,TECHNIQUE,METIER
+PINS-METIER-058,Immatriculation d'un véhicule (carte grise),TECHNIQUE,METIER
+PINS-METIER-059,Visite technique de véhicule,TECHNIQUE,METIER
+PINS-METIER-060,Demande de logement social SN-HLM,TECHNIQUE,METIER
+PINS-METIER-062,Permis de construire individuel,TECHNIQUE,METIER
+PINS-METIER-063,Demande de visa (étranger entrant),TECHNIQUE,METIER
+PINS-METIER-064,Carte d'identité d'étranger / titre de séjour,TECHNIQUE,METIER
+PINS-METIER-066,Demande de NINEA,TECHNIQUE,METIER
+PINS-METIER-067,Faire le dépôt légal d'un imprimé,TECHNIQUE,METIER
+PINS-METIER-068,Demander l'enregistrement d'un acte civil,TECHNIQUE,METIER
+PINS-METIER-069,Demander l'autorisation d'ouvrir un cabinet médical à titre privé,TECHNIQUE,METIER
+PINS-METIER-070,Demander un certificat de salubrité,TECHNIQUE,METIER
+PINS-METIER-071,Demander l'autorisation de mise sur le marché d'un médicament (AMM),TECHNIQUE,METIER
+PINS-METIER-072,Demander un certificat de visite médicale périodique,TECHNIQUE,METIER
+PINS-METIER-073,"Se présenter au concours d'accès aux professions libérales du barreau, du notariat et des huissiers de justice",TECHNIQUE,METIER
+PINS-METIER-074,Demander une mutation d'une autorisation de transport routier,TECHNIQUE,METIER
+PINS-METIER-075,Effectuer la réception par type d'un véhicule,TECHNIQUE,METIER
+PINS-METIER-076,autorisation d'ouvrir une auto-école,TECHNIQUE,METIER
+PINS-METIER-077,Passer l'Examen de moniteur d'auto-école,TECHNIQUE,METIER
+PINS-METIER-078,Comment procéder à l'expulsion d'un locataire,TECHNIQUE,METIER
+PINS-METIER-079,Demande de création d'un dépôt privé de médicaments,TECHNIQUE,METIER
+PINS-METIER-080,Signaler à l'autorité de régulation des télécommunications et des postes le brouillage du téléphone pour sa cessation,TECHNIQUE,METIER
+PINS-METIER-081,Demander le paiement d'une indemnité de sujétion pour un agent de l'Etat,TECHNIQUE,METIER
+PINS-METIER-082,Demander un suivi sanitaire et social d'un enfant ou d'une femme en état de grossesse à la Caisse de sécurité sociale,TECHNIQUE,METIER
+PINS-METIER-083,Demander un agrément pour l'activité de collecte des huiles usagées,TECHNIQUE,METIER
+PINS-METIER-084,Demander un agrément pour l'élimination des huiles usagées,TECHNIQUE,METIER
+PINS-METIER-085,Demander une autorisation d'importation de produits chimiques,TECHNIQUE,METIER
+PINS-METIER-086,Demander un agrément pour exercer des activités d'étude d'impact sur l'environnement,TECHNIQUE,METIER
+PINS-METIER-087,Demander l'autorisation d'exploiter une installation classée pour la protection de l'environnement (ICPE),TECHNIQUE,METIER
+PINS-METIER-088,Demander un numéro ISSN (numéro international normalisé des publications en série),TECHNIQUE,METIER
+PINS-METIER-089,S'inscrire au registre des navires de pêche industrielle,TECHNIQUE,METIER
+PINS-METIER-090,Demander à obtenir un document d'identification de marin,TECHNIQUE,METIER
+PINS-METIER-091,Demander une attestation de non retard de paiement de salaires,TECHNIQUE,METIER
+PINS-METIER-092,Demander une attestation de quotient familial,TECHNIQUE,METIER
+PINS-METIER-093,Demander un remboursement d'impôts indirects,TECHNIQUE,METIER
+PINS-METIER-094,Demander un remboursement d'impôts directs,TECHNIQUE,METIER
+PINS-METIER-095,Reverser les retenues à la source pour les prestations de services,TECHNIQUE,METIER
+PINS-METIER-096,Demander l'autorisation d'ouverture d'une alimentation générale,TECHNIQUE,METIER
+PINS-METIER-097,Déclarer des sommes versées aux non salariés de l'entreprise,TECHNIQUE,METIER
+PINS-METIER-098,Demander l'enregistrement d'une marque en vue de l'obtention d'un titre de protection,TECHNIQUE,METIER
+PINS-METIER-099,Demander l'immatriculation d'un employeur à la Caisse de sécurité sociale,TECHNIQUE,METIER
+PINS-METIER-100,Faire une déclaration pour la contribution globale unique (CGU),TECHNIQUE,METIER
+PINS-METIER-101,Réconciliation bidirectionnelle DGD ↔ DGID,TECHNIQUE,METIER
+PINS-METIER-102,Cycle complet Liquidation → Recouvrement → BAE,TECHNIQUE,METIER
+PINS-METIER-103,Quitus fiscal en temps réel,TECHNIQUE,METIER
+PINS-METIER-104,Télépaiement fiscal via X-Road (E.Taxes ↔ SIGIF),TECHNIQUE,METIER
+PINS-METIER-105,Référentiel NINEA via PINS (migration ESB → X-Road),TECHNIQUE,METIER
+PINS-METIER-106,Détection contribuables à risque (croisement multi-sources),TECHNIQUE,METIER
+PINS-METIER-107,Alimentation automatisée TOFE et données budgétaires,TECHNIQUE,METIER
+PINS-METIER-108,Fiscalité locale (TéléDAC / GFILOC / SIGIF),TECHNIQUE,METIER
+PINS-METIER-109,Demander l'autorisation d'implanter d'un mobilier urbain,TECHNIQUE,METIER
+PINS-METIER-110,Demander l'instauration d'une zone d'interdiction de stationnement,TECHNIQUE,METIER
+PINS-METIER-111,Demander l'instauration d'une zone de stationnement réservée,TECHNIQUE,METIER
+PINS-METIER-112,S'acquitter de l'imposition à la contribution forfaitaire à la charge des employeurs (CFCE),TECHNIQUE,METIER
+PINS-METIER-113,Déclarer les mouvements de personnel à l'Institution de prévoyance retraite du Sénégal (IPRES),TECHNIQUE,METIER
+PINS-METIER-114,Faire un versement des cotisations sociales à l'Institution de prévoyance retraite du Sénégal (IPRES),TECHNIQUE,METIER
+PINS-METIER-115,Faire un dépôt de déclarations de personnel à l'Institution de prévoyance retraite du Sénégal (IPRES),TECHNIQUE,METIER
+PINS-METIER-116,Déclarer un employé de maison à l'Institution de prévoyance retraite du Sénégal (IPRES),TECHNIQUE,METIER
+PINS-METIER-117,Demander l'adhésion d'une entreprise à l'Institution de prévoyance retraite du Sénégal (IPRES),TECHNIQUE,METIER
+PINS-METIER-118,Demander un extrait de plan cadastral certifié,TECHNIQUE,METIER
+PINS-METIER-119,Demander une remise gracieuse d'impôt,TECHNIQUE,METIER
+PINS-METIER-120,S'acquitter des obligations et paiements de la contribution des patentes,TECHNIQUE,METIER
+PINS-METIER-121,"Demander l'assiette de l'impôt sur le foncier bâti, le foncier non bâti, la contribution globale unique (CGU), la taxe d'enlèvement des ordures ménagères (TEOM) et les autres impôts directs",TECHNIQUE,METIER
+PINS-METIER-122,Demander un remboursement d'impôts,TECHNIQUE,METIER
+PINS-METIER-123,Demander l'établissement d'un titre foncier (mutation ou morcellement),TECHNIQUE,METIER
+PINS-METIER-124,"Demander la transformation d'un bail (droit de superficie, autorisation) en titre foncier",TECHNIQUE,METIER
+PINS-METIER-125,Demander une immatriculation au Centre des grandes entreprises (CGE),TECHNIQUE,METIER
+PINS-METIER-126,Obtenir un visa en exonération de la taxe sur la valeur ajoutée (TVA),TECHNIQUE,METIER
+PINS-METIER-127,Payer une taxe auprès du receveur des domaines,TECHNIQUE,METIER
+PINS-METIER-128,Demander une attestation de non condamnation,TECHNIQUE,METIER
+PINS-METIER-129,Demander une attestation de chômage,TECHNIQUE,METIER
+PINS-METIER-130,Déclarer un accident du travail ou une maladie professionnelle,TECHNIQUE,METIER
+PINS-METIER-131,Demander l'approbation des statuts et du règlement intérieur d'une institution de prévoyance maladie (IPM),TECHNIQUE,METIER
+PINS-METIER-132,Demander un recours hiérarchique pour infirmer l'autorisation ou le refus de licenciement d'un délégué du personnel,TECHNIQUE,METIER
+PINS-METIER-133,Demander un agrément pour l'exercice du transport routier,TECHNIQUE,METIER
+PINS-METIER-134,Demander un prêt au Fonds d'impulsion de la micro-finance (FIMF),TECHNIQUE,METIER
+PINS-METIER-135,Demander un financement du Fonds national de promotion de l'entreprenariat féminin,TECHNIQUE,METIER
+PINS-METIER-136,Demander un agrément des activités de contrôle technique,TECHNIQUE,METIER
+PINS-METIER-137,Demander une autorisation d'infrastructures et fournisseur d'accès internet,TECHNIQUE,METIER
+PINS-METIER-138,Demander une attestation d'imposition à la contribution foncière des propriétés bâties (CFBT) et à la taxe d'enlèvement des ordures ménagères (TEOM).,TECHNIQUE,METIER
+PINS-METIER-139,Demander l'agrément de transporteur routier pour un étranger,TECHNIQUE,METIER
+PINS-METIER-140,Demander une qualification et une classification d'une entreprise ou d'un artisan de BTP,TECHNIQUE,METIER
+PINS-METIER-141,Demander une attestation de services faits au PCRPE,TECHNIQUE,METIER
+PINS-METIER-142,Demander un agrément auprès du Projet de construction et de réhabilitation du patrimoine de l'Etat (PCRPE),TECHNIQUE,METIER
+PINS-METIER-143,Demander un certificat de qualité pour l'exportation du sel,TECHNIQUE,METIER
+PINS-METIER-144,Faire une déclaration d'importation de produits alimentaires (DIPA),TECHNIQUE,METIER
+PINS-METIER-145,Demander un certificat d'origine pour l'exportation,TECHNIQUE,METIER
+PINS-METIER-146,Constituer une caution de marché public,TECHNIQUE,METIER
+PINS-METIER-147,Demander une prise en charge des taxes et droits de douane,TECHNIQUE,METIER
+PINS-METIER-148,Demander une attestation d'imposition à la patente,TECHNIQUE,METIER
+PINS-METIER-149,Demander le règlement d'un contentieux judiciaire avec l'Etat,TECHNIQUE,METIER
+PINS-METIER-150,Demander un dégrèvement d'impôts,TECHNIQUE,METIER
+PINS-METIER-151,Demander une attestation d'agrément pour les produits phytosanitaires,TECHNIQUE,METIER
+PINS-METIER-152,Soumissionner aux marchés de l'Armée,TECHNIQUE,METIER
+PINS-METIER-153,Demande d'autorisation d'ouverture et d'exploitation d'un débit de boisson,TECHNIQUE,METIER
+PINS-METIER-154,Demander un quitus fiscal,TECHNIQUE,METIER
+PINS-METIER-155,Demander un état de droits réels (ou une attestation du conservateur de la propriété et des droits fonciers),TECHNIQUE,METIER
+PINS-METIER-156,Demander l'autorisation de licenciement d'un délégué du personnel,TECHNIQUE,METIER
+PINS-METIER-157,Payer la patente sur véhicule,TECHNIQUE,METIER
+PINS-METIER-158,Remplir une déclaration de taxe sur la valeur ajoutée (TVA),TECHNIQUE,METIER
+PINS-METIER-159,Demander une autorisation de lotissement,TECHNIQUE,METIER
+PINS-METIER-160,Demander une carte de commerçant,TECHNIQUE,METIER
+PINS-METIER-161,Demander l'autorisation d'ouvrir un cabinet paramédical privé,TECHNIQUE,METIER
+PINS-METIER-162,Demander une autorisation de transport (licence),TECHNIQUE,METIER
+PINS-METIER-163,Demander un visa d'approbation pour un contrat d'expatrié,TECHNIQUE,METIER
+PINS-METIER-164,Demander la reconnaissance d'un syndicat,TECHNIQUE,METIER
+PINS-METIER-165,Demander une autorisation d'ouverture d'un atelier d'ajustage de clés,TECHNIQUE,METIER
+PINS-METIER-166,Demander une imputation budgétaire,TECHNIQUE,METIER
+PINS-METIER-167,Demander l'agrément au statut d'entreprise franche d'exportation (EFE),TECHNIQUE,METIER
+PINS-METIER-168,Attestation de non-appartenance à la Fonction Publique,TECHNIQUE,METIER
+PINS-METIER-169,Autorisation de visite d'un détenu dans les centres pénitenciers (juridictions pilotes),TECHNIQUE,METIER
+PINS-METIER-170,Certificat de nationalité sénégalaise (juridictions pilotes),TECHNIQUE,METIER
+PINS-METIER-171,Extrait du bulletin n° 3 du casier judiciaire pour les étrangers nés au Sénégal,TECHNIQUE,METIER
+PINS-METIER-172,Extrait de bulletin n° 3 du casier judiciaire spécial pour un sénégalais né à l'étranger,TECHNIQUE,METIER
+PINS-METIER-173,Demander un certificat d'urbanisme,TECHNIQUE,METIER
+PINS-METIER-174,Extrait de bulletin n° 3 du casier judiciaire pour un sénégalais né au Sénégal,TECHNIQUE,METIER
+PINS-METIER-175,Demander un certificat de perte,TECHNIQUE,METIER
+PINS-METIER-176,Demander un certificat de bonne vie et moeurs,TECHNIQUE,METIER
+PINS-METIER-177,"Demander la transcription d'un acte d'état civil (acte de naissance, acte de mariage, acte de décès) auprès des services consulaires",TECHNIQUE,METIER
+PINS-METIER-178,Payer la caution de rapatriement,TECHNIQUE,METIER
+PINS-METIER-179,Demander une avance pèlerinage pour les agents de l'Etat,TECHNIQUE,METIER
+PINS-METIER-180,Demander l'immatriculation consulaire des Sénégalais résidant à l'étranger,TECHNIQUE,METIER
+PINS-METIER-181,S'acquitter du paiement de la quittance correspondant au timbre du passeport,TECHNIQUE,METIER
+PINS-METIER-182,Demander un visa d'entrée en Allemagne,TECHNIQUE,METIER
+PINS-METIER-183,Accomplir les formalités du pèlerinage à la Mecque,TECHNIQUE,METIER
+PINS-METIER-184,Demander un visa d'entrée aux Etats-Unis,TECHNIQUE,METIER
+PINS-METIER-185,Demander un visa d'entrée en France,TECHNIQUE,METIER
+PINS-METIER-186,Demander un carnet de vaccination international,TECHNIQUE,METIER
+PINS-METIER-187,Demander un regroupement familial,TECHNIQUE,METIER
+PINS-METIER-188,Demander un sauf-conduit,TECHNIQUE,METIER
+PINS-METIER-189,Demander une autorisation de sortie du territoire national pour un enseignant,TECHNIQUE,METIER
+PINS-METIER-190,Demander un passeport de réfugié,TECHNIQUE,METIER
+PINS-METIER-191,Demander un sauf-conduit étranger,TECHNIQUE,METIER
+PINS-METIER-192,S'acquitter des droits d'enregistrement et de timbres relatifs à un acte judiciaire ou extra-judiciaire,TECHNIQUE,METIER
+PINS-METIER-193,Demander une homologation du procès-verbal de partage de succession,TECHNIQUE,METIER
+PINS-METIER-194,Faire certifier conforme la copie d'un document,TECHNIQUE,METIER
+PINS-METIER-195,Faire légaliser un document,TECHNIQUE,METIER
+PINS-METIER-196,Demander une Authentification de diplôme ou un duplicata de diplôme,TECHNIQUE,METIER
+PINS-METIER-197,Demander une autorisation d'exercer au Sénégal en tant que médecin naturalisé sénégalais,TECHNIQUE,METIER
+PINS-METIER-198,Demander un certificat de grossesse,TECHNIQUE,METIER
+PINS-METIER-199,Demander un certificat de genre de mort,TECHNIQUE,METIER
+PINS-METIER-200,Demander un certificat de handicap moteur,TECHNIQUE,METIER
+PINS-METIER-201,Demander un certificat médical de visite et de contre-visite délivré par un médecin militaire,TECHNIQUE,METIER
+PINS-METIER-202,Demander un certificat médical d'accouchement,TECHNIQUE,METIER
+PINS-METIER-203,Demander un certificat médical pour coups et blessures,TECHNIQUE,METIER
+PINS-METIER-204,Se présenter au concours d'entrée à la Faculté des sciences et technologies de l'éducation et de la formation (FASTEF) niveau inspecteur de l'enseignement élémentaire et de l'éducation préscolaire,TECHNIQUE,METIER
+PINS-METIER-205,S'inscrire au concours d'officier de police,TECHNIQUE,METIER
+PINS-METIER-206,Se présenter au concours d'entrée à la Faculté des sciences et technologies de l'éducation et de la formation (FASTEF) niveau inspecteur de spécialité,TECHNIQUE,METIER
+PINS-METIER-207,S'inscrire au concours de contrôleur de l'administration pénitentiaire,TECHNIQUE,METIER
+PINS-METIER-208,S'inscrire au concours de commissaire de police,TECHNIQUE,METIER
+PINS-METIER-209,Se présenter au concours d'entrée à la Faculté des sciences et technologies de l'éducation et de la formation (FASTEF) niveau professeur de l'enseignement moyen (PEM),TECHNIQUE,METIER
+PINS-METIER-210,S'inscrire au concours d'officier de paix de la police,TECHNIQUE,METIER
+PINS-METIER-211,Se présenter au concours d'entrée à la Faculté des sciences et technologies de l'éducation et de la formation (FASTEF) niveau professeur de collège d'enseignement moyen (PCEM),TECHNIQUE,METIER
+PINS-METIER-212,S'inscrire au concours de gardien de la paix de la police,TECHNIQUE,METIER
+PINS-METIER-213,S'inscrire au concours d'élève gendarme féminin,TECHNIQUE,METIER
+PINS-METIER-214,S'inscrire au concours d'élève gendarme,TECHNIQUE,METIER
+PINS-METIER-215,Se présenter au concours d'entrée à l'Ecole nationale de formation en économie familiale et sociale (ENFEFS),TECHNIQUE,METIER
+PINS-METIER-216,S'inscrire au brevet de fin d'études moyennes (BFEM),TECHNIQUE,METIER
+PINS-METIER-217,Se présenter au concours d'entrée au centre de formation professionnelle et commerciale (CFPC),TECHNIQUE,METIER
+PINS-METIER-218,S'inscrire à l'examen du baccalauréat,TECHNIQUE,METIER
+PINS-METIER-219,Retirer le diplôme du baccalauréat,TECHNIQUE,METIER
+PINS-METIER-220,S'inscrire à l'examen du certificat d'aptitude pédagogique (CAP),TECHNIQUE,METIER
+PINS-METIER-221,S'inscrire au concours d'entrée dans les grandes écoles militaires étrangères,TECHNIQUE,METIER
+PINS-METIER-222,S'inscrire à l'examen du certificat de fin d'études élémentaires (CFEE),TECHNIQUE,METIER
+PINS-METIER-223,S'inscrire au concours d'entrée de l'Ecole militaire de santé (EMS),TECHNIQUE,METIER
+PINS-METIER-224,S'inscrire au concours d'entrée à l'Ecole nationale des officiers d'active (ENOA),TECHNIQUE,METIER
+PINS-METIER-225,S'inscrire au concours d'entrée du Prytanée militaire de Saint-Louis (PMS),TECHNIQUE,METIER
+PINS-METIER-226,S'inscrire au concours d'entrée à l'Ecole nationale des sous-officiers d'active (ENSOA),TECHNIQUE,METIER
+PINS-METIER-227,S'inscrire à l'examen du Brevet supérieur de capacité (BSC 2),TECHNIQUE,METIER
+PINS-METIER-228,S'inscrire à l'examen d'entrée en sixième,TECHNIQUE,METIER
+PINS-METIER-229,Demander à être nommé chef de village,TECHNIQUE,METIER
+PINS-METIER-230,Demander un certificat de vie collectif,TECHNIQUE,METIER
+PINS-METIER-231,Opter pour la nationalité sénégalaise,TECHNIQUE,METIER
+PINS-METIER-232,Demander une carte nationale d'identité,TECHNIQUE,METIER
+PINS-METIER-233,Demander la nationalité sénégalaise par voie de mariage,TECHNIQUE,METIER
+PINS-METIER-234,Demander la nationalité sénégalaise par filiation (ou d'origine),TECHNIQUE,METIER
+PINS-METIER-235,Enregistrer une reconnaissance d'enfant,TECHNIQUE,METIER
+PINS-METIER-236,Demander à acquérir la nationalité sénégalaise par décret (naturalisation),TECHNIQUE,METIER
+PINS-METIER-237,Demander une carte de circulation,TECHNIQUE,METIER
+PINS-METIER-238,Demander un bulletin de naissance,TECHNIQUE,METIER
+PINS-METIER-239,Faire la déclaration tardive d'un mariage coutumier,TECHNIQUE,METIER
+PINS-METIER-240,Demander une curatelle,TECHNIQUE,METIER
+PINS-METIER-241,Déclarer un décès,TECHNIQUE,METIER
+PINS-METIER-242,Demander une copie littérale d'acte de décès,TECHNIQUE,METIER
+PINS-METIER-243,Demander un certificat de non inscription de naissance,TECHNIQUE,METIER
+PINS-METIER-244,Demander une copie littérale d'acte de naissance,TECHNIQUE,METIER
+PINS-METIER-245,Demander un jugement d'autorisation d'inscription tardive de mariage,TECHNIQUE,METIER
+PINS-METIER-246,Demander un jugement d'autorisation d'inscription tardive de décès,TECHNIQUE,METIER
+PINS-METIER-247,Demander un certificat de non inscription de mariage,TECHNIQUE,METIER
+PINS-METIER-248,Demander un certificat de vie individuel,TECHNIQUE,METIER
+PINS-METIER-249,Initier une procédure en divorce,TECHNIQUE,METIER
+PINS-METIER-250,Demander un extrait du registre des actes de décès,TECHNIQUE,METIER
+PINS-METIER-251,Demander une copie littérale d'acte de mariage,TECHNIQUE,METIER
+PINS-METIER-252,Demander un certificat de non mariage et de non remariage,TECHNIQUE,METIER
+PINS-METIER-253,Demander un extrait du registre des actes de mariage,TECHNIQUE,METIER
+PINS-METIER-254,Demander l'enregistrement d'un mariage constaté,TECHNIQUE,METIER
+PINS-METIER-255,Demander un certificat de non divorce et de non séparation de corps,TECHNIQUE,METIER
+PINS-METIER-256,Demander un certificat de divorce,TECHNIQUE,METIER
+PINS-METIER-257,Demander un extrait du registre des actes de naissance,TECHNIQUE,METIER
+PINS-METIER-258,Demander un bulletin de décès,TECHNIQUE,METIER
+PINS-METIER-259,Demander une indication en paternité,TECHNIQUE,METIER
+PINS-METIER-260,Déclarer une naissance,TECHNIQUE,METIER
+PINS-METIER-261,Demander un certificat de mariage,TECHNIQUE,METIER
+PINS-METIER-262,Demander la célébration d'un mariage,TECHNIQUE,METIER
+PINS-METIER-263,Contester une filiation maternelle,TECHNIQUE,METIER
+PINS-METIER-264,Demander l'adoption plénière d'un enfant,TECHNIQUE,METIER
+PINS-METIER-265,Demander un certificat de coutume,TECHNIQUE,METIER
+PINS-METIER-266,Demander l'autorisation de constituer une association étrangère,TECHNIQUE,METIER
+PINS-METIER-267,S'inscrire au registre des Français établis au Sénégal,TECHNIQUE,METIER
+PINS-METIER-268,Demander le remboursement d'une caution de rapatriement,TECHNIQUE,METIER
+PINS-METIER-269,Demander un certificat de domicile,TECHNIQUE,METIER
+PINS-METIER-270,Demander un certificat de position militaire,TECHNIQUE,METIER
+PINS-METIER-271,Convertir le brevet militaire en permis de conduire,TECHNIQUE,METIER
+PINS-METIER-272,Demander un livret individuel pour les anciens militaires,TECHNIQUE,METIER
+PINS-METIER-273,Demander une pension de retraite pour un militaire,TECHNIQUE,METIER
+PINS-METIER-274,Demander une pension d'ascendant de militaire,TECHNIQUE,METIER
+PINS-METIER-275,Demander un état signalétique et des services (pour un militaire),TECHNIQUE,METIER
+PINS-METIER-276,Demander une pension de réversion au bénéfice de la veuve d'un militaire,TECHNIQUE,METIER
+PINS-METIER-277,Passer le permis de conduire pour véhicules lourds (type C),TECHNIQUE,METIER
+PINS-METIER-278,Effectuer la mutation d'un véhicule (prendre en compte tous les cas),TECHNIQUE,METIER
+PINS-METIER-279,Demander une attestation d'authenticité du permis de conduire,TECHNIQUE,METIER
+PINS-METIER-280,Demander un renouvellement ou un duplicata du permis de conduire,TECHNIQUE,METIER
+PINS-METIER-281,Certificat d'immatriculation et d'aptitude technique (Carte grise) avec les mentions,TECHNIQUE,METIER
+PINS-METIER-282,Passer son permis de conduire pour véhicule léger,TECHNIQUE,METIER
+PINS-METIER-283,Demander une autorisation de vente d'un bien appartenant à un mineur ou à un majeur incapable,TECHNIQUE,METIER
+PINS-METIER-284,Demander un certificat de non enrôlement,TECHNIQUE,METIER
+PINS-METIER-285,Demander un procès verbal de renonciation à succession,TECHNIQUE,METIER
+PINS-METIER-286,Demander une attestation de jugement ou d'arrêt rendu,TECHNIQUE,METIER
+PINS-METIER-287,Demander l'exécution d'une décision allouant une pension alimentaire à une personne,TECHNIQUE,METIER
+PINS-METIER-288,Demander un procès verbal de conciliation,TECHNIQUE,METIER
+PINS-METIER-289,Demander un jugement d'émancipation,TECHNIQUE,METIER
+PINS-METIER-290,Demander un procès verbal d'ouverture de testament,TECHNIQUE,METIER
+PINS-METIER-291,Demander un certificat de non rétractation à consentement,TECHNIQUE,METIER
+PINS-METIER-292,Demander un procès verbal de consentement à adoption,TECHNIQUE,METIER
+PINS-METIER-293,Demander l'exécution d'une décision ordonnant la main levée d'une décision qui avait alloué une pension alimentaire à une personne,TECHNIQUE,METIER
+PINS-METIER-294,Faire appel du jugement ou de l'ordonnance,TECHNIQUE,METIER
+PINS-METIER-295,Demander un jugement d'hérédité,TECHNIQUE,METIER
+PINS-METIER-296,Demander un certificat d'administration légale,TECHNIQUE,METIER
+PINS-METIER-297,"Demander une expédition, une copie ou une grosse d'une décision de justice",TECHNIQUE,METIER
+PINS-METIER-298,Demander la résiliation d'un bail,TECHNIQUE,METIER
+PINS-METIER-299,Rédiger un testament,TECHNIQUE,METIER
+PINS-METIER-300,Demander la tutelle d'un enfant,TECHNIQUE,METIER
+PINS-METIER-301,Saisir la maison de justice pour le règlement d'un litige,TECHNIQUE,METIER
+PINS-METIER-302,Demander une délégation de puissance paternelle,TECHNIQUE,METIER
+PINS-METIER-303,Demander l'établissement exceptionnel d'indication de paternité,TECHNIQUE,METIER
+PINS-METIER-304,Réclamer la filiation maternelle,TECHNIQUE,METIER
+PINS-METIER-305,Porter plainte directement devant le procureur de la République,TECHNIQUE,METIER
+PINS-METIER-306,Demander un partage successoral,TECHNIQUE,METIER
+PINS-METIER-307,"Demander un certificat de non opposition, ni appel",TECHNIQUE,METIER
+PINS-METIER-308,Demander la délivrance d'une copie du procès verbal d'un accident de la circulation routière,TECHNIQUE,METIER
+PINS-METIER-309,Faire une donation entre vifs,TECHNIQUE,METIER
+PINS-METIER-310,"Demander un certificat de non pourvoi en cassation en matière pénale, civile et sociale",TECHNIQUE,METIER
+PINS-METIER-311,Demander un désaveu de paternité,TECHNIQUE,METIER
+PINS-METIER-312,Demander l'adoption limitée d'un enfant,TECHNIQUE,METIER
+PINS-METIER-313,Demande de création d'une officine de pharmacie,TECHNIQUE,METIER
+PINS-METIER-314,Demander le paiement de frais de déplacement en cas d'affectation ou de départ à la retraite d'un agent de l'Etat,TECHNIQUE,METIER
+PINS-METIER-315,Demander un branchement eau à la SEN'EAU : cas d'une personne morale,TECHNIQUE,METIER
+PINS-METIER-316,Parrainer un enfant dans les cases des tout - petits.,TECHNIQUE,METIER
+PINS-METIER-317,Demander à créer un journal d'information quotidien ou périodique,TECHNIQUE,METIER
+PINS-METIER-318,Faire une déclaration de parution pour enregistrement d'un organe de presse écrite,TECHNIQUE,METIER
+PINS-METIER-319,Demander à obtenir la licence d'exploitation d'une radio privée commerciale,TECHNIQUE,METIER
+PINS-METIER-320,Demander à devenir un animateur polyvalent dans les cases des tout - petits,TECHNIQUE,METIER
+PINS-METIER-321,Demander à devenir une mère assistante dans les cases des tout - petits,TECHNIQUE,METIER
+PINS-METIER-322,Demander à bénéficier de l'aide aux organes de presse,TECHNIQUE,METIER
+PINS-METIER-323,Demander à obtenir la carte nationale de presse.,TECHNIQUE,METIER
+PINS-METIER-324,Demander à obtenir la licence d'exploitation d'une télévision privée commerciale,TECHNIQUE,METIER
+PINS-METIER-325,Demander à obtenir la licence d'exploitation d'une télévision non commerciale,TECHNIQUE,METIER
+PINS-METIER-326,Demander à élaguer un arbre,TECHNIQUE,METIER
+PINS-METIER-327,Demander à constituer un dossier de prestations familiales à la Caisse de sécurité sociale,TECHNIQUE,METIER
+PINS-METIER-328,Demander un agrément en Organisation Non Gouvernementale (ONG),TECHNIQUE,METIER
+PINS-METIER-329,Demander l'autorisation d'organiser un événement sportif par les établissements scolaires et universitaires,TECHNIQUE,METIER
+PINS-METIER-330,Enregistrer un marché administratif,TECHNIQUE,METIER
+PINS-METIER-331,Demander une inscription en hypothèque ou autre cause d'indisponibilité,TECHNIQUE,METIER
+PINS-METIER-332,Comment obtenir un titre foncier pour une propriété acquise à la SN HLM,TECHNIQUE,METIER
+PINS-METIER-333,Demander la certification de pièces administratives à la Direction des archives du Sénégal,TECHNIQUE,METIER
+PINS-METIER-334,Demander un agrément pour une mutuelle de santé,TECHNIQUE,METIER
+PINS-METIER-335,Demander l'autorisation d'ouvrir un laboratoire d'analyses de biologie médicale,TECHNIQUE,METIER
+PINS-METIER-336,Comment obtenir l'aide d'un médiateur financier,TECHNIQUE,METIER
+PINS-METIER-337,Demander l'autorisation d'ouvrir une clinique médicale,TECHNIQUE,METIER
+PINS-METIER-338,Demander à ouvrir un cabinet dentaire à titre privé,TECHNIQUE,METIER
+PINS-METIER-339,Comment créer une fédération sportive,TECHNIQUE,METIER
+PINS-METIER-340,Comment créer un club sportif ou une association sportive et culturelle (ASC),TECHNIQUE,METIER
+PINS-METIER-341,Demander à obtenir un acte de nationalité sénégalaise d'un navire,TECHNIQUE,METIER
+PINS-METIER-342,Se présenter aux concours d'entrée au Centre national de formation des techniciens des pêches et de l'aquaculture (CNFTPA),TECHNIQUE,METIER
+PINS-METIER-343,Demander à créer une section d'acquéreurs de parcelles assainies de la SN-HLM,TECHNIQUE,METIER
+PINS-METIER-344,Demander l'autorisation de nantir un logement SN-HLM ou une parcelle assainie,TECHNIQUE,METIER
+PINS-METIER-345,Demander à solder par anticipation un logement SN-HLM ou une parcelle assainie,TECHNIQUE,METIER
+PINS-METIER-346,Demander la radiation d'un agent de l'Etat décédé,TECHNIQUE,METIER
+PINS-METIER-347,Comment bénéficier d'un branchement à l'égout,TECHNIQUE,METIER
+PINS-METIER-348,Demander l'agrément pour une coopérative d'habitat,TECHNIQUE,METIER
+PINS-METIER-349,Demander une diminution de parts pour les agents de l'Etat,TECHNIQUE,METIER
+PINS-METIER-350,Demander la validation des services auxiliaires et précaires pour les fonctionnaires,TECHNIQUE,METIER
+PINS-METIER-351,Demander une retraite anticipée,TECHNIQUE,METIER
+PINS-METIER-352,Demander le paiement d'une indemnité de logement pour les agents de l'Etat,TECHNIQUE,METIER
+PINS-METIER-353,Demander des prestations familiales pour les fonctionnaires,TECHNIQUE,METIER
+PINS-METIER-354,S'inscrire au concours d'entrée à l'Ecole nationale d'administration (ENA),TECHNIQUE,METIER
+PINS-METIER-355,Demander l'octroi d'une allocation municipale d'études à l'étranger,TECHNIQUE,METIER
+PINS-METIER-356,Demander une aide municipale d'études au niveau national,TECHNIQUE,METIER
+PINS-METIER-357,Faire une demande de location d'un corbillard,TECHNIQUE,METIER
+PINS-METIER-358,Demander une autorisation d'occupation de voirie à titre temporaire,TECHNIQUE,METIER
+PINS-METIER-359,Demande de prise en charge médicale à l'Institution de prévoyance retraite du Sénégal (IPRES),TECHNIQUE,METIER
+PINS-METIER-360,Demander un quitus et une attestation de fin de paiement à la Société nationale des habitations à loyer modéré (SN-HLM),TECHNIQUE,METIER
+PINS-METIER-361,Demander la substitution d'un logement à la Société nationale des habitations à loyer modéré (SN-HLM),TECHNIQUE,METIER
+PINS-METIER-362,Demander une attestation de non attributaire de logement à la Société nationale des habitations à loyer modéré (SN-HLM),TECHNIQUE,METIER
+PINS-METIER-363,Obtenir une attestation de locataire à la SICAP SA,TECHNIQUE,METIER
+PINS-METIER-364,Demander une carte d'affiliation à l'Institution de prévoyance retraite du Sénégal (IPRES),TECHNIQUE,METIER
+PINS-METIER-365,Demander la vérification de l'affiliation à l'Institution de prévoyance retraite du Sénégal (IPRES),TECHNIQUE,METIER
+PINS-METIER-366,Demander une pension de retraite à l'Institution de prévoyance retraite du Sénégal (IPRES),TECHNIQUE,METIER
+PINS-METIER-367,Demander une indemnité compensatrice de congé (pour les agents non fonctionnaires de l'Etat),TECHNIQUE,METIER
+PINS-METIER-368,Demander un visa de domiciliation de salaire,TECHNIQUE,METIER
+PINS-METIER-369,Demander une indemnité de déplacement à l'intérieur du pays pour un agent de l'Etat,TECHNIQUE,METIER
+PINS-METIER-370,Demander une allocation de congés de maternité (pour un agent non fonctionnaire de l'Etat),TECHNIQUE,METIER
+PINS-METIER-371,Demander une allocation de congés administratifs,TECHNIQUE,METIER
+PINS-METIER-372,Payer la taxe d'enlèvement des ordures ménagères (TEOM),TECHNIQUE,METIER
+PINS-METIER-373,Déclarer ses revenus,TECHNIQUE,METIER
+PINS-METIER-374,Accéder à une zone d'aménagement concerté (ZAC),TECHNIQUE,METIER
+PINS-METIER-375,S'inscrire au test d'entrée à l'Institut national supérieur de l'éducation populaire et du sport (INSEPS),TECHNIQUE,METIER
+PINS-METIER-376,Demander une dispense d'âge pour l'inscription en classe de cours d'initiation (CI),TECHNIQUE,METIER
+PINS-METIER-377,Demander une autorisation d'enseigner dans les écoles privées de formation professionnelle,TECHNIQUE,METIER
+PINS-METIER-378,Devenir vacataire de l'enseignement technique et de la formation professionnelle,TECHNIQUE,METIER
+PINS-METIER-379,Demander une autorisation d'ouvrir une école privée de formation professionnelle,TECHNIQUE,METIER
+PINS-METIER-380,Comment faire une carrière militaire,TECHNIQUE,METIER
+PINS-METIER-381,S'inscrire au Centre africain d'études supérieures en gestion (CESAG),TECHNIQUE,METIER
+PINS-METIER-382,Demander la fourniture d'électricité à la Sénélec,TECHNIQUE,METIER
+PINS-METIER-383,S'inscrire à l'université Gaston Berger de Saint-Louis,TECHNIQUE,METIER
+PINS-METIER-384,Acquérir ou se faire attribuer un terrain du domaine national,TECHNIQUE,METIER
+PINS-METIER-385,Demander un remboursement de cotisations au Fonds national de retraite (FNR),TECHNIQUE,METIER
+PINS-METIER-386,S'inscrire en classe de seconde,TECHNIQUE,METIER
+PINS-METIER-387,Demander le placement d'un enfant mineur dans les centres spécialisés,TECHNIQUE,METIER
+PINS-METIER-388,Demander un logement administratif,TECHNIQUE,METIER
+PINS-METIER-389,Demander une attestation de logement administratif,TECHNIQUE,METIER
+PINS-METIER-390,Demander une attestation de non logement administratif,TECHNIQUE,METIER
+PINS-METIER-391,Demander une attestation de propriété à la SICAP SA,TECHNIQUE,METIER
+PINS-METIER-392,Demander un contrat de location-vente de logement à la Société nationale des habitations à loyer modéré (SN-HLM),TECHNIQUE,METIER
+PINS-METIER-393,Demander une attestation de non locataire ou de non propriétaire à la SICAP SA,TECHNIQUE,METIER
+PINS-METIER-394,Demander une autorisation de transformation de plans ou de construction à la SICAP SA,TECHNIQUE,METIER
+PINS-METIER-395,Demander une petite parcelle à la Société nationale des habitations à loyer modéré (SN-HLM),TECHNIQUE,METIER
+PINS-METIER-396,Demander une attestation d'apport à la Société nationale des habitations à loyer modéré (SN-HLM),TECHNIQUE,METIER
+PINS-METIER-397,Demander un permis d'occuper,TECHNIQUE,METIER
+PINS-METIER-398,Demander une attestation de non attributaire de parcelle à la Société nationale des habitations à loyer modéré (SN-HLM),TECHNIQUE,METIER
+PINS-METIER-399,Demander l'octroi d'une allocation d'étude à l'étranger (bourse),TECHNIQUE,METIER
+PINS-METIER-400,Faire une réclamation sur des faits mettant en cause un ou des agent(s) chargé(s) de la sécurité publique,TECHNIQUE,METIER
+PINS-METIER-401,Demander une bourse d'étude nationale (études supérieures),TECHNIQUE,METIER
+PINS-METIER-402,Demander une cession volontaire sur salaire,TECHNIQUE,METIER
+PINS-METIER-403,Demander une carte de lecteur à la bibliothèque universitaire,TECHNIQUE,METIER
+PINS-METIER-404,Demander une attestation d'inscription dans un programme immobilier de la SICAP SA,TECHNIQUE,METIER
+PINS-METIER-405,"Demander un logement ou un terrain à usage d'habitation, de bureaux, de commerce, de garage ou autres à la SICAP SA",TECHNIQUE,METIER
+PINS-METIER-406,Demander une attestation d'imposition ou de non imposition,TECHNIQUE,METIER
+PINS-METIER-407,Demander une exonération quinquennale à la contribution foncière,TECHNIQUE,METIER
+PINS-METIER-408,Demander un prêt immobilier à la direction de la Monnaie et du Crédit (DMC),TECHNIQUE,METIER
+PINS-METIER-501,Création d'entreprise au guichet unique,TECHNIQUE,METIER
+PINS-METIER-502,Modification des statuts d'entreprise,TECHNIQUE,METIER
+PINS-METIER-503,Cessation d'activité et radiation d'entreprise,TECHNIQUE,METIER
+PINS-METIER-504,Création d'entreprise individuelle,TECHNIQUE,METIER
+PINS-METIER-505,Création de groupement d'intérêt économique (GIE),TECHNIQUE,METIER
+PINS-METIER-506,Déclaration et paiement de l'impôt sur les sociétés (IS),TECHNIQUE,METIER
+PINS-METIER-507,Déclaration et paiement de la TVA,TECHNIQUE,METIER
+PINS-METIER-508,Demande de quitus fiscal / attestation de régularité fiscale,TECHNIQUE,METIER
+PINS-METIER-509,Régularisation et recours fiscal entreprise,TECHNIQUE,METIER
+PINS-METIER-510,Déclaration de la Contribution Forfaitaire à la Charge de l'Employeur (CFCE),TECHNIQUE,METIER
+PINS-METIER-511,Affiliation employeur à la CSS,TECHNIQUE,METIER
+PINS-METIER-512,Affiliation employeur à l'IPRES,TECHNIQUE,METIER
+PINS-METIER-513,Déclaration mensuelle des salaires (DUS) CSS/IPRES,TECHNIQUE,METIER
+PINS-METIER-601,Payer l'impôt sur les sociétés,TECHNIQUE,METIER
+PINS-METIER-602,Faire une déclaration de revenus fonciers,TECHNIQUE,METIER
+PINS-METIER-603,Demander à enregistrer un brevet d'invention,TECHNIQUE,METIER
+PINS-METIER-604,Payer ses cotisations d'employeur à la Caisse de sécurité sociale,TECHNIQUE,METIER
+PINS-METIER-605,Créer une société à responsabilité limitée (SARL) ou une société anonyme (SA),TECHNIQUE,METIER
+PINS-METIER-606,Créer une société en nom collectif (SNC) ou une société en commandite simple (SCS),TECHNIQUE,METIER
+PINS-METIER-607,Demander une autorisation d'ouverture d'une officine privée de pharmacie,TECHNIQUE,METIER
+PINS-METIER-608,S'acquitter de la taxe publicitaire,TECHNIQUE,METIER
