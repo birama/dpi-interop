@@ -360,6 +360,13 @@ enum RegistreUsageMode {
   CREE
 }
 
+/// Public cible d'un service guichet e-sénégal (citoyen, entreprise, mixte)
+enum PublicCible {
+  CITOYEN
+  ENTREPRISE
+  MIXTE
+}
+
 // ============================================================================
 // INSTITUTIONS
 // ============================================================================
@@ -1245,6 +1252,9 @@ model CasUsageMVP {
   // New Deal Technologique — Projets nationaux associés
   casUsageProjets CasUsageProjet[]
 
+  // Liaison vers les services guichet e-sénégal (frontière backbone/front)
+  liaisonsGuichet LiaisonGuichet[]
+
   // Faisabilité (atelier use cases potentiels)
   faisabilite FaisabiliteCas?
 
@@ -1768,4 +1778,53 @@ model DocumentReference {
 
   @@index([categorie])
   @@map("documents_reference")
+}
+
+// ============================================================================
+// LIAISON GUICHET e-sénégal — Frontière backbone/front
+// ============================================================================
+// Les démarches du guichet citoyen (e-sénégal / TELEDAC) sont matérialisées par
+// une entité séparée ServiceGuichet, distincte de CasUsageMVP : pas de
+// pollution des compteurs métier/technique du catalogue, et publicCible /
+// statutEsenegal sont des propriétés intrinsèques du service guichet (pas de
+// la liaison). LiaisonGuichet est une table de liaison N:N classique entre
+// CasUsageMVP (backbone interop) et ServiceGuichet (front e-sénégal), sur le
+// même pattern que CasUsageRegistre : mode/dateAjout/ajoutePar (PAS
+// createdAt/updatedAt).
+
+model ServiceGuichet {
+  id                String           @id @default(uuid())
+  code              String           @unique // PINS-GUICHET-NNN
+  intitule          String
+  evenementDeVie    String?
+  secteur           String?
+  publicCible       PublicCible?
+  statutEsenegal    String? // Statut TELEDAC : en ligne / pas en ligne / Nekkal / etc.
+  ministere         String?
+  pointFocalSiTiers String?
+  besoinSiTiers     String?
+  priorisationJson  Json? // Scores hétérogènes des deux feuilles du séminaire
+  mode              String?
+  dateAjout         DateTime         @default(now())
+  ajoutePar         String?
+  liaisons          LiaisonGuichet[]
+
+  @@index([secteur])
+  @@map("service_guichet")
+}
+
+model LiaisonGuichet {
+  id               String         @id @default(uuid())
+  casUsageId       String
+  serviceGuichetId String
+  casUsage         CasUsageMVP    @relation(fields: [casUsageId], references: [id], onDelete: Cascade)
+  serviceGuichet   ServiceGuichet @relation(fields: [serviceGuichetId], references: [id], onDelete: Cascade)
+  note             String?
+  mode             String?
+  dateAjout        DateTime       @default(now())
+  ajoutePar        String?
+
+  @@unique([casUsageId, serviceGuichetId])
+  @@index([serviceGuichetId])
+  @@map("liaison_guichet")
 }
