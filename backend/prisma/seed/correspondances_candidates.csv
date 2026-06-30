@@ -1,0 +1,124 @@
+serviceGuichetCode,serviceGuichetIntitule,secteurGuichet,casUsageCode,casUsageIntitule,domaineCatalogue,score,rang
+PINS-GUICHET-010,Demander un permis de conduire,Transport,PINS-METIER-057,Demande de permis de conduire,SERVICES_CITOYENS,0.9000,1
+PINS-GUICHET-010,Demander un permis de conduire,Transport,PINS-TECH-0100,Vérification d'un permis de conduire,SERVICES_CITOYENS,0.6667,2
+PINS-GUICHET-010,Demander un permis de conduire,Transport,PINS-METIER-279,Demander une attestation d'authenticité du permis de conduire,SERVICES_CITOYENS,0.6000,3
+PINS-GUICHET-011,Demander le duplicata du permis de conduire ;,Transport,PINS-METIER-280,Demander un renouvellement ou un duplicata du permis de conduire,SERVICES_CITOYENS,0.8000,1
+PINS-GUICHET-011,Demander le duplicata du permis de conduire ;,Transport,PINS-METIER-057,Demande de permis de conduire,SERVICES_CITOYENS,0.6512,2
+PINS-GUICHET-011,Demander le duplicata du permis de conduire ;,Transport,PINS-METIER-279,Demander une attestation d'authenticité du permis de conduire,SERVICES_CITOYENS,0.6230,3
+PINS-GUICHET-012,Demander le renouvellement du permis de conduire,Transport,PINS-METIER-280,Demander un renouvellement ou un duplicata du permis de conduire,SERVICES_CITOYENS,0.8000,1
+PINS-GUICHET-012,Demander le renouvellement du permis de conduire,Transport,PINS-METIER-003,Demande et renouvellement de passeport,SERVICES_CITOYENS,0.6458,2
+PINS-GUICHET-012,Demander le renouvellement du permis de conduire,Transport,PINS-METIER-279,Demander une attestation d'authenticité du permis de conduire,SERVICES_CITOYENS,0.6230,3
+PINS-GUICHET-013,Demander une attestation d’authenticité d’un permis de conduire,Transport,PINS-METIER-279,Demander une attestation d'authenticité du permis de conduire,SERVICES_CITOYENS,1.0000,1
+PINS-GUICHET-013,Demander une attestation d’authenticité d’un permis de conduire,Transport,PINS-METIER-280,Demander un renouvellement ou un duplicata du permis de conduire,SERVICES_CITOYENS,0.5938,2
+PINS-GUICHET-013,Demander une attestation d’authenticité d’un permis de conduire,Transport,PINS-METIER-274,Demander une pension d'ascendant de militaire,SERVICES_CITOYENS,0.5079,3
+PINS-GUICHET-014,Proroger un permis de conduire,Transport,PINS-METIER-057,Demande de permis de conduire,SERVICES_CITOYENS,0.7000,1
+PINS-GUICHET-014,Proroger un permis de conduire,Transport,PINS-TECH-0100,Vérification d'un permis de conduire,SERVICES_CITOYENS,0.6667,2
+PINS-GUICHET-014,Proroger un permis de conduire,Transport,PINS-METIER-271,Convertir le brevet militaire en permis de conduire,SERVICES_CITOYENS,0.4902,3
+PINS-GUICHET-015,Passer l’examen de moniteur d’auto-école,Transport,PINS-METIER-077,Passer l'Examen de moniteur d'auto-école,SERVICES_CITOYENS,1.0000,1
+PINS-GUICHET-015,Passer l’examen de moniteur d’auto-école,Transport,PINS-METIER-282,Passer son permis de conduire pour véhicule léger,SERVICES_CITOYENS,0.4490,2
+PINS-GUICHET-015,Passer l’examen de moniteur d’auto-école,Transport,PINS-METIER-277,Passer le permis de conduire pour véhicules lourds (type C),SERVICES_CITOYENS,0.4211,3
+PINS-GUICHET-016,Demander un agrément de transport routier,Transport,PINS-METIER-133,Demander un agrément pour l'exercice du transport routier,SERVICES_CITOYENS,0.8000,1
+PINS-GUICHET-016,Demander un agrément de transport routier,Transport,PINS-METIER-139,Demander l'agrément de transporteur routier pour un étranger,SERVICES_CITOYENS,0.6333,2
+PINS-GUICHET-016,Demander un agrément de transport routier,Transport,PINS-METIER-162,Demander une autorisation de transport (licence),SERVICES_CITOYENS,0.6087,3
+PINS-GUICHET-017,Effectuer le remplacement d’un agrément de transport routier,Transport,PINS-METIER-074,Demander une mutation d'une autorisation de transport routier,SERVICES_CITOYENS,0.5246,1
+PINS-GUICHET-017,Effectuer le remplacement d’un agrément de transport routier,Transport,PINS-METIER-133,Demander un agrément pour l'exercice du transport routier,SERVICES_CITOYENS,0.5167,2
+PINS-GUICHET-017,Effectuer le remplacement d’un agrément de transport routier,Transport,PINS-METIER-268,Demander le remboursement d'une caution de rapatriement,SERVICES_CITOYENS,0.4667,3
+PINS-GUICHET-018,Effectuer le renouvellement d’un agrément de transport routier,Transport,PINS-METIER-133,Demander un agrément pour l'exercice du transport routier,SERVICES_CITOYENS,0.5000,1
+PINS-GUICHET-018,Effectuer le renouvellement d’un agrément de transport routier,Transport,PINS-METIER-074,Demander une mutation d'une autorisation de transport routier,SERVICES_CITOYENS,0.4839,2
+PINS-GUICHET-018,Effectuer le renouvellement d’un agrément de transport routier,Transport,PINS-METIER-280,Demander un renouvellement ou un duplicata du permis de conduire,SERVICES_CITOYENS,0.4688,3
+PINS-GUICHET-019,Effectuer une demande de licence de transport,Transport,PINS-METIER-357,Faire une demande de location d'un corbillard,SERVICES_CITOYENS,0.4667,1
+PINS-GUICHET-019,Effectuer une demande de licence de transport,Transport,PINS-METIER-133,Demander un agrément pour l'exercice du transport routier,SERVICES_CITOYENS,0.4211,2
+PINS-GUICHET-019,Effectuer une demande de licence de transport,Transport,PINS-METIER-074,Demander une mutation d'une autorisation de transport routier,SERVICES_CITOYENS,0.4098,3
+PINS-GUICHET-020,Effectuer le remplacement d’une licence,Transport,PINS-METIER-075,Effectuer la réception par type d'un véhicule,SERVICES_CITOYENS,0.5111,1
+PINS-GUICHET-020,Effectuer le remplacement d’une licence,Transport,PINS-METIER-268,Demander le remboursement d'une caution de rapatriement,SERVICES_CITOYENS,0.4182,2
+PINS-GUICHET-020,Effectuer le remplacement d’une licence,Transport,PINS-METIER-067,Faire le dépôt légal d'un imprimé,SERVICES_CITOYENS,0.3846,3
+PINS-GUICHET-021,Immatriculer un véhicule,Transport,PINS-METIER-058,Immatriculation d'un véhicule (carte grise),SERVICES_CITOYENS,0.5366,1
+PINS-GUICHET-021,Immatriculer un véhicule,Transport,PINS-TECH-0101,Vérification d'immatriculation d'un véhicule,SERVICES_CITOYENS,0.5000,2
+PINS-GUICHET-021,Immatriculer un véhicule,Transport,PINS-METIER-059,Visite technique de véhicule,SERVICES_CITOYENS,0.4643,3
+PINS-GUICHET-022,Effectuer la visite technique,Transport,PINS-TECH-0102,Vérification de visite technique,SERVICES_CITOYENS,0.6875,1
+PINS-GUICHET-022,Effectuer la visite technique,Transport,PINS-METIER-059,Visite technique de véhicule,SERVICES_CITOYENS,0.5000,2
+PINS-GUICHET-022,Effectuer la visite technique,Transport,PINS-METIER-075,Effectuer la réception par type d'un véhicule,SERVICES_CITOYENS,0.4667,3
+PINS-GUICHET-023,"Demander la mutation d’un véhicule (prendre en compte tous les cas) la mutation peut être considéré comme un changement de nom, de région ou de département.)",Transport,PINS-METIER-278,Effectuer la mutation d'un véhicule (prendre en compte tous les cas),SERVICES_CITOYENS,0.3816,1
+PINS-GUICHET-023,"Demander la mutation d’un véhicule (prendre en compte tous les cas) la mutation peut être considéré comme un changement de nom, de région ou de département.)",Transport,PINS-METIER-405,"Demander un logement ou un terrain à usage d'habitation, de bureaux, de commerce, de garage ou autres à la SICAP SA",SERVICES_CITOYENS,0.3750,2
+PINS-GUICHET-023,"Demander la mutation d’un véhicule (prendre en compte tous les cas) la mutation peut être considéré comme un changement de nom, de région ou de département.)",Transport,PINS-METIER-370,Demander une allocation de congés de maternité (pour un agent non fonctionnaire de l'Etat),SERVICES_CITOYENS,0.3618,3
+PINS-GUICHET-024,Demander le remplacement d’une carte grise (L’opération permet de changer une carte grise format papier en une carte numérisée sécurisée à puce),Transport,PINS-METIER-405,"Demander un logement ou un terrain à usage d'habitation, de bureaux, de commerce, de garage ou autres à la SICAP SA",SERVICES_CITOYENS,0.3732,1
+PINS-GUICHET-024,Demander le remplacement d’une carte grise (L’opération permet de changer une carte grise format papier en une carte numérisée sécurisée à puce),Transport,PINS-METIER-370,Demander une allocation de congés de maternité (pour un agent non fonctionnaire de l'Etat),SERVICES_CITOYENS,0.3662,2
+PINS-GUICHET-024,Demander le remplacement d’une carte grise (L’opération permet de changer une carte grise format papier en une carte numérisée sécurisée à puce),Transport,PINS-METIER-387,Demander le placement d'un enfant mineur dans les centres spécialisés,SERVICES_CITOYENS,0.3592,3
+PINS-GUICHET-034,Déclaration annuelle de la situation de la main d'œuvre,Travail et Sécurité Sociale,PINS-METIER-513,Déclaration mensuelle des salaires (DUS) CSS/IPRES,PROTECTION_SOCIALE,0.5185,1
+PINS-GUICHET-034,Déclaration annuelle de la situation de la main d'œuvre,Travail et Sécurité Sociale,PINS-TECH-5034,Déclaration mensuelle des salaires (DUS),PROTECTION_SOCIALE,0.5185,2
+PINS-GUICHET-034,Déclaration annuelle de la situation de la main d'œuvre,Travail et Sécurité Sociale,PINS-METIER-015,Déclaration d'accident du travail,PROTECTION_SOCIALE,0.4074,3
+PINS-GUICHET-035,Bilan social,Travail et Sécurité Sociale,PINS-TECH-5035,Historique des cotisations sociales,PROTECTION_SOCIALE,0.2857,1
+PINS-GUICHET-035,Bilan social,Travail et Sécurité Sociale,PINS-TECH-5032,Attestation de régularité sociale CSS,PROTECTION_SOCIALE,0.2703,2
+PINS-GUICHET-035,Bilan social,Travail et Sécurité Sociale,PINS-METIER-511,Affiliation employeur à la CSS,PROTECTION_SOCIALE,0.2667,3
+PINS-GUICHET-036,Attestation de régularité,Travail et Sécurité Sociale,PINS-TECH-5033,Attestation de régularité IPRES,PROTECTION_SOCIALE,0.8065,1
+PINS-GUICHET-036,Attestation de régularité,Travail et Sécurité Sociale,PINS-TECH-5032,Attestation de régularité sociale CSS,PROTECTION_SOCIALE,0.6757,2
+PINS-GUICHET-036,Attestation de régularité,Travail et Sécurité Sociale,PINS-METIER-014,Attestation de régularité sociale CSS / IPRES,PROTECTION_SOCIALE,0.5814,3
+PINS-GUICHET-057,Demande de diplôme du baccalauréat,Éducation,PINS-METIER-219,Retirer le diplôme du baccalauréat,EDUCATION,0.7941,1
+PINS-GUICHET-057,Demande de diplôme du baccalauréat,Éducation,PINS-METIER-218,S'inscrire à l'examen du baccalauréat,EDUCATION,0.5405,2
+PINS-GUICHET-057,Demande de diplôme du baccalauréat,Éducation,PINS-METIER-048,Demande d'équivalence de diplôme,EDUCATION,0.5000,3
+PINS-GUICHET-058,Demande de duplicata attestation Bac,Éducation,PINS-METIER-129,Demander une attestation de chômage,EMPLOI_FORMATION,0.4444,1
+PINS-GUICHET-058,Demande de duplicata attestation Bac,Éducation,PINS-METIER-049,Demande d'attestation de diplôme,EDUCATION,0.4167,2
+PINS-GUICHET-058,Demande de duplicata attestation Bac,Éducation,PINS-METIER-051,Demande d'attestation de non-emploi public,EMPLOI_FORMATION,0.3810,3
+PINS-GUICHET-059,Demander l’authenticité du diplôme du Baccalauréat,Éducation,PINS-METIER-219,Retirer le diplôme du baccalauréat,EDUCATION,0.6000,1
+PINS-GUICHET-059,Demander l’authenticité du diplôme du Baccalauréat,Éducation,PINS-METIER-196,Demander une Authentification de diplôme ou un duplicata de diplôme,EDUCATION,0.5522,2
+PINS-GUICHET-059,Demander l’authenticité du diplôme du Baccalauréat,Éducation,PINS-METIER-049,Demande d'attestation de diplôme,EDUCATION,0.4800,3
+PINS-GUICHET-060,Demande d'attestation spéciale,Éducation,PINS-METIER-049,Demande d'attestation de diplôme,EDUCATION,0.7813,1
+PINS-GUICHET-060,Demande d'attestation spéciale,Éducation,PINS-METIER-129,Demander une attestation de chômage,EMPLOI_FORMATION,0.6857,2
+PINS-GUICHET-060,Demande d'attestation spéciale,Éducation,PINS-METIER-051,Demande d'attestation de non-emploi public,EMPLOI_FORMATION,0.5952,3
+PINS-GUICHET-063,Demander l’orientation à l’Université,Éducation,PINS-METIER-049,Demande d'attestation de diplôme,EDUCATION,0.5405,1
+PINS-GUICHET-063,Demander l’orientation à l’Université,Éducation,PINS-METIER-129,Demander une attestation de chômage,EMPLOI_FORMATION,0.4865,2
+PINS-GUICHET-063,Demander l’orientation à l’Université,Éducation,PINS-METIER-051,Demande d'attestation de non-emploi public,EMPLOI_FORMATION,0.4524,3
+PINS-GUICHET-064,S’inscrire à l’université,Éducation,PINS-METIER-228,S'inscrire à l'examen d'entrée en sixième,EDUCATION,0.5122,1
+PINS-GUICHET-064,S’inscrire à l’université,Éducation,PINS-METIER-383,S'inscrire à l'université Gaston Berger de Saint-Louis,EDUCATION,0.4630,2
+PINS-GUICHET-064,S’inscrire à l’université,Éducation,PINS-METIER-218,S'inscrire à l'examen du baccalauréat,EDUCATION,0.4595,3
+PINS-GUICHET-065,Demander l’octroie d’une allocation d’étude à l’étranger ;,Éducation,PINS-METIER-129,Demander une attestation de chômage,EMPLOI_FORMATION,0.4464,1
+PINS-GUICHET-065,Demander l’octroie d’une allocation d’étude à l’étranger ;,Éducation,PINS-METIER-156,Demander l'autorisation de licenciement d'un délégué du personnel,EMPLOI_FORMATION,0.4308,2
+PINS-GUICHET-065,Demander l’octroie d’une allocation d’étude à l’étranger ;,Éducation,PINS-METIER-317,Demander à créer un journal d'information quotidien ou périodique,EDUCATION,0.4154,3
+PINS-GUICHET-066,Demander une bourse d’étude nationale ;,Éducation,PINS-METIER-129,Demander une attestation de chômage,EMPLOI_FORMATION,0.5405,1
+PINS-GUICHET-066,Demander une bourse d’étude nationale ;,Éducation,PINS-METIER-048,Demande d'équivalence de diplôme,EDUCATION,0.4324,2
+PINS-GUICHET-066,Demander une bourse d’étude nationale ;,Éducation,PINS-METIER-049,Demande d'attestation de diplôme,EDUCATION,0.4054,3
+PINS-GUICHET-067,Demander une bourse sociale ;,Éducation,PINS-METIER-129,Demander une attestation de chômage,EMPLOI_FORMATION,0.5143,1
+PINS-GUICHET-067,Demander une bourse sociale ;,Éducation,PINS-METIER-048,Demande d'équivalence de diplôme,EDUCATION,0.4063,2
+PINS-GUICHET-067,Demander une bourse sociale ;,Éducation,PINS-METIER-049,Demande d'attestation de diplôme,EDUCATION,0.4063,3
+PINS-GUICHET-068,Demander une aide ministérielle pour étudiant,Éducation,PINS-METIER-129,Demander une attestation de chômage,EMPLOI_FORMATION,0.4667,1
+PINS-GUICHET-068,Demander une aide ministérielle pour étudiant,Éducation,PINS-METIER-196,Demander une Authentification de diplôme ou un duplicata de diplôme,EDUCATION,0.4179,2
+PINS-GUICHET-068,Demander une aide ministérielle pour étudiant,Éducation,PINS-METIER-156,Demander l'autorisation de licenciement d'un délégué du personnel,EMPLOI_FORMATION,0.3692,3
+PINS-GUICHET-069,Demander un NICAD,Fiscalités et domaine,PINS-METIER-154,Demander un quitus fiscal,FINANCES_PUBLIQUES,0.6000,1
+PINS-GUICHET-069,Demander un NICAD,Fiscalités et domaine,PINS-METIER-173,Demander un certificat d'urbanisme,FONCIER_CADASTRE,0.4706,2
+PINS-GUICHET-069,Demander un NICAD,Fiscalités et domaine,PINS-METIER-388,Demander un logement administratif,FONCIER_CADASTRE,0.4412,3
+PINS-GUICHET-070,Demander la transformation d’un bail en Titre foncier,Fiscalités et domaine,PINS-METIER-124,"Demander la transformation d'un bail (droit de superficie, autorisation) en titre foncier",FONCIER_CADASTRE,0.6250,1
+PINS-GUICHET-070,Demander la transformation d’un bail en Titre foncier,Fiscalités et domaine,PINS-METIER-298,Demander la résiliation d'un bail,FONCIER_CADASTRE,0.5472,2
+PINS-GUICHET-070,Demander la transformation d’un bail en Titre foncier,Fiscalités et domaine,PINS-TECH-0072,Consultation d'un titre foncier,FONCIER_CADASTRE,0.5094,3
+PINS-GUICHET-071,Demander un extrait du plan Cadastral,Fiscalités et domaine,PINS-METIER-118,Demander un extrait de plan cadastral certifié,FONCIER_CADASTRE,0.8000,1
+PINS-GUICHET-071,Demander un extrait du plan Cadastral,Fiscalités et domaine,PINS-METIER-154,Demander un quitus fiscal,FINANCES_PUBLIQUES,0.5135,2
+PINS-GUICHET-071,Demander un extrait du plan Cadastral,Fiscalités et domaine,PINS-METIER-173,Demander un certificat d'urbanisme,FONCIER_CADASTRE,0.4865,3
+PINS-GUICHET-072,Demander un bail,Fiscalités et domaine,PINS-METIER-298,Demander la résiliation d'un bail,FONCIER_CADASTRE,0.6667,1
+PINS-GUICHET-072,Demander un bail,Fiscalités et domaine,PINS-METIER-154,Demander un quitus fiscal,FINANCES_PUBLIQUES,0.5600,2
+PINS-GUICHET-072,Demander un bail,Fiscalités et domaine,PINS-METIER-166,Demander une imputation budgétaire,FINANCES_PUBLIQUES,0.4412,3
+PINS-GUICHET-073,Payer l’impôt sur le bail,Fiscalités et domaine,PINS-METIER-601,Payer l'impôt sur les sociétés,FINANCES_PUBLIQUES,0.7333,1
+PINS-GUICHET-073,Payer l’impôt sur le bail,Fiscalités et domaine,PINS-METIER-157,Payer la patente sur véhicule,FINANCES_PUBLIQUES,0.5517,2
+PINS-GUICHET-073,Payer l’impôt sur le bail,Fiscalités et domaine,PINS-METIER-298,Demander la résiliation d'un bail,FONCIER_CADASTRE,0.4242,3
+PINS-GUICHET-074,Bénéficier du plan sésame,Sante / protection sociale,PINS-METIER-322,Demander à bénéficier de l'aide aux organes de presse,SANTE_NUMERIQUE,0.3585,1
+PINS-GUICHET-074,Bénéficier du plan sésame,Sante / protection sociale,PINS-METIER-313,Demande de création d'une officine de pharmacie,SANTE_NUMERIQUE,0.3191,2
+PINS-GUICHET-074,Bénéficier du plan sésame,Sante / protection sociale,PINS-TECH-5031,Vérification d'affiliation IPRES,PROTECTION_SOCIALE,0.3125,3
+PINS-GUICHET-075,Bénéficier de la carte d’égalité des chances,Sante / protection sociale,PINS-METIER-056,Demande de carte d'égalité des chances (handicap),PROTECTION_SOCIALE,0.5745,1
+PINS-GUICHET-075,Bénéficier de la carte d’égalité des chances,Sante / protection sociale,PINS-METIER-322,Demander à bénéficier de l'aide aux organes de presse,SANTE_NUMERIQUE,0.4151,2
+PINS-GUICHET-075,Bénéficier de la carte d’égalité des chances,Sante / protection sociale,PINS-METIER-014,Attestation de régularité sociale CSS / IPRES,PROTECTION_SOCIALE,0.3636,3
+PINS-GUICHET-076,Demander la création d’une mutuelle de santé,Sante / protection sociale,PINS-METIER-334,Demander un agrément pour une mutuelle de santé,SANTE_NUMERIQUE,0.7447,1
+PINS-GUICHET-076,Demander la création d’une mutuelle de santé,Sante / protection sociale,PINS-METIER-313,Demande de création d'une officine de pharmacie,SANTE_NUMERIQUE,0.6383,2
+PINS-GUICHET-076,Demander la création d’une mutuelle de santé,Sante / protection sociale,PINS-METIER-079,Demande de création d'un dépôt privé de médicaments,SANTE_NUMERIQUE,0.5882,3
+PINS-GUICHET-077,"Bénéficier de la Gratuité des soins : césarienne, enfant de moins de 5ans et dialyse",Sante / protection sociale,PINS-METIER-091,Demander une attestation de non retard de paiement de salaires,PROTECTION_SOCIALE,0.3704,1
+PINS-GUICHET-077,"Bénéficier de la Gratuité des soins : césarienne, enfant de moins de 5ans et dialyse",Sante / protection sociale,PINS-METIER-399,Demander l'octroi d'une allocation d'étude à l'étranger (bourse),PROTECTION_SOCIALE,0.3333,2
+PINS-GUICHET-077,"Bénéficier de la Gratuité des soins : césarienne, enfant de moins de 5ans et dialyse",Sante / protection sociale,PINS-METIER-365,Demander la vérification de l'affiliation à l'Institution de prévoyance retraite du Sénégal (IPRES),PROTECTION_SOCIALE,0.3299,3
+PINS-GUICHET-086,Demande de carte d'identité nationale,Citoyenneté,PINS-METIER-039,Demande de Carte Nationale d'Identité (CNI),IDENTITE_NUMERIQUE,0.8000,1
+PINS-GUICHET-086,Demande de carte d'identité nationale,Citoyenneté,PINS-METIER-041,Demande de certificat de nationalité,IDENTITE_NUMERIQUE,0.6757,2
+PINS-GUICHET-086,Demande de carte d'identité nationale,Citoyenneté,PINS-METIER-186,Demander un carnet de vaccination international,SERVICES_CITOYENS,0.5957,3
+PINS-GUICHET-087,Demande de renouvellement de CNI,Citoyenneté,PINS-METIER-003,Demande et renouvellement de passeport,SERVICES_CITOYENS,0.7105,1
+PINS-GUICHET-087,Demande de renouvellement de CNI,Citoyenneté,PINS-METIER-039,Demande de Carte Nationale d'Identité (CNI),IDENTITE_NUMERIQUE,0.5854,2
+PINS-GUICHET-087,Demande de renouvellement de CNI,Citoyenneté,PINS-METIER-187,Demander un regroupement familial,SERVICES_CITOYENS,0.5152,3
+PINS-GUICHET-095,"Organisation Concours d'entré( ENA,douanes,CFJ Greffiers,Magistrat)",Éducation,PINS-METIER-215,Se présenter au concours d'entrée à l'Ecole nationale de formation en économie familiale et sociale (ENFEFS),EDUCATION,0.3491,1
+PINS-GUICHET-095,"Organisation Concours d'entré( ENA,douanes,CFJ Greffiers,Magistrat)",Éducation,PINS-METIER-217,Se présenter au concours d'entrée au centre de formation professionnelle et commerciale (CFPC),EMPLOI_FORMATION,0.3478,2
+PINS-GUICHET-095,"Organisation Concours d'entré( ENA,douanes,CFJ Greffiers,Magistrat)",Éducation,PINS-METIER-010,Orientation et inscription universitaire (CAMPUSEN),EDUCATION,0.2923,3
+PINS-GUICHET-100,Demander un bon de formation à la 3FPT,Formation professsonnelle,PINS-METIER-129,Demander une attestation de chômage,EMPLOI_FORMATION,0.4737,1
+PINS-GUICHET-100,Demander un bon de formation à la 3FPT,Formation professsonnelle,PINS-METIER-317,Demander à créer un journal d'information quotidien ou périodique,EDUCATION,0.4308,2
+PINS-GUICHET-100,Demander un bon de formation à la 3FPT,Formation professsonnelle,PINS-METIER-049,Demande d'attestation de diplôme,EDUCATION,0.4211,3
