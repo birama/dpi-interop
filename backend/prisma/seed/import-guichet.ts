@@ -64,7 +64,11 @@ function normalizePublicCible(raw: string | null | undefined): PublicCibleEnum |
 function normalizeNullable(raw: string | null | undefined): string | null {
   if (raw === null || raw === undefined) return null;
   const s = raw.toString().trim();
-  return s.length === 0 ? null : s;
+  if (s.length === 0) return null;
+  // Artefact de sérialisation Python : la chaîne littérale "None" reflète une
+  // valeur null amont — on la ramène à NULL en base.
+  if (s === 'None') return null;
+  return s;
 }
 
 function buildPriorisationJson(d: DemarcheGuichet): Record<string, unknown> | null {
