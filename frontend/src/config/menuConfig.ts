@@ -17,6 +17,7 @@ import {
   Gauge, Map as MapIcon, Scale, UserCheck, Network,
   Grid3X3, Wallet, Radar, Shield, BarChart3, Upload, Inbox, Briefcase, Tags,
   Users as UsersGroup,
+  Globe,
 } from 'lucide-react';
 
 // Re-export types pour MenuConfig utilise dans DashboardLayout
@@ -74,6 +75,7 @@ export const MENU_SECTIONS: MenuSection[] = [
       { name: 'Parcours metier', href: '/catalogue/parcours-metier', icon: UsersIcon },
       { name: 'Services techniques', href: '/catalogue/services-techniques', icon: Cog },
       { name: 'Couverture referentiels', href: '/registres/couverture', icon: Database },
+      { name: 'Correspondance e-senegal', href: '/catalogue/correspondance-esenegal', icon: Globe },
     ],
   },
   {

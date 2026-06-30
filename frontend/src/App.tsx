@@ -39,6 +39,7 @@ import { RegistresCouverturePage } from '@/modules/vue360/registres/RegistresCou
 import { CataloguePropositionsPage } from '@/modules/vue360/catalogue/CataloguePropositionsPage';
 import { PropositionDetailPage } from '@/modules/vue360/catalogue/PropositionDetailPage';
 import { ParcoursMetierPage, ServicesTechniquesPage } from '@/modules/vue360/catalogue/TypologieListPage';
+import { CorrespondanceEsenegalPage } from '@/pages/CorrespondanceEsenegalPage';
 import { AdoptionRequestsPage } from '@/modules/vue360/du/AdoptionRequestsPage';
 import { DocumentsPage } from '@/pages/DocumentsPage';
 import { NotFoundPage } from '@/pages/NotFoundPage';
@@ -437,6 +438,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <ServicesTechniquesPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/catalogue/correspondance-esenegal"
+            element={
+              <ProtectedRoute>
+                <CorrespondanceEsenegalPage />
               </ProtectedRoute>
             }
           />
