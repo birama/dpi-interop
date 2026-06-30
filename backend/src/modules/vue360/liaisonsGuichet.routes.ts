@@ -252,7 +252,11 @@ export async function liaisonsGuichetRoutes(app: FastifyInstance) {
     let citoyen = 0;
     let entreprise = 0;
     let mixte = 0;
+    // Split exposition e-sénégal : "En ligne" et "En ligne mais Non utilisée"
+    // sont distinctement utiles. La page UI les somme pour "exposé sur e-sénégal"
+    // et affiche la sous-nuance non utilisé au survol.
     let exposeEnLigne = 0;
+    let exposeNonUtilise = 0;
     let casAvecLiaison = 0;
     const serviceIdsCount = new Set<string>();
     for (const cu of cus) {
@@ -264,6 +268,7 @@ export async function liaisonsGuichetRoutes(app: FastifyInstance) {
         else if (sg.publicCible === 'ENTREPRISE') entreprise++;
         else if (sg.publicCible === 'MIXTE') mixte++;
         if (sg.statutEsenegal === 'En ligne') exposeEnLigne++;
+        else if (sg.statutEsenegal === 'En ligne mais Non utilisée') exposeNonUtilise++;
       }
     }
 
@@ -276,6 +281,7 @@ export async function liaisonsGuichetRoutes(app: FastifyInstance) {
       liaisonsEntreprise: entreprise,
       liaisonsMixte: mixte,
       liaisonsExposeEnLigne: exposeEnLigne,
+      liaisonsExposeNonUtilise: exposeNonUtilise,
     };
 
     return reply.send({ kpis, items: cus });
