@@ -30,6 +30,10 @@ model User {
   ptf            PTF?      @relation(fields: [ptfId], references: [id])
   cguAccepteesAt DateTime?
 
+  // Organisation (AMO/prestataires — role PARTENAIRE_TECHNIQUE)
+  organisationId String?
+  organisation   Organisation? @relation(fields: [organisationId], references: [id])
+
   // Audit
   lastLoginAt DateTime?
   createdAt   DateTime  @default(now())
@@ -64,9 +68,156 @@ model User {
 }
 
 enum Role {
-  ADMIN // SENUM/MCTN
-  INSTITUTION // Administrations sectorielles
-  BAILLEUR // Partenaires Techniques et Financiers (libellé UI : PTF)
+  ADMIN
+  INSTITUTION
+  BAILLEUR
+  PARTENAIRE_TECHNIQUE // AMO, prestataires d'accompagnement (ex: Accenture)
+}
+
+enum OrganisationType {
+  CABINET_CONSEIL
+  INTEGRATEUR
+  EDITEUR
+  EXPERT_INDEPENDANT
+}
+
+enum OrganisationStatus {
+  ACTIF
+  INACTIF
+  ARCHIVE
+}
+
+model Organisation {
+  id                    String             @id // code (ex: ACCENTURE)
+  nom                   String
+  type                  OrganisationType
+  secteurAccompagnement String?            @db.Text
+  dateRattachement      DateTime?
+  dateFinPrevue         DateTime?
+  statut                OrganisationStatus @default(ACTIF)
+  users                 User[]
+  accompagnements       AccompagnementAMO[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("organisations")
+}
+
+// ============================================================================
+// ACCOMPAGNEMENT AMO — ÉNUMÉRATIONS ET MODÈLES (P14-CONC)
+// ============================================================================
+
+enum TypeAccompagnement {
+  ROADMAP_V0
+  ROADMAP_V1
+  IMPLEMENTATION
+  AUDIT
+  STANDARDISATION
+  FORMATION
+  AUTRE
+}
+
+enum StatutAccompagnement {
+  ACTIF
+  SUSPENDU
+  TERMINE
+}
+
+enum TypeJalon {
+  DIAGNOSTIC
+  CADRAGE
+  POC
+  IMPLEMENTATION
+  RECETTE
+  MISE_EN_PRODUCTION
+  AUDIT_QUALITE
+  AUTRE
+}
+
+enum StatutJalon {
+  PLANIFIE
+  EN_COURS
+  REALISE
+  REPORTE
+  ANNULE
+}
+
+enum VisibiliteCommentaire {
+  DU_ET_AMO
+  DU_ONLY
+  AMO_ONLY
+}
+
+/// Accompagnement AMO d'un cas d'usage par une organisation (cabinet conseil, intégrateur)
+/// N-N Organisation ↔ CasUsageMVP avec payload de suivi
+model AccompagnementAMO {
+  id              String               @id @default(uuid())
+  organisationId  String
+  organisation    Organisation         @relation(fields: [organisationId], references: [id])
+  casUsageMVPId   String
+  casUsageMVP     CasUsageMVP          @relation(fields: [casUsageMVPId], references: [id], onDelete: Cascade)
+
+  type            TypeAccompagnement
+  statut          StatutAccompagnement @default(ACTIF)
+  scoreMaturite   Int?                 @db.SmallInt
+  description     String?              @db.Text
+  dateDebut       DateTime?
+  dateFinPrevue   DateTime?
+  dateFinEffective DateTime?
+
+  jalons      JalonAccompagnement[]
+  commentaires CommentaireAMO[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([organisationId, casUsageMVPId])
+  @@index([organisationId])
+  @@index([casUsageMVPId])
+  @@index([statut])
+  @@map("accompagnement_amo")
+}
+
+/// Jalon d'un accompagnement AMO (feuille de route)
+model JalonAccompagnement {
+  id                String              @id @default(uuid())
+  accompagnementId  String
+  accompagnement    AccompagnementAMO   @relation(fields: [accompagnementId], references: [id], onDelete: Cascade)
+
+  type        TypeJalon
+  libelle     String
+  description String?             @db.Text
+  trimestre   String?             // ex: "Q3 2026"
+  statut      StatutJalon         @default(PLANIFIE)
+  ordre       Int                 @default(0)
+  datePrevue  DateTime?
+  dateReelle  DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([accompagnementId])
+  @@index([statut])
+  @@index([trimestre])
+  @@map("jalon_accompagnement")
+}
+
+/// Commentaire interne dans le cadre d'un accompagnement AMO
+model CommentaireAMO {
+  id                String              @id @default(uuid())
+  accompagnementId  String
+  accompagnement    AccompagnementAMO   @relation(fields: [accompagnementId], references: [id], onDelete: Cascade)
+
+  contenu     String                  @db.Text
+  visibilite  VisibiliteCommentaire   @default(DU_ET_AMO)
+  createdBy   String
+  createdAt   DateTime                @default(now())
+  updatedAt   DateTime                @updatedAt
+
+  @@index([accompagnementId])
+  @@index([createdAt])
+  @@map("commentaire_amo")
 }
 
 // ============================================================================
@@ -1025,6 +1176,9 @@ model CasUsageMVP {
   institutionCibleCode  String?
   autresInstitutions    String?
   donneesEchangees      String?
+  donneesEntree         String?                 @db.Text // Contrat : données d'entrée (clé d'appel)
+  donneesSortie         String?                 @db.Text // Contrat : données de sortie (réponse)
+  donneesLecture        String?                 @db.Text // Contrat : données lues dans le registre producteur
   registresConcernes    String?
   axePrioritaire        String?
   impact                ImpactLevel          @default(MOYEN)
@@ -1038,6 +1192,7 @@ model CasUsageMVP {
   financements          Financement[]
   declarationsInst      CasUsage[]
   fluxInstitutions      FluxInstitution[]
+  accompagnementsAMO    AccompagnementAMO[]
   dateIdentification    DateTime?
   dateLancement         DateTime?
   dateMiseEnProd        DateTime?
@@ -1069,7 +1224,7 @@ model CasUsageMVP {
   adoptionRequests        AdoptionRequest[]
 
   // Typologie (P9)
-  typologie              TypologieCasUsage @default(TECHNIQUE)
+  typologie              TypologieCasUsage // PAS de défaut : doit être explicitement positionné à la création
   reclassementsTypologie Json? // [{from, to, motif, auteurUserId, auteurNom, date}]
 
   // Liaison conventions (P9)
@@ -1087,6 +1242,12 @@ model CasUsageMVP {
   // PTF Phase 2 — Relations vers les manifestations partenaires
   manifestations ManifestationInteret[]
 
+  // New Deal Technologique — Projets nationaux associés
+  casUsageProjets CasUsageProjet[]
+
+  // Faisabilité (atelier use cases potentiels)
+  faisabilite FaisabiliteCas?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -1099,6 +1260,37 @@ model CasUsageMVP {
   @@index([aFinancer])
   @@index([domaine])
   @@map("cas_usage_mvp")
+}
+
+// ============================================================================
+// FAISABILITÉ — Évaluation brute des propositions (atelier use cases potentiels)
+// ============================================================================
+
+model FaisabiliteCas {
+  id        String @id @default(uuid())
+  casUsageId String @unique
+  casUsage   CasUsageMVP @relation(fields: [casUsageId], references: [id], onDelete: Cascade)
+
+  // Juridique
+  partageLegalementAutorise     Boolean // Q1+: Le partage est-il légalement autorisé ?
+  contraintesBloquantesProtection Boolean // Q1-: Existe-t-il des contraintes bloquantes ?
+  // Institutionnelle
+  institutionsAptesAPartager    Boolean // Q2+: Les institutions sont-elles aptes à partager ?
+  obstaclesCoordination         Boolean // Q2-: Existe-t-il des obstacles à la coordination ?
+  // Gouvernance
+  proprieteDonneesDefinie       Boolean // Q3+: La propriété des données est-elle définie ?
+  incoherencesNormes            Boolean // Q3-: Existe-t-il des incohérences de normes ?
+  // Technique
+  systemesPrennentEnCharge      Boolean // Q4+: Les systèmes peuvent-ils prendre en charge ?
+  infraDisponible               Boolean // Q4+: L'infrastructure est-elle disponible ?
+
+  source  String @default("Atelier - TABLEAU_DES_USE_CASE_POTENTIELS.xlsx")
+  notes   String? @db.Text // Points à confirmer
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("faisabilite_cas")
 }
 
 enum ImpactLevel {
@@ -1519,6 +1711,46 @@ model CasUsageRegistre {
 // ============================================================================
 // DOCUMENTS DE RÉFÉRENCE (espace documentaire)
 // ============================================================================
+
+// ============================================================================
+// NEW DEAL TECHNOLOGIQUE — PROGRAMMES PRIORITAIRES ET PROJETS NATIONAUX
+// ============================================================================
+
+model ProgrammePrioritaire {
+  id        String            @id @default(uuid())
+  code      String            @unique // PR-P01 à PR-P12
+  nom       String
+  domaine   String?           @db.Text
+  finalite  String?           @db.Text
+  projets   ProjetNational[]
+
+  @@map("programme_prioritaire")
+}
+
+model ProjetNational {
+  id                     String               @id @default(uuid())
+  code                   String               @unique // PRJ_1.1 à PRJ_12.3
+  nom                    String
+  programmePrioritaireId String
+  programmePrioritaire   ProgrammePrioritaire @relation(fields: [programmePrioritaireId], references: [id])
+  budgetEstimatif        Float?               // milliards FCFA
+  finalite               String?              @db.Text
+  casUsageProjets        CasUsageProjet[]
+
+  @@index([programmePrioritaireId])
+  @@map("projet_national")
+}
+
+model CasUsageProjet {
+  id               String         @id @default(uuid())
+  casUsageMVPId    String
+  projetNationalId String
+  casUsageMVP      CasUsageMVP    @relation(fields: [casUsageMVPId], references: [id], onDelete: Cascade)
+  projetNational   ProjetNational @relation(fields: [projetNationalId], references: [id], onDelete: Cascade)
+
+  @@unique([casUsageMVPId, projetNationalId])
+  @@map("cas_usage_projet")
+}
 
 model DocumentReference {
   id              String   @id @default(uuid())

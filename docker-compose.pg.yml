@@ -1,0 +1,41 @@
+# PostgreSQL 15 — Base de données PINS (sécurisé)
+# Accessible UNIQUEMENT via le réseau Docker interne pins-net
+# Aucun port exposé sur l'hôte
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: pins-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: pins
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: questionnaire_interop
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - pins-net
+    security_opt:
+      - no-new-privileges:true
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pins -d questionnaire_interop"]
+      interval: 10s
+      timeout: 5s
+      start_period: 30s
+      retries: 5
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  pins-net:
+    driver: bridge
+    internal: false

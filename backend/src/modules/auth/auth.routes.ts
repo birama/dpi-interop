@@ -23,6 +23,12 @@ export async function authRoutes(app: FastifyInstance) {
       description: 'Se connecter et obtenir un token JWT',
       ...authSchemas.login,
     },
+    config: {
+      rateLimit: {
+        max: 5,
+        timeWindow: 15 * 60 * 1000, // 15 minutes
+      },
+    },
     handler: authController.login.bind(authController),
   });
 

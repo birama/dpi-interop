@@ -180,6 +180,11 @@ function PropositionCard({ proposition, userInstitutionId }: { proposition: any;
                 {matBadge.label}
               </span>
             )}
+            {proposition.donneesEntree && proposition.donneesSortie && proposition.donneesLecture && (
+              <span className="inline-flex items-center text-[10px] font-semibold px-2 py-0.5 rounded bg-teal-50 text-teal-700 border border-teal-200">
+                Documenté
+              </span>
+            )}
           </div>
           <h3 className="text-sm font-bold text-navy mt-1.5 line-clamp-2">{proposition.titre}</h3>
         </div>

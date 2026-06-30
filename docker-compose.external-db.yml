@@ -1,24 +1,30 @@
-version: '3.8'
-
+# PINS — Docker Compose Production (DB externe, sécurisé, HTTPS actif)
+# PostgreSQL géré par docker-compose.pg.yml (réseau pins-net partagé)
 services:
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    restart: always
-    environment:
-      NODE_ENV: production
-      HOST: 0.0.0.0
-      PORT: 3000
-      DATABASE_URL: ${DATABASE_URL}
-      JWT_SECRET: ${JWT_SECRET:-change-me-production-64-chars-minimum-security-key-here}
-      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
-      CORS_ORIGIN: ${CORS_ORIGIN:-*}
-      RATE_LIMIT_MAX: 200
-      RATE_LIMIT_TIMEWINDOW: 60000
-      LOG_LEVEL: info
+    container_name: pins-api
+    restart: unless-stopped
+    env_file:
+      - backend/.env
+    networks:
+      - pins-net
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '0.25'
+          memory: 256M
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/health"]
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1:3000/health"]
       interval: 30s
       timeout: 5s
       start_period: 60s
@@ -31,9 +37,30 @@ services:
       target: production
       args:
         VITE_API_URL: ${VITE_API_URL:-}
-    restart: always
+    container_name: pins-frontend
+    restart: unless-stopped
     ports:
-      - "${APP_PORT:-80}:80"
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /opt/dpi-interop/certs:/etc/nginx/certs:ro
+    networks:
+      - pins-net
+    security_opt:
+      - no-new-privileges:true
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+        reservations:
+          cpus: '0.1'
+          memory: 128M
     depends_on:
       backend:
         condition: service_healthy
+
+networks:
+  pins-net:
+    driver: bridge
+    internal: false

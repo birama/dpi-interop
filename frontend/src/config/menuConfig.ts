@@ -15,7 +15,7 @@ import {
   FolderOpen, Users as UsersIcon, Cog, Database,
   Building2, BookOpen, FileCheck, Layers,
   Gauge, Map as MapIcon, Scale, UserCheck, Network,
-  Grid3X3, Wallet, Radar, Shield, BarChart3, Upload,
+  Grid3X3, Wallet, Radar, Shield, BarChart3, Upload, Inbox, Briefcase, Tags,
   Users as UsersGroup,
 } from 'lucide-react';
 
@@ -25,10 +25,10 @@ export interface MenuItem {
   href: string;
   icon: LucideIcon;
   /** Nom du compteur contextuel a afficher (badge a droite), si fourni */
-  counter?: 'mesCasUsage' | 'adoptionRequestsEnAttente' | 'desaccords';
+  counter?: 'mesCasUsage' | 'adoptionRequestsEnAttente' | 'desaccords' | 'manifestationsEnValidation';
   /** Rubrique reservee a certains roles — redondant avec section.roles mais
    *  permet des exceptions fines */
-  roles?: Array<'INSTITUTION' | 'ADMIN'>;
+  roles?: Array<'INSTITUTION' | 'ADMIN' | 'PARTENAIRE_TECHNIQUE'>;
 }
 
 export interface MenuSection {
@@ -36,7 +36,7 @@ export interface MenuSection {
   label: string;
   icon: LucideIcon;
   /** Roles autorises a voir cette rubrique */
-  roles: Array<'INSTITUTION' | 'ADMIN'>;
+  roles: Array<'INSTITUTION' | 'ADMIN' | 'PARTENAIRE_TECHNIQUE'>;
   items: MenuItem[];
 }
 
@@ -64,7 +64,7 @@ export const MENU_SECTIONS: MenuSection[] = [
     id: 'catalogue',
     label: 'Catalogue',
     icon: FolderOpen,
-    roles: ['INSTITUTION', 'ADMIN'],
+    roles: ['INSTITUTION', 'ADMIN', 'PARTENAIRE_TECHNIQUE'],
     items: [
       { name: 'Propositions', href: '/catalogue/propositions', icon: FolderOpen },
       // "Cas d'usage actifs" = page Kanban /admin/qualification, reservee a la DU.
@@ -80,7 +80,7 @@ export const MENU_SECTIONS: MenuSection[] = [
     id: 'ecosysteme',
     label: 'Ecosysteme',
     icon: Network,
-    roles: ['INSTITUTION', 'ADMIN'],
+    roles: ['INSTITUTION', 'ADMIN', 'PARTENAIRE_TECHNIQUE'],
     items: [
       { name: 'Institutions', href: '/institutions', icon: Building2 },
       { name: 'Registres nationaux', href: '/admin/registres-nationaux', icon: Database },
@@ -102,12 +102,27 @@ export const MENU_SECTIONS: MenuSection[] = [
       { name: 'Pipeline X-Road', href: '/admin/xroad-pipeline', icon: Network },
       { name: 'Graphe des flux', href: '/admin/graphe', icon: Grid3X3 },
       { name: 'Matrice des flux', href: '/matrice', icon: Grid3X3 },
-      { name: 'Financements', href: '/admin/financements', icon: Wallet },
       { name: 'Radar de maturite', href: '/maturite', icon: Radar },
       { name: 'Soumissions', href: '/submissions', icon: FileCheck },
       { name: 'Audit & Sessions', href: '/admin/audit', icon: Shield },
       { name: 'Rapports', href: '/reports', icon: BarChart3 },
       { name: 'Import Word', href: '/admin/import', icon: Upload },
+    ],
+  },
+  {
+    // Rubrique parente PTF — atelier 19/05/2026 puis Phase 5+6 (juin 2026).
+    // Du plus structurant (annuaire) au plus prospectif (tableau de bord agrégé).
+    id: 'partenaires-ptf',
+    label: 'Partenaires PTF',
+    icon: Briefcase,
+    roles: ['ADMIN'],
+    items: [
+      { name: 'Annuaire PTF', href: '/admin/ptf', icon: Building2 },
+      { name: 'Annuaire AMO', href: '/admin/organisations', icon: UsersGroup },
+      { name: 'Manifestations', href: '/admin/manifestations', icon: Inbox, counter: 'manifestationsEnValidation' },
+      { name: 'Financements', href: '/admin/financements', icon: Wallet },
+      { name: 'Domaines d\'interet', href: '/admin/ptf-domaines', icon: Tags },
+      { name: 'Tableau de bord PTF', href: '/admin/ptf-dashboard', icon: BarChart3 },
     ],
   },
   {
@@ -119,13 +134,25 @@ export const MENU_SECTIONS: MenuSection[] = [
       { name: 'Utilisateurs', href: '/admin/utilisateurs', icon: UsersGroup },
     ],
   },
+  {
+    // P13-CONC — Espace Partenaire Technique (AMO)
+    id: 'espace-amo',
+    label: 'Mon espace',
+    icon: UserCheck,
+    roles: ['PARTENAIRE_TECHNIQUE'],
+    items: [
+      { name: 'Tableau de bord', href: '/partenaire-tech/dashboard', icon: LayoutDashboard },
+      { name: 'Mes cas accompagnés', href: '/partenaire-tech/mes-cas', icon: ListChecks },
+      { name: 'Mon profil', href: '/partenaire-tech/profil', icon: UserCheck },
+    ],
+  },
 ];
 
 /**
  * Filtre les sections visibles selon le role user.
  * Puis filtre les items dans chaque section (roles specifiques).
  */
-export function visibleSections(role: 'ADMIN' | 'INSTITUTION' | undefined): MenuSection[] {
+export function visibleSections(role: 'ADMIN' | 'INSTITUTION' | 'PARTENAIRE_TECHNIQUE' | undefined): MenuSection[] {
   if (!role) return [];
   return MENU_SECTIONS
     .filter(s => s.roles.includes(role))
@@ -142,7 +169,7 @@ export function visibleSections(role: 'ADMIN' | 'INSTITUTION' | undefined): Menu
  * est filtre (ex: /submissions pour ADMIN ne doit pas retourner "mon-espace"
  * car "Mes soumissions" y est masque pour ADMIN).
  */
-export function findSectionForPath(path: string, role?: 'ADMIN' | 'INSTITUTION'): string | null {
+export function findSectionForPath(path: string, role?: 'ADMIN' | 'INSTITUTION' | 'PARTENAIRE_TECHNIQUE'): string | null {
   for (const section of MENU_SECTIONS) {
     if (role && !section.roles.includes(role)) continue;
     for (const item of section.items) {

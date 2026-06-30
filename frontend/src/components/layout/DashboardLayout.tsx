@@ -22,7 +22,7 @@ import { Breadcrumb } from '@/components/Breadcrumb';
 import { NotificationsBell } from '@/modules/vue360/notifications/NotificationsBell';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '@/services/api';
-import { MENU_SECTIONS, MENU_TOP, findSectionForPath, type MenuItem } from '@/config/menuConfig';
+import { MENU_TOP, findSectionForPath, visibleSections, type MenuItem } from '@/config/menuConfig';
 import { useInactivityLogout } from '@/hooks/useInactivityLogout';
 
 // Aligné avec le TTL backend (cleanup automatique des sessions > 10 min sans activité)
@@ -58,19 +58,15 @@ export function DashboardLayout() {
   });
 
   const isBailleur = user?.role === 'BAILLEUR';
+  const isPartenaireTech = user?.role === 'PARTENAIRE_TECHNIQUE';
 
-  // Filtrage des rubriques selon le role (vide pour BAILLEUR qui a son menu dédié)
-  const visibleSections = isBailleur ? [] : MENU_SECTIONS
-    .filter(s => user?.role && s.roles.includes(user.role as 'ADMIN' | 'INSTITUTION'))
-    .map(s => ({
-      ...s,
-      items: s.items.filter(i => !i.roles || (user?.role && i.roles.includes(user.role as 'ADMIN' | 'INSTITUTION'))),
-    }))
-    .filter(s => s.items.length > 0);
+  // Utilise visibleSections() pour ADMIN, INSTITUTION, PARTENAIRE_TECHNIQUE
+  // BAILLEUR a son menu dédié (PARTENAIRE_MENU)
+  const roleForMenu = (isBailleur ? undefined : user?.role) as 'ADMIN' | 'INSTITUTION' | 'PARTENAIRE_TECHNIQUE' | undefined;
+  const filteredSections = visibleSections(roleForMenu);
 
   // Pattern accordeon : une seule rubrique ouverte a la fois.
-  // null = toutes fermees (etat valide quand user clique pour fermer la rubrique active).
-  const activeSectionId = findSectionForPath(location.pathname, user?.role as 'ADMIN' | 'INSTITUTION' | undefined);
+  const activeSectionId = findSectionForPath(location.pathname, roleForMenu);
   const [activeRubrique, setActiveRubrique] = useState<string | null>(activeSectionId);
 
   // Au changement de route : ouvre automatiquement la rubrique de la nouvelle URL,
@@ -104,11 +100,18 @@ export function DashboardLayout() {
     enabled: user?.role === 'ADMIN',
     staleTime: 60000,
   });
+  const { data: manifEnValData } = useQuery({
+    queryKey: ['menu-counter-manifestations-en-validation'],
+    queryFn: () => api.get('/admin/manifestations?statut=EN_VALIDATION&pageSize=1').then((r: any) => r.data),
+    enabled: user?.role === 'ADMIN',
+    staleTime: 60000,
+  });
 
   const counters: Record<string, { value: number; color: 'amber' | 'red' | 'teal' }> = {
     mesCasUsage: { value: (involvedData?.length || 0), color: 'teal' },
     desaccords: { value: (duData?.desaccords?.length || 0), color: 'amber' },
     adoptionRequestsEnAttente: { value: (adoptionRequestsData?.length || 0), color: 'red' },
+    manifestationsEnValidation: { value: (manifEnValData?.kpis?.EN_VALIDATION || 0), color: 'amber' },
   };
 
   const sidebarWidth = sidebarCollapsed ? 'w-16' : 'w-64';
@@ -171,8 +174,8 @@ export function DashboardLayout() {
 
         {/* Navigation — 5 rubriques collapsibles + Tableau de bord en tete */}
         <nav className="flex-1 px-2 py-3 space-y-1 overflow-y-auto">
-          {/* Lien tableau de bord en tete (route différente pour BAILLEUR) */}
-          {!isBailleur && (() => {
+          {/* Lien tableau de bord en tete (route différente pour BAILLEUR et PARTENAIRE_TECHNIQUE) */}
+          {!isBailleur && !isPartenaireTech && (() => {
             const isActive = location.pathname === MENU_TOP.href;
             const Icon = MENU_TOP.icon;
             return (
@@ -216,7 +219,7 @@ export function DashboardLayout() {
           })}
 
           {/* Rubriques collapsibles — accordeon : une seule ouverte a la fois */}
-          {visibleSections.map(section => {
+          {filteredSections.map(section => {
             const isOpen = activeRubrique === section.id;
             const SectionIcon = section.icon;
             // En mode collapse, on ne rend pas les entetes de section — juste la liste avec separateur
@@ -308,9 +311,10 @@ export function DashboardLayout() {
               <div className="ml-3 flex-1 min-w-0">
                 <p className="text-sm font-medium text-gray-200 truncate">{user?.email}</p>
                 <p className="text-xs text-gray-400">{
-                  user?.role === 'ADMIN'    ? 'Administrateur' :
-                  user?.role === 'BAILLEUR' ? 'Partenaire Technique et Financier' :
-                                              'Institution'
+                  user?.role === 'ADMIN'                  ? 'Administrateur' :
+                  user?.role === 'BAILLEUR'               ? 'Partenaire Technique et Financier' :
+                  user?.role === 'PARTENAIRE_TECHNIQUE'   ? 'Partenaire Technique (AMO)' :
+                                                            'Institution'
                 }</p>
               </div>
             )}

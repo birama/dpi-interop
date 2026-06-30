@@ -10,6 +10,7 @@ import { useToast } from '@/components/ui/use-toast';
 import { Loader2, X, CheckCircle, XCircle, ClipboardCheck, Search, ExternalLink } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Link } from 'react-router-dom';
+import OrphelinsCard from '@/components/OrphelinsCard';
 
 const IMPACT_LABELS: Record<string, string> = { CRITIQUE: 'Critique', ELEVE: 'Eleve', MOYEN: 'Moyen', FAIBLE: 'Faible' };
 const IMPACT_COLORS: Record<string, string> = { CRITIQUE: 'bg-red-100 text-red-700', ELEVE: 'bg-orange-100 text-orange-700', MOYEN: 'bg-gray-100 text-gray-600', FAIBLE: 'bg-gray-50 text-gray-400' };
@@ -110,6 +111,9 @@ export function QualificationPage() {
         <Card className="border-l-4 border-l-teal"><CardContent className="p-3"><p className="text-[10px] text-gray-500">Qualifies SENUM</p><p className="text-xl font-bold text-teal">{stats.qualifiesSenum || 0}</p></CardContent></Card>
         <Card className="border-l-4 border-l-success"><CardContent className="p-3"><p className="text-[10px] text-gray-500">Retenus MVP</p><p className="text-xl font-bold text-success">{stats.retenusMVP || 0}</p></CardContent></Card>
       </div>
+
+      {/* Cohérence métier ↔ technique */}
+      <OrphelinsCard />
 
       {/* Filtres + Recherche */}
       <div className="flex flex-wrap items-center gap-2 bg-white p-3 rounded-lg border">

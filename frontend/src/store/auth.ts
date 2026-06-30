@@ -4,7 +4,7 @@ import { persist } from 'zustand/middleware';
 interface User {
   id: string;
   email: string;
-  role: 'ADMIN' | 'INSTITUTION' | 'BAILLEUR';
+  role: 'ADMIN' | 'INSTITUTION' | 'BAILLEUR' | 'PARTENAIRE_TECHNIQUE';
   institutionId?: string;
   institution?: {
     id: string;
@@ -12,6 +12,7 @@ interface User {
     nom: string;
   };
   ptfId?: string | null;
+  organisationId?: string | null;
   cguAccepted?: boolean;
 }
 

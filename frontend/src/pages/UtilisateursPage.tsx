@@ -15,12 +15,14 @@ const ROLE_COLORS: Record<string, string> = {
   ADMIN: 'bg-red-100 text-red-700',
   INSTITUTION: 'bg-teal-50 text-teal-700',
   BAILLEUR: 'bg-gold/15 text-gold border border-gold/30',
+  PARTENAIRE_TECHNIQUE: 'bg-blue-100 text-blue-700',
 };
 
 const ROLE_LABELS: Record<string, string> = {
   ADMIN: 'Admin',
   INSTITUTION: 'Institution',
   BAILLEUR: 'PTF (Partenaire Technique et Financier)',
+  PARTENAIRE_TECHNIQUE: 'Partenaire Technique (AMO)',
 };
 
 type UserItem = {
@@ -66,8 +68,8 @@ export function UtilisateursPage() {
   const [bulkResults, setBulkResults] = useState<BulkResult[] | null>(null);
 
   // Forms
-  const [createForm, setCreateForm] = useState({ email: '', password: '', role: 'INSTITUTION', institutionId: '', ptfId: '', mustChangePassword: true });
-  const [editForm, setEditForm] = useState({ email: '', role: '', institutionId: '', ptfId: '', mustChangePassword: false });
+  const [createForm, setCreateForm] = useState({ email: '', password: '', role: 'INSTITUTION', institutionId: '', ptfId: '', organisationId: '', mustChangePassword: true });
+  const [editForm, setEditForm] = useState({ email: '', role: '', institutionId: '', ptfId: '', organisationId: '', mustChangePassword: false });
   const [newPassword, setNewPassword] = useState('');
   const [bulkSelectedInstitutions, setBulkSelectedInstitutions] = useState('');
   const [bulkDefaultPassword, setBulkDefaultPassword] = useState('Atelier@2026');
@@ -95,13 +97,25 @@ export function UtilisateursPage() {
     label: `${p.code} — ${p.nom}`,
   }));
 
+  // Organisations pour création/édition de comptes PARTENAIRE_TECHNIQUE
+  const { data: orgData } = useQuery({
+    queryKey: ['organisations-list-users'],
+    queryFn: () => api.get('/admin/organisations'),
+  });
+  const orgOptions = ((orgData?.data?.data || []) as any[])
+    .filter((o: any) => o.statut === 'ACTIF')
+    .map((o: any) => ({
+      value: o.id,
+      label: `${o.id} — ${o.nom}`,
+    }));
+
   // Mutations
   const createUserMut = useMutation({
     mutationFn: (data: any) => api.post('/users', data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-users'] });
       setShowCreateModal(false);
-      setCreateForm({ email: '', password: '', role: 'INSTITUTION', institutionId: '', ptfId: '', mustChangePassword: true });
+      setCreateForm({ email: '', password: '', role: 'INSTITUTION', institutionId: '', ptfId: '', organisationId: '', mustChangePassword: true });
       toast({ title: 'Utilisateur cree' });
     },
     onError: (err: any) => toast({ variant: 'destructive', title: 'Erreur', description: err.response?.data?.error || err.message }),
@@ -165,6 +179,7 @@ export function UtilisateursPage() {
       role: user.role,
       institutionId: user.institutionId || '',
       ptfId: (user as any).ptfId || '',
+      organisationId: (user as any).organisationId || '',
       mustChangePassword: user.mustChangePassword,
     });
   };
@@ -237,6 +252,8 @@ export function UtilisateursPage() {
           <option value="">Tous les roles</option>
           <option value="ADMIN">Admin</option>
           <option value="INSTITUTION">Institution</option>
+          <option value="BAILLEUR">PTF</option>
+          <option value="PARTENAIRE_TECHNIQUE">AMO</option>
         </select>
         <div className="relative max-w-xs">
           <Input
@@ -276,7 +293,7 @@ export function UtilisateursPage() {
                   </td>
                   <td className="px-4 py-2">
                     <span className={cn('text-xs px-2 py-0.5 rounded-full font-medium', ROLE_COLORS[user.role] || 'bg-gray-100 text-gray-600')}>
-                      {user.role === 'BAILLEUR' ? 'PTF' : (ROLE_LABELS[user.role] || user.role)}
+                      {ROLE_LABELS[user.role] || user.role}
                     </span>
                   </td>
                   <td className="px-4 py-2 text-gray-600">
@@ -346,6 +363,7 @@ export function UtilisateursPage() {
                   <option value="INSTITUTION">Institution</option>
                   <option value="ADMIN">Admin</option>
                   <option value="BAILLEUR">PTF (Partenaire Technique et Financier)</option>
+                  <option value="PARTENAIRE_TECHNIQUE">Partenaire Technique (AMO)</option>
                 </select>
               </div>
               {createForm.role === 'INSTITUTION' && (
@@ -367,6 +385,17 @@ export function UtilisateursPage() {
                     value={createForm.ptfId}
                     onChange={val => setCreateForm(f => ({ ...f, ptfId: val }))}
                     placeholder="Selectionner un PTF..."
+                  />
+                </div>
+              )}
+              {createForm.role === 'PARTENAIRE_TECHNIQUE' && (
+                <div>
+                  <Label className="text-xs">Organisation (AMO/Prestataire)</Label>
+                  <SearchableSelect
+                    options={orgOptions}
+                    value={createForm.organisationId}
+                    onChange={val => setCreateForm(f => ({ ...f, organisationId: val }))}
+                    placeholder="Selectionner une organisation..."
                   />
                 </div>
               )}
@@ -420,6 +449,7 @@ export function UtilisateursPage() {
                   <option value="INSTITUTION">Institution</option>
                   <option value="ADMIN">Admin</option>
                   <option value="BAILLEUR">PTF (Partenaire Technique et Financier)</option>
+                  <option value="PARTENAIRE_TECHNIQUE">Partenaire Technique (AMO)</option>
                 </select>
               </div>
               {editForm.role === 'INSTITUTION' && (
@@ -441,6 +471,17 @@ export function UtilisateursPage() {
                     value={editForm.ptfId}
                     onChange={val => setEditForm(f => ({ ...f, ptfId: val }))}
                     placeholder="Selectionner un PTF..."
+                  />
+                </div>
+              )}
+              {editForm.role === 'PARTENAIRE_TECHNIQUE' && (
+                <div>
+                  <Label className="text-xs">Organisation (AMO/Prestataire)</Label>
+                  <SearchableSelect
+                    options={orgOptions}
+                    value={editForm.organisationId}
+                    onChange={val => setEditForm(f => ({ ...f, organisationId: val }))}
+                    placeholder="Selectionner une organisation..."
                   />
                 </div>
               )}

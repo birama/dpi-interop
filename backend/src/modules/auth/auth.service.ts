@@ -91,6 +91,7 @@ export class AuthService {
       role: user.role,
       institutionId: user.institutionId || undefined,
       ptfId: (user as any).ptfId || undefined,
+      organisationId: (user as any).organisationId || undefined,
       cguAccepted: !!(user as any).cguAccepteesAt,
     };
     const token = this.app.jwt.sign(payload, { expiresIn: '2h' });

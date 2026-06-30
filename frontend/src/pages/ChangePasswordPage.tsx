@@ -42,7 +42,9 @@ export function ChangePasswordPage() {
         setAuth(token, { ...user, mustChangePassword: false } as any);
       }
       toast({ title: 'Mot de passe modifié', description: 'Vous pouvez maintenant accéder à l\'application' });
-      navigate('/dashboard');
+      if (user?.role === 'PARTENAIRE_TECHNIQUE') navigate('/partenaire-tech/dashboard');
+      else if (user?.role === 'BAILLEUR') navigate('/partenaire/dashboard');
+      else navigate('/dashboard');
     } catch (error: any) {
       toast({
         variant: 'destructive',

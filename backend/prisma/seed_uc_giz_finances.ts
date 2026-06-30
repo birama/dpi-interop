@@ -2,7 +2,7 @@ import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log('=== Import 8 UC Finances GIZ (Note de cadrage v4.0) ===');
+  console.log('=== Import 8 UC Finances GIZ (PINS-METIER-101 à 108) ===');
 
   // Trouver la phase MVP-2.0
   let mvp2 = await prisma.phaseMVP.findUnique({ where: { code: 'MVP-2.0' } });
@@ -17,21 +17,22 @@ async function main() {
   const gizProg = await prisma.programme.findUnique({ where: { code: 'RFS059' } });
   if (!gizProg) { console.error('Programme RFS059 non trouvé'); process.exit(1); }
 
-  // Supprimer les anciens UC-GIZ-FIN si existants
+  // Nettoyage idempotent : supprimer anciens UC-GIZ-FIN-XX et nouveaux PINS-METIER-10X
   for (let i = 1; i <= 8; i++) {
-    const code = `UC-GIZ-FIN-${String(i).padStart(2, '0')}`;
-    const existing = await prisma.casUsageMVP.findUnique({ where: { code } });
-    if (existing) {
-      await prisma.financement.deleteMany({ where: { casUsageMVPId: existing.id } });
-      await prisma.fluxInstitution.deleteMany({ where: { casUsageMVPId: existing.id } });
-      await prisma.casUsage.updateMany({ where: { casUsageMVPId: existing.id }, data: { casUsageMVPId: null } });
-      await prisma.casUsageMVP.delete({ where: { id: existing.id } });
+    for (const code of [`UC-GIZ-FIN-${String(i).padStart(2, '0')}`, `PINS-METIER-${100 + i}`]) {
+      const existing = await prisma.casUsageMVP.findUnique({ where: { code } });
+      if (existing) {
+        await prisma.financement.deleteMany({ where: { casUsageMVPId: existing.id } });
+        await prisma.fluxInstitution.deleteMany({ where: { casUsageMVPId: existing.id } });
+        await prisma.casUsage.updateMany({ where: { casUsageMVPId: existing.id }, data: { casUsageMVPId: null } });
+        await prisma.casUsageMVP.delete({ where: { id: existing.id } });
+      }
     }
   }
 
   const useCases = [
     {
-      code: 'UC-GIZ-FIN-01',
+      code: 'PINS-METIER-101',
       titre: 'Réconciliation bidirectionnelle DGD ↔ DGID',
       description: 'Étendre le flux MVP existant (DGD→DGID) vers un service bidirectionnel. La DGID (SENTAX) expose les informations comptables, déclarations fiscales et fichier CGE. La DGD (GAINDE) consomme ce service pour croisement sur NINEA. Détection sous-déclarations et élargissement assiette fiscale.',
       source: 'DGD', cible: 'DGID',
@@ -42,7 +43,7 @@ async function main() {
       observations: 'PRIORITÉ 1. MVP EXISTANT à étendre. Flux DGD→DGID déjà opérationnel dans X-Road. Étendre vers flux retour DGID→DGD. Transition SIGTAS→SENTAX = opportunité concevoir avec X-Road natif. KPIs: taux réconciliation 100%, réduction sous-déclarations 90%.',
     },
     {
-      code: 'UC-GIZ-FIN-02',
+      code: 'PINS-METIER-102',
       titre: 'Cycle complet Liquidation → Recouvrement → BAE',
       description: 'Trois services X-Road interconnectant GAINDE et SIGIF. (1) GAINDE→SIGIF: transmission temps réel des déclarations validées avec détail des droits par nature de taxe (40+ codes). (2) Paiement: validation dans SIGIF, comptabilisation par nature, quittance. (3) SIGIF→GAINDE: retour quittance pour émargement BAE.',
       source: 'DGD', cible: 'DGCPT',
@@ -53,7 +54,7 @@ async function main() {
       observations: 'PRIORITÉ 1. IMPACT DB MAXIMAL. Réduction cycle liquidation→BAE de 48h+ à temps réel. 3 services X-Road. Table correspondance bureau douane/percepteur. Mapping 40+ codes taxes → comptes SIGIF. GAINDE repensé + SIGIF imminent = fenêtre d\'opportunité.',
     },
     {
-      code: 'UC-GIZ-FIN-03',
+      code: 'PINS-METIER-103',
       titre: 'Quitus fiscal en temps réel',
       description: 'Service X-Road exposant l\'état de conformité fiscale (identifié par NINEA), interrogeable en temps réel par DGD (exonérations) et DGCPT (marchés publics). Retourne: conforme / non conforme / dossier en cours avec dates validité.',
       source: 'DGID', cible: 'DGD',
@@ -64,7 +65,7 @@ async function main() {
       observations: 'PRIORITÉ 1. Passage de 5 jours à temps réel. Suppression déplacements. Simplification accès marchés publics et régimes exonération. Intégrer nativement dans SENTAX.',
     },
     {
-      code: 'UC-GIZ-FIN-04',
+      code: 'PINS-METIER-104',
       titre: 'Télépaiement fiscal via X-Road (E.Taxes ↔ SIGIF)',
       description: 'Flux E.Taxes ↔ SIGIF via PINS. Télédéclaration → ordre virement banque → notification Trésor → comptabilisation SIGIF (recettes attendues) → réimputation par nature recettes → notification DGID avec références paiement.',
       source: 'DGID', cible: 'DGCPT',
@@ -75,7 +76,7 @@ async function main() {
       observations: 'PRIORITÉ 2. Intégrer dans SIGIF. Réconciliation automatisée télédéclarations/encaissements. Suppression réimputation manuelle.',
     },
     {
-      code: 'UC-GIZ-FIN-05',
+      code: 'PINS-METIER-105',
       titre: 'Référentiel NINEA via PINS (migration ESB → X-Road)',
       description: 'Migration du service de partage NINEA de l\'ESB actuel vers PINS/X-Road. Expose créations NINEA, mises à jour immatriculation, informations complètes contribuable. e-NINEA (immatriculation en ligne) renforce le caractère stratégique.',
       source: 'ANSD', cible: 'DGID',
@@ -86,7 +87,7 @@ async function main() {
       observations: 'PRIORITÉ 2. Migration ESB → X-Road. SENTAX et SIGIF doivent consommer ce service nativement. Cohérence avec e-NINEA (ANSD).',
     },
     {
-      code: 'UC-GIZ-FIN-06',
+      code: 'PINS-METIER-106',
       titre: 'Détection contribuables à risque (croisement multi-sources)',
       description: 'Croisement données DGD+DGID+DGCPT via plateforme PRES. Détection entreprises actives douane mais inconnues impôts, CA incohérents avec importations, suivi exonérations. Capitalise sur flux UC-1, UC-2, UC-4 via Kafka/ClickHouse/Metabase.',
       source: 'DGD', cible: 'DGID',
@@ -97,7 +98,7 @@ async function main() {
       observations: 'PRIORITÉ 2. Extension analytique. Capitalise sur UC-1/UC-2/UC-4. Plateforme PRES (Kafka, ClickHouse, Metabase). Augmentation recettes par élargissement assiette.',
     },
     {
-      code: 'UC-GIZ-FIN-07',
+      code: 'PINS-METIER-107',
       titre: 'Alimentation automatisée TOFE et données budgétaires',
       description: 'Alimentation automatisée du TOFE par données SIGIF (balance comptes, recettes/dépenses, dette) et SIGFIP (mandats, exécution budgétaire, DPBEP) via PINS.',
       source: 'DGCPT', cible: 'DGF',
@@ -108,7 +109,7 @@ async function main() {
       observations: 'PRIORITÉ 3. Fiabilisation données budgétaires pour projets loi de finances.',
     },
     {
-      code: 'UC-GIZ-FIN-08',
+      code: 'PINS-METIER-108',
       titre: 'Fiscalité locale (TéléDAC / GFILOC / SIGIF)',
       description: 'Dématérialisation des Demandes d\'Autorisation de Construire (TéléDAC) et intégration GFILOC ↔ SIGIF pour comptabilisation taxes locales (patentes, taxes foncières). Identification receveurs par commune.',
       source: 'DGCPT', cible: 'MCTDAT',
@@ -137,7 +138,7 @@ async function main() {
       data: {
         casUsageMVPId: cu.id, programmeId: gizProg.id,
         typeFinancement: 'Accompagnement technique et organisationnel',
-        statut: uc.code <= 'UC-GIZ-FIN-03' ? 'EN_COURS' : 'DEMANDE',
+        statut: uc.code <= 'PINS-METIER-103' ? 'EN_COURS' : 'DEMANDE',
       },
     });
 
@@ -145,8 +146,8 @@ async function main() {
   }
 
   // Stats
-  const total = await prisma.casUsageMVP.count({ where: { code: { startsWith: 'UC-GIZ-FIN' } } });
-  const financed = await prisma.financement.count({ where: { casUsageMVP: { code: { startsWith: 'UC-GIZ-FIN' } } } });
+  const total = await prisma.casUsageMVP.count({ where: { code: { startsWith: 'PINS-METIER-10' } } });
+  const financed = await prisma.financement.count({ where: { casUsageMVP: { code: { startsWith: 'PINS-METIER-10' } } } });
   console.log(`\n=== ${total} cas d'usage créés, ${financed} financements GIZ liés ===`);
   console.log('Budget total estimé: 173 800 € (accompagnement GIZ RFS059)');
 }

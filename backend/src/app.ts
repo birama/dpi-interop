@@ -19,6 +19,7 @@ export async function buildApp(): Promise<FastifyInstance> {
             }
           : undefined,
     },
+    trustProxy: true,
   });
 
   // Health check endpoint

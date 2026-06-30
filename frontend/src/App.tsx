@@ -49,10 +49,22 @@ import { PartenaireCasDetailPage } from '@/pages/partenaire/PartenaireCasDetailP
 import { PartenaireManifestationsPage } from '@/pages/partenaire/PartenaireManifestationsPage';
 import { PartenaireProfilPage } from '@/pages/partenaire/PartenaireProfilPage';
 import { CreatePartenaireUserPage } from '@/pages/partenaire/CreatePartenaireUserPage';
+import { AdminManifestationsPage } from '@/pages/AdminManifestationsPage';
+import { AdminPtfListPage } from '@/modules/admin/AdminPtfListPage';
+import { AdminPtfDetailPage } from '@/modules/admin/AdminPtfDetailPage';
+import { AdminPtfDomainesPage } from '@/modules/admin/AdminPtfDomainesPage';
+import { AdminPtfDashboardPage } from '@/modules/admin/AdminPtfDashboardPage';
+import { PartenaireTechniqueDashboardPage } from '@/pages/partenaire-tech/PartenaireTechniqueDashboardPage';
+import { PartenaireTechniqueCataloguePage } from '@/pages/partenaire-tech/PartenaireTechniqueCataloguePage';
+import { PartenaireTechniqueCasDetailPage } from '@/pages/partenaire-tech/PartenaireTechniqueCasDetailPage';
+import { PartenaireTechniqueProfilPage } from '@/pages/partenaire-tech/PartenaireTechniqueProfilPage';
+import { PartenaireTechniqueMesCasPage } from '@/pages/partenaire-tech/PartenaireTechniqueMesCasPage';
+import { PartenaireTechniqueAccompagnementDetailPage } from '@/pages/partenaire-tech/PartenaireTechniqueAccompagnementDetailPage';
+import { OrganisationsPage } from '@/pages/OrganisationsPage';
 import { useLocation } from 'react-router-dom';
 
 // Protected Route wrapper
-type AllowedRole = 'ADMIN' | 'INSTITUTION' | 'BAILLEUR';
+type AllowedRole = 'ADMIN' | 'INSTITUTION' | 'BAILLEUR' | 'PARTENAIRE_TECHNIQUE';
 function ProtectedRoute({
   children,
   adminOnly = false,
@@ -90,6 +102,17 @@ function ProtectedRoute({
     location.pathname.startsWith('/partenaire') &&
     !location.pathname.startsWith('/partenaire/cgu') // CGU est public
   ) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  // P13-CONC — Cloisonnement PARTENAIRE_TECHNIQUE : routes catalogue, écosystème, espace dédié
+  const ptAllowed = ['/partenaire-tech', '/catalogue', '/registres', '/institutions', '/admin/registres-nationaux', '/admin/conventions', '/documents'];
+  if (user?.role === 'PARTENAIRE_TECHNIQUE' && !ptAllowed.some(p => location.pathname.startsWith(p))) {
+    return <Navigate to="/partenaire-tech/dashboard" replace />;
+  }
+
+  // Inversement : un non-PARTENAIRE_TECHNIQUE ne peut accéder à /partenaire-tech/*
+  if (user?.role !== 'PARTENAIRE_TECHNIQUE' && location.pathname.startsWith('/partenaire-tech')) {
     return <Navigate to="/dashboard" replace />;
   }
 
@@ -278,7 +301,39 @@ function App() {
               </ProtectedRoute>
             }
           />
-          <Route path="/admin/ptf" element={<Navigate to="/admin/financements" replace />} />
+          <Route
+            path="/admin/ptf"
+            element={
+              <ProtectedRoute adminOnly>
+                <AdminPtfListPage />
+              </ProtectedRoute>
+            }
+          />
+          {/* Routes hors arborescence /admin/ptf/* pour éviter de doubler le surlignage sidebar avec "Annuaire PTF" */}
+          <Route
+            path="/admin/ptf-domaines"
+            element={
+              <ProtectedRoute adminOnly>
+                <AdminPtfDomainesPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/ptf-dashboard"
+            element={
+              <ProtectedRoute adminOnly>
+                <AdminPtfDashboardPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/ptf/:id"
+            element={
+              <ProtectedRoute adminOnly>
+                <AdminPtfDetailPage />
+              </ProtectedRoute>
+            }
+          />
           <Route
             path="/admin/qualification"
             element={
@@ -473,6 +528,78 @@ function App() {
             element={
               <ProtectedRoute adminOnly>
                 <CreatePartenaireUserPage />
+              </ProtectedRoute>
+            }
+          />
+          {/* P13-CONC — Partenaire Technique (AMO) */}
+          <Route
+            path="/partenaire-tech"
+            element={<Navigate to="/partenaire-tech/dashboard" replace />}
+          />
+          <Route
+            path="/partenaire-tech/dashboard"
+            element={
+              <ProtectedRoute allowedRoles={['PARTENAIRE_TECHNIQUE']}>
+                <PartenaireTechniqueDashboardPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/partenaire-tech/catalogue"
+            element={
+              <ProtectedRoute allowedRoles={['PARTENAIRE_TECHNIQUE']}>
+                <PartenaireTechniqueCataloguePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/partenaire-tech/cas/:id"
+            element={
+              <ProtectedRoute allowedRoles={['PARTENAIRE_TECHNIQUE']}>
+                <PartenaireTechniqueCasDetailPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/partenaire-tech/profil"
+            element={
+              <ProtectedRoute allowedRoles={['PARTENAIRE_TECHNIQUE']}>
+                <PartenaireTechniqueProfilPage />
+              </ProtectedRoute>
+            }
+          />
+          {/* P14-CONC — Accompagnement AMO */}
+          <Route
+            path="/partenaire-tech/mes-cas"
+            element={
+              <ProtectedRoute allowedRoles={['PARTENAIRE_TECHNIQUE']}>
+                <PartenaireTechniqueMesCasPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/partenaire-tech/mes-cas/:accompagnementId"
+            element={
+              <ProtectedRoute allowedRoles={['PARTENAIRE_TECHNIQUE']}>
+                <PartenaireTechniqueAccompagnementDetailPage />
+              </ProtectedRoute>
+            }
+          />
+          {/* P13-CONC — Annuaire AMO (admin only) */}
+          <Route
+            path="/admin/organisations"
+            element={
+              <ProtectedRoute adminOnly>
+                <OrganisationsPage />
+              </ProtectedRoute>
+            }
+          />
+          {/* PTF MVP — Manifestations PTF (lecture seule v1) */}
+          <Route
+            path="/admin/manifestations"
+            element={
+              <ProtectedRoute adminOnly>
+                <AdminManifestationsPage />
               </ProtectedRoute>
             }
           />

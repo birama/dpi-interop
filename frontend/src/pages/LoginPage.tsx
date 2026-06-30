@@ -76,13 +76,15 @@ export function LoginPage() {
         description: 'Bienvenue sur PINS',
       });
 
-      // Redirection par rôle (PTF Phase 1)
-      const role = response.data.user.role as 'ADMIN' | 'INSTITUTION' | 'BAILLEUR';
+      // Redirection par rôle
+      const role = response.data.user.role as 'ADMIN' | 'INSTITUTION' | 'BAILLEUR' | 'PARTENAIRE_TECHNIQUE';
       const cguAccepted = (response.data.user as any).cguAccepted;
       if (role === 'BAILLEUR' && !cguAccepted) {
         navigate('/partenaire/cgu');
       } else if (role === 'BAILLEUR') {
         navigate('/partenaire');
+      } else if (role === 'PARTENAIRE_TECHNIQUE') {
+        navigate('/partenaire-tech/dashboard');
       } else {
         navigate('/dashboard');
       }

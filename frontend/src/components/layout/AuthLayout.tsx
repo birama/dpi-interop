@@ -2,9 +2,11 @@ import { Outlet, Navigate } from 'react-router-dom';
 import { useAuthStore } from '@/store/auth';
 
 export function AuthLayout() {
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, user } = useAuthStore();
 
   if (isAuthenticated) {
+    if (user?.role === 'PARTENAIRE_TECHNIQUE') return <Navigate to="/partenaire-tech/dashboard" replace />;
+    if (user?.role === 'BAILLEUR') return <Navigate to="/partenaire/dashboard" replace />;
     return <Navigate to="/dashboard" replace />;
   }
 

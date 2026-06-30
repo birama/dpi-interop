@@ -48,6 +48,8 @@ questionnaire-interop/
 - PhaseMVP (MVP-1.0, MVP-2.0, MVP-3.0)
 - PTF, Programme, Financement (chaîne de financement, statuts IDENTIFIE→DEMANDE→ACCORDE→EN_COURS→CLOTURE ; Financement.manifestationOrigineId → ManifestationInteret)
 - BailleurDomaineInteret, ManifestationInteret, JournalAuditPtf (module PTF Phase 2)
+- Organisation (AMO/prestataires, type CABINET_CONSEIL/INTEGRATEUR/EDITEUR/EXPERT_INDEPENDANT) — P13-CONC
+- ProgrammePrioritaire, ProjetNational, CasUsageProjet (New Deal Technologique, 12 PRPs + 48 projets)
 - Convention (institutionA ↔ institutionB, statut, dates)
 - XRoadReadiness (6 jalons par institution, modeConnexion)
 - RegistreNational (10 registres de base, 5 domaines)
@@ -56,7 +58,7 @@ questionnaire-interop/
 - DemandeInterop (demandes des institutions)
 - AuditLog, UserSession (traçabilité)
 - DocumentReference (documents téléchargeables)
-- Enums clés : Role (ADMIN/INSTITUTION/BAILLEUR), Domaine (14 valeurs), ManifestationType, ManifestationStatus, AuditAction, SourceProposition (...+BAILLEUR)
+- Enums clés : Role (ADMIN/INSTITUTION/BAILLEUR/PARTENAIRE_TECHNIQUE), Domaine (14 valeurs), ManifestationType, ManifestationStatus, AuditAction, SourceProposition (...+BAILLEUR), OrganisationType, OrganisationStatus
 
 ## Dualité des statuts CasUsageMVP
 Deux enums parallèles, sémantiques distinctes :

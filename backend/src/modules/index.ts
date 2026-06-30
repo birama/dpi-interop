@@ -11,7 +11,11 @@ import { useCasesWriteRoutes, consultationRoutes, feedbackRoutes, duArbitrageRou
 import { registresCouvertureRoutes, registresUseCaseRoutes } from './vue360/registres.routes.js';
 import { notificationsMeRoutes, notificationsRoutes } from './vue360/notifications.routes.js';
 import { catalogueRoutes, suggestionsRoutes } from './vue360/catalogue.routes.js';
-import { adminBailleurRoutes, partenaireRoutes } from './partenaire/routes.js';
+import { newDealRoutes } from './vue360/newDeal.routes.js';
+import { adminBailleurRoutes, adminManifestationsRoutes, adminPtfRoutes, partenaireRoutes } from './partenaire/routes.js';
+import { partenaireTechniqueRoutes, adminOrganisationRoutes } from './partenaire-technique/routes.js';
+import { adminAccompagnementRoutes } from './accompagnement/admin.routes.js';
+import { partenaireTechAccompagnementRoutes } from './accompagnement/partenaire-tech.routes.js';
 
 // Inline routes for conventions and xroad
 async function conventionsRoutes(app: FastifyInstance) {
@@ -694,22 +698,31 @@ async function usersAdminRoutes(app: FastifyInstance) {
 
   // POST / — create user
   app.post('/', { onRequest: [app.authenticateAdmin] }, async (req: any, reply: any) => {
-    const { email, password, role, institutionId, ptfId, mustChangePassword } = req.body as any;
+    const { email, password, role, institutionId, ptfId, organisationId, mustChangePassword } = req.body as any;
+    const finalRole = role || 'INSTITUTION';
+
+    // Validation RBAC : ptfId obligatoire pour BAILLEUR
+    if (finalRole === 'BAILLEUR' && !ptfId) {
+      return reply.status(400).send({ error: 'ptfId est requis pour le rôle BAILLEUR' });
+    }
+    // Validation RBAC : organisationId obligatoire pour PARTENAIRE_TECHNIQUE
+    if (finalRole === 'PARTENAIRE_TECHNIQUE' && !organisationId) {
+      return reply.status(400).send({ error: 'organisationId est requis pour le rôle PARTENAIRE_TECHNIQUE' });
+    }
+
     const bcrypt = await import('bcrypt');
     const hashedPassword = await bcrypt.hash(password, 10);
-    const finalRole = role || 'INSTITUTION';
     const user = await app.prisma.user.create({
       data: {
         email,
         password: hashedPassword,
         role: finalRole,
-        // Lien institution uniquement pour role=INSTITUTION (cohérence)
         institutionId: finalRole === 'INSTITUTION' ? (institutionId || null) : null,
-        // Lien PTF uniquement pour role=BAILLEUR (ptf-phase1)
         ptfId: finalRole === 'BAILLEUR' ? (ptfId || null) : null,
+        organisationId: finalRole === 'PARTENAIRE_TECHNIQUE' ? (organisationId || null) : null,
         mustChangePassword: mustChangePassword !== false,
       },
-      select: { id: true, email: true, role: true, institutionId: true, ptfId: true, institution: { select: { code: true, nom: true } }, mustChangePassword: true },
+      select: { id: true, email: true, role: true, institutionId: true, ptfId: true, organisationId: true, institution: { select: { code: true, nom: true } }, mustChangePassword: true },
     });
     try { await app.prisma.auditLog.create({ data: { userId: req.user.id, userEmail: req.user.email, userRole: req.user.role, action: 'CREATE', resource: 'user', resourceId: user.id, resourceLabel: user.email, ipAddress: req.headers['x-forwarded-for']?.toString() || req.ip, userAgent: req.headers['user-agent'] } }); } catch {}
     return reply.status(201).send(user);
@@ -717,7 +730,7 @@ async function usersAdminRoutes(app: FastifyInstance) {
 
   // PATCH /:id — update user
   app.patch('/:id', { onRequest: [app.authenticateAdmin] }, async (req: any, reply: any) => {
-    const { email, role, institutionId, ptfId, mustChangePassword } = req.body as any;
+    const { email, role, institutionId, ptfId, organisationId, mustChangePassword } = req.body as any;
     const user = await app.prisma.user.update({
       where: { id: req.params.id },
       data: {
@@ -725,9 +738,10 @@ async function usersAdminRoutes(app: FastifyInstance) {
         ...(role && { role }),
         ...(institutionId !== undefined && { institutionId: institutionId || null }),
         ...(ptfId !== undefined && { ptfId: ptfId || null }),
+        ...(organisationId !== undefined && { organisationId: organisationId || null }),
         ...(mustChangePassword !== undefined && { mustChangePassword }),
       },
-      select: { id: true, email: true, role: true, institutionId: true, ptfId: true, institution: { select: { code: true, nom: true } }, mustChangePassword: true },
+      select: { id: true, email: true, role: true, institutionId: true, ptfId: true, organisationId: true, institution: { select: { code: true, nom: true } }, mustChangePassword: true },
     });
     try { await app.prisma.auditLog.create({ data: { userId: req.user.id, userEmail: req.user.email, userRole: req.user.role, action: 'UPDATE', resource: 'user', resourceId: req.params.id, ipAddress: req.headers['x-forwarded-for']?.toString() || req.ip, userAgent: req.headers['user-agent'] } }); } catch {}
     return reply.send(user);
@@ -1107,6 +1121,18 @@ export async function registerRoutes(app: FastifyInstance) {
       // PTF Phase 1 — RBAC
       api.register(adminBailleurRoutes, { prefix: '/admin/users/bailleur' });
       api.register(partenaireRoutes, { prefix: '/partenaire' });
+      // PTF MVP — Manifestations admin (lecture seule v1, validation post-atelier)
+      api.register(adminManifestationsRoutes, { prefix: '/admin/manifestations' });
+      // PTF MVP — File des PTF côté admin (liste + fiche détaillée)
+      api.register(adminPtfRoutes, { prefix: '/admin/ptf' });
+
+      // P13-CONC — Partenaire Technique (AMO) + Admin Organisations
+      api.register(partenaireTechniqueRoutes, { prefix: '/partenaire-tech' });
+      api.register(adminOrganisationRoutes, { prefix: '/admin/organisations' });
+
+      // P14-CONC — Accompagnement AMO
+      api.register(adminAccompagnementRoutes, { prefix: '/admin/accompagnements' });
+      api.register(partenaireTechAccompagnementRoutes, { prefix: '/partenaire-tech/accompagnements' });
 
       // Vue 360°
       api.register(useCasesRoutes, { prefix: '/use-cases' });
@@ -1121,6 +1147,7 @@ export async function registerRoutes(app: FastifyInstance) {
       api.register(registresUseCaseRoutes, { prefix: '/use-cases' });
       api.register(notificationsMeRoutes, { prefix: '/me' });
       api.register(notificationsRoutes, { prefix: '/notifications' });
+      api.register(newDealRoutes, { prefix: '/new-deal' });
     },
     { prefix: '/api' }
   );

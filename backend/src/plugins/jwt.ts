@@ -8,7 +8,7 @@ import { env } from '../config/env.js';
 // Inactivité > 10min ou logout forcé => 401.
 async function assertSessionActive(app: FastifyInstance, request: any): Promise<boolean> {
   const authHeader = request.headers.authorization;
-  if (!authHeader) return true; // route publique, pas de session à vérifier
+  if (!authHeader) return true;
   const token = authHeader.replace(/^Bearer\s+/i, '');
   if (!token) return true;
   const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
@@ -17,12 +17,10 @@ async function assertSessionActive(app: FastifyInstance, request: any): Promise<
       where: { tokenHash },
       select: { isActive: true },
     });
-    // Tolérance : si la session n'existe pas (cas d'un JWT généré avant le déploiement
-    // ou via refresh non encore intégré), on laisse passer. Sinon, refus si inactive.
     if (session && !session.isActive) return false;
     return true;
   } catch {
-    return true; // ne bloque pas si la DB est indisponible
+    return true;
   }
 }
 
@@ -31,17 +29,19 @@ declare module '@fastify/jwt' {
     payload: {
       id: string;
       email: string;
-      role: 'ADMIN' | 'INSTITUTION' | 'BAILLEUR';
+      role: 'ADMIN' | 'INSTITUTION' | 'BAILLEUR' | 'PARTENAIRE_TECHNIQUE';
       institutionId?: string;
       ptfId?: string;
+      organisationId?: string;
       cguAccepted?: boolean;
     };
     user: {
       id: string;
       email: string;
-      role: 'ADMIN' | 'INSTITUTION' | 'BAILLEUR';
+      role: 'ADMIN' | 'INSTITUTION' | 'BAILLEUR' | 'PARTENAIRE_TECHNIQUE';
       institutionId?: string;
       ptfId?: string;
+      organisationId?: string;
       cguAccepted?: boolean;
     };
   }
@@ -101,6 +101,25 @@ async function jwtPlugin(fastify: FastifyInstance) {
       reply.status(401).send({ error: 'Unauthorized', message: 'Invalid or expired token' });
     }
   });
+
+  // P13-CONC — Middleware Partenaire Technique (AMO/prestataire)
+  // Vérifie : JWT valide + role=PARTENAIRE_TECHNIQUE + organisationId présent
+  fastify.decorate('authenticatePartenaireTechnique', async function (request: any, reply: any) {
+    try {
+      await request.jwtVerify();
+      if (!(await assertSessionActive(fastify, request))) {
+        return reply.status(401).send({ error: 'SessionExpired', message: 'Votre session a expiré après 10 minutes d\'inactivité. Veuillez vous reconnecter.' });
+      }
+      if (request.user.role !== 'PARTENAIRE_TECHNIQUE') {
+        return reply.status(403).send({ error: 'Forbidden', message: 'Accès réservé aux Partenaires Techniques (AMO)' });
+      }
+      if (!request.user.organisationId) {
+        return reply.status(403).send({ error: 'Forbidden', message: 'Compte partenaire technique non rattaché à une organisation' });
+      }
+    } catch (err) {
+      reply.status(401).send({ error: 'Unauthorized', message: 'Invalid or expired token' });
+    }
+  });
 }
 
 declare module 'fastify' {
@@ -108,6 +127,7 @@ declare module 'fastify' {
     authenticate: (request: any, reply: any) => Promise<void>;
     authenticateAdmin: (request: any, reply: any) => Promise<void>;
     authenticateBailleur: (request: any, reply: any) => Promise<void>;
+    authenticatePartenaireTechnique: (request: any, reply: any) => Promise<void>;
   }
 }
 

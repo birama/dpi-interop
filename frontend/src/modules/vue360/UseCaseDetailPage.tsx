@@ -19,6 +19,9 @@ import { TransitionsTimeline } from './TransitionsTimeline';
 import { RegistresTouchesTable } from './RegistresTouchesTable';
 import { FeedbackModal } from './FeedbackModal';
 import { RelationsBlock } from './RelationsBlock';
+import { ManifestationsPtfBlock } from './ManifestationsPtfBlock';
+import { ProjetsNationauxBlock } from './ProjetsNationauxBlock';
+import { DataContractBlock } from './DataContractBlock';
 
 export function UseCaseDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -123,6 +126,14 @@ export function UseCaseDetailPage() {
           {/* Referentiels touches */}
           <RegistresTouchesTable registres={cu.registresAssocies || []} />
 
+          {/* Manifestations PTF sur ce cas (admin only) */}
+          {user?.role === 'ADMIN' && cu.id && (
+            <ManifestationsPtfBlock casUsageId={cu.id} />
+          )}
+
+          {/* Projets New Deal Technologique associés */}
+          {cu.id && <ProjetsNationauxBlock casUsageId={cu.id} />}
+
           {/* Fil d'avis formels */}
           <FeedbacksFeed
             stakeholders={cu.stakeholders360 || []}
@@ -130,6 +141,9 @@ export function UseCaseDetailPage() {
             onGiveFeedback={myConsultationId ? openModal : undefined}
             onAmended={() => refetch()}
           />
+
+          {/* Contrat de données (entrée / sortie / lecture) */}
+          <DataContractBlock cu={cu} />
 
           {/* Specs techniques (accordion) */}
           {(cu.donneesEchangees || cu.description) && (

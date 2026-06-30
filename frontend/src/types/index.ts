@@ -2,7 +2,7 @@
 // USER & AUTH
 // ============================================================================
 
-export type Role = 'ADMIN' | 'INSTITUTION' | 'BAILLEUR';
+export type Role = 'ADMIN' | 'INSTITUTION' | 'BAILLEUR' | 'PARTENAIRE_TECHNIQUE';
 
 export interface User {
   id: string;
@@ -11,6 +11,7 @@ export interface User {
   institutionId: string | null;
   institution?: Institution;
   ptfId?: string | null;
+  organisationId?: string | null;
   cguAccepted?: boolean;
   lastLoginAt: string | null;
   createdAt: string;
@@ -318,6 +319,7 @@ export const ROLE_LABELS: Record<Role, string> = {
   ADMIN: 'Administrateur',
   INSTITUTION: 'Institution',
   BAILLEUR: 'Partenaire Technique et Financier',
+  PARTENAIRE_TECHNIQUE: 'Partenaire Technique (AMO)',
 };
 
 export const QUESTIONNAIRE_STEPS = [
@@ -328,3 +330,99 @@ export const QUESTIONNAIRE_STEPS = [
   { id: 4, title: 'Maturité', description: 'Contraintes et auto-évaluation' },
   { id: 5, title: 'Attentes', description: 'Attentes et contributions' },
 ];
+
+// ============================================================================
+// ACCOMPAGNEMENT AMO (P14-CONC)
+// ============================================================================
+
+export type TypeAccompagnement = 'ROADMAP_V0' | 'ROADMAP_V1' | 'IMPLEMENTATION' | 'AUDIT' | 'STANDARDISATION' | 'FORMATION' | 'AUTRE';
+export type StatutAccompagnement = 'ACTIF' | 'SUSPENDU' | 'TERMINE';
+export type TypeJalon = 'DIAGNOSTIC' | 'CADRAGE' | 'POC' | 'IMPLEMENTATION' | 'RECETTE' | 'MISE_EN_PRODUCTION' | 'AUDIT_QUALITE' | 'AUTRE';
+export type StatutJalon = 'PLANIFIE' | 'EN_COURS' | 'REALISE' | 'REPORTE' | 'ANNULE';
+export type VisibiliteCommentaire = 'DU_ET_AMO' | 'DU_ONLY' | 'AMO_ONLY';
+
+export const TYPE_ACCOMPAGNEMENT_LABELS: Record<TypeAccompagnement, string> = {
+  ROADMAP_V0: 'Roadmap V0',
+  ROADMAP_V1: 'Roadmap V1',
+  IMPLEMENTATION: 'Implémentation',
+  AUDIT: 'Audit',
+  STANDARDISATION: 'Standardisation',
+  FORMATION: 'Formation',
+  AUTRE: 'Autre',
+};
+
+export const STATUT_ACCOMPAGNEMENT_LABELS: Record<StatutAccompagnement, string> = {
+  ACTIF: 'Actif',
+  SUSPENDU: 'Suspendu',
+  TERMINE: 'Terminé',
+};
+
+export const TYPE_JALON_LABELS: Record<TypeJalon, string> = {
+  DIAGNOSTIC: 'Diagnostic',
+  CADRAGE: 'Cadrage',
+  POC: 'POC',
+  IMPLEMENTATION: 'Implémentation',
+  RECETTE: 'Recette',
+  MISE_EN_PRODUCTION: 'Mise en production',
+  AUDIT_QUALITE: 'Audit qualité',
+  AUTRE: 'Autre',
+};
+
+export const STATUT_JALON_LABELS: Record<StatutJalon, string> = {
+  PLANIFIE: 'Planifié',
+  EN_COURS: 'En cours',
+  REALISE: 'Réalisé',
+  REPORTE: 'Reporté',
+  ANNULE: 'Annulé',
+};
+
+export const VISIBILITE_LABELS: Record<VisibiliteCommentaire, string> = {
+  DU_ET_AMO: 'DU & AMO',
+  DU_ONLY: 'DU uniquement',
+  AMO_ONLY: 'AMO uniquement',
+};
+
+export interface AccompagnementAMO {
+  id: string;
+  organisationId: string;
+  organisation?: { id: string; nom: string; type: string };
+  casUsageMVPId: string;
+  casUsageMVP?: { id: string; code: string; titre: string; statutVueSection?: string; statutImpl?: string; domaine?: string; description?: string; resumeMetier?: string };
+  type: TypeAccompagnement;
+  statut: StatutAccompagnement;
+  scoreMaturite?: number | null;
+  description?: string | null;
+  dateDebut?: string | null;
+  dateFinPrevue?: string | null;
+  dateFinEffective?: string | null;
+  jalons?: JalonAccompagnement[];
+  commentaires?: CommentaireAMO[];
+  _count?: { jalons: number; commentaires: number };
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface JalonAccompagnement {
+  id: string;
+  accompagnementId: string;
+  type: TypeJalon;
+  libelle: string;
+  description?: string | null;
+  trimestre?: string | null;
+  statut: StatutJalon;
+  ordre: number;
+  datePrevue?: string | null;
+  dateReelle?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CommentaireAMO {
+  id: string;
+  accompagnementId: string;
+  contenu: string;
+  visibilite: VisibiliteCommentaire;
+  createdBy: string;
+  createdAt: string;
+  updatedAt: string;
+}

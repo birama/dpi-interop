@@ -1,0 +1,28 @@
+À      : Mohamed DIABY <mohamed.diaby@mctn.gouv.sn>
+CC     : Moctar <moctar@mctn.gouv.sn>
+Objet  : Note de cadrage stratégique — Module Partenaires Techniques et Financiers (PTF) sur PINS — Pour validation
+
+---
+
+Bonjour Monsieur le Directeur,
+
+Suite à la démonstration PINS du 5 mai et en préparation de l'atelier stratégique du 19 mai prochain, je vous transmets pour validation la note de cadrage du module Partenaires Techniques et Financiers (PTF) que nous nous proposons d'intégrer à la plateforme PINS.
+
+Cette note pose les bases d'un outil de coordination des appuis extérieurs à la transformation numérique du Sénégal, dans le respect des principes de souveraineté, de pilotage MCTN et de validation institutionnelle qui structurent déjà PINS. Elle vise à transformer la plateforme en référence nationale pour l'alignement des partenaires (Banque Mondiale, GIZ, JICA, Fondation Gates, et autres) sur le portefeuille de cas d'usage validé par l'État.
+
+Le document soumis à validation est structuré en dix sections et cinq annexes (architecture, permissions, parcours utilisateur, référentiel PTF, et clauses minimales d'accès). Sept décisions structurantes sont soumises à votre arbitrage : périmètre fonctionnel, architecture technique, calendrier, stratégie pour l'atelier du 19 mai, niveau d'information visible par les partenaires, cadre juridique d'accès, et instance de revue périodique.
+
+La proposition stratégique est de ne pas chercher à livrer le module en six jours pour l'atelier, mais de présenter lors de celui-ci la vision et la trajectoire (livraison cible fin juin 2026), tout en recueillant six engagements concrets de chaque partenaire participant. Cette approche privilégie la qualité du livrable et préserve la crédibilité institutionnelle du MCTN.
+
+Je suis à votre disposition pour une revue collégiale d'une heure à votre convenance, ou pour intégrer vos retours par voie écrite. La date de validation cible est le vendredi 16 mai 2026, pour permettre un démarrage opérationnel du développement le lundi 19 mai en parallèle de l'atelier.
+
+En vous remerciant pour votre attention,
+
+Cordialement,
+
+Birama DIOP
+Point Focal National d'Interopérabilité
+Délégation à l'Architecture DPI
+MCTN / SENUM SA
+
+Pièce jointe : MCTN_DU_NCS-PINS-PTF-2026-01_v0.3.md (30 pages)
