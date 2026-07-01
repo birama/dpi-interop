@@ -456,6 +456,7 @@ async function fluxInstitutionRoutes(app: FastifyInstance) {
         institutionSourceCode,
         institutionCibleCode,
         donneesEchangees,
+        typologie: 'TECHNIQUE',
         statutImpl: 'IDENTIFIE',
         impact: 'MOYEN',
       },
