@@ -328,7 +328,7 @@ export function CorrespondanceEsenegalPage() {
                   {rows.map((cu) => (
                     <tr key={cu.id} className="hover:bg-gray-50 align-top">
                       <td className="px-4 py-3">
-                        <Link to={`/use-cases/${cu.id}`} className="text-navy hover:underline font-mono text-xs">
+                        <Link to={`/admin/cas-usage/${cu.id}`} className="text-navy hover:underline font-mono text-xs">
                           {cu.code}
                         </Link>
                         <div className="text-gray-800 mt-0.5">{cu.titre}</div>
