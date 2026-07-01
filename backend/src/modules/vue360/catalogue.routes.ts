@@ -825,21 +825,47 @@ async function executeAdoption(app: any, params: {
     });
     if (!inst) throw new Error('Institution initiatrice non trouvee');
 
-    // Generer un nouveau code PINS-CU-XXX (distinct de PINS-PROP-XXX)
-    const lastCu = await tx.casUsageMVP.findFirst({
-      where: { code: { startsWith: 'PINS-CU-' } },
-      orderBy: { code: 'desc' },
-    });
-    const nextNum = lastCu ? parseInt(lastCu.code.replace('PINS-CU-', '')) + 1 : 1;
-    const newCode = `PINS-CU-${String(nextNum).padStart(3, '0')}`;
+    // Generer le code definitif selon la nature du code existant :
+    // - PINS-METIER-* / PINS-TECH-* deja definitif → conserve tel quel, jamais reassigne
+    // - PINS-PROP-* (proposition) → genere le prochain sequentiel de la bonne famille
+    const oldCode = cu.code;
+    let newCode: string;
+    let codeHistorique: string | null = cu.codeHistorique;
 
-    // Bascule PROPOSE -> DECLARE, rename code, enregistrement adoption
+    if (oldCode.startsWith('PINS-METIER-') || oldCode.startsWith('PINS-TECH-')) {
+      // Code deja definitif : ne jamais reassigner (fix bug PINS-CU-XXX)
+      newCode = oldCode;
+    } else {
+      // Proposition : generer le prochain code sequentiel de la famille
+      const prefix = cu.typologie === 'METIER' ? 'PINS-METIER-' : 'PINS-TECH-';
+      const padding = cu.typologie === 'METIER' ? 3 : 4;
+
+      const lastInFamily = await tx.casUsageMVP.findFirst({
+        where: { code: { startsWith: prefix } },
+        orderBy: { code: 'desc' },
+      });
+
+      let nextNum = 1;
+      if (lastInFamily) {
+        const match = lastInFamily.code.match(new RegExp(`^${prefix.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(\\d+)$`));
+        if (match) nextNum = parseInt(match[1], 10) + 1;
+      }
+      newCode = `${prefix}${String(nextNum).padStart(padding, '0')}`;
+
+      // Preserver l'ancien code proposition dans codeHistorique
+      codeHistorique = cu.codeHistorique
+        ? `${cu.codeHistorique}, ${oldCode}`
+        : oldCode;
+    }
+
+    // Bascule PROPOSE -> DECLARE, assigner code definitif, enregistrement adoption
     await tx.casUsageMVP.update({
       where: { id: casUsageId },
       data: {
         statutVueSection: 'DECLARE',
         code: newCode,
-        ancienCode: cu.code,
+        ...(newCode !== oldCode ? { ancienCode: oldCode } : {}),
+        codeHistorique,
         institutionSourceCode: inst.code,
         dateAdoption: new Date(),
         adopteParInstitutionId: institutionInitiatriceId,
