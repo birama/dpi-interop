@@ -26,9 +26,10 @@ export async function liaisonsGuichetRoutes(app: FastifyInstance) {
 
   // ===========================================================================
   // GET /services-guichet — Liste des ServiceGuichet (filtres optionnels)
+  //   ?avecLiaisons=true : inclut les liaisons existantes et leur CasUsageMVP
   // ===========================================================================
   app.get('/services-guichet', { onRequest: [app.authenticate] }, async (req: any, reply: any) => {
-    const { q, secteur, publicCible, avecBesoinSiTiers } = req.query as any;
+    const { q, secteur, publicCible, avecBesoinSiTiers, avecLiaisons } = req.query as any;
 
     const where: any = {};
     if (secteur) where.secteur = secteur;
@@ -44,6 +45,17 @@ export async function liaisonsGuichetRoutes(app: FastifyInstance) {
       ];
     }
 
+    const include: any = {};
+    if (avecLiaisons === 'true') {
+      include.liaisons = {
+        orderBy: { dateAjout: 'desc' },
+        select: {
+          id: true, mode: true, note: true, dateAjout: true,
+          casUsage: { select: { id: true, code: true, titre: true, domaine: true } },
+        },
+      };
+    }
+
     const items = await app.prisma.serviceGuichet.findMany({
       where,
       orderBy: [{ secteur: 'asc' }, { code: 'asc' }],
@@ -51,9 +63,78 @@ export async function liaisonsGuichetRoutes(app: FastifyInstance) {
         id: true, code: true, intitule: true, evenementDeVie: true,
         secteur: true, publicCible: true, statutEsenegal: true,
         ministere: true, besoinSiTiers: true,
+        ...(avecLiaisons === 'true' ? { liaisons: include.liaisons } : {}),
       },
     });
     return reply.send({ total: items.length, items });
+  });
+
+  // ===========================================================================
+  // POST /services-guichet — Ajouter une démarche (DU only)
+  //   body : { intitule, secteur?, evenementDeVie?, publicCible?,
+  //            statutEsenegal?, besoinSiTiers? }
+  //   Code PINS-GUICHET-NNN auto-généré. Idempotent sur (intitule, secteur).
+  // ===========================================================================
+  app.post('/services-guichet', { onRequest: [app.authenticateAdmin] }, async (req: any, reply: any) => {
+    const { intitule, secteur, evenementDeVie, publicCible, statutEsenegal, besoinSiTiers } = (req.body || {}) as any;
+    const user = req.user;
+
+    if (!intitule || typeof intitule !== 'string' || intitule.trim().length === 0) {
+      return reply.status(400).send({ error: 'intitule requis (string non vide)' });
+    }
+    const intituleClean = intitule.trim();
+    const secteurClean = typeof secteur === 'string' && secteur.trim().length > 0 ? secteur.trim() : null;
+
+    // Idempotence : lookup par (intitule, secteur)
+    const existing = await app.prisma.serviceGuichet.findFirst({
+      where: { intitule: intituleClean, ...(secteurClean === null ? { secteur: null } : { secteur: secteurClean }) },
+    });
+    if (existing) {
+      return reply.status(409).send({ error: 'Ce service existe déjà', existing });
+    }
+
+    // Générer le prochain code PINS-GUICHET-NNN
+    const lastCode = await app.prisma.serviceGuichet.findFirst({
+      where: { code: { startsWith: 'PINS-GUICHET-' } },
+      orderBy: { code: 'desc' },
+    });
+    let nextNum = 1;
+    if (lastCode) {
+      const match = lastCode.code.match(/^PINS-GUICHET-(\d{3})$/);
+      if (match) nextNum = parseInt(match[1], 10) + 1;
+    }
+    if (nextNum > 999) {
+      return reply.status(500).send({ error: 'Capacité PINS-GUICHET-NNN épuisée (999)' });
+    }
+    const code = `PINS-GUICHET-${String(nextNum).padStart(3, '0')}`;
+
+    const created = await app.prisma.serviceGuichet.create({
+      data: {
+        code,
+        intitule: intituleClean,
+        secteur: secteurClean,
+        evenementDeVie: typeof evenementDeVie === 'string' && evenementDeVie.trim().length > 0 ? evenementDeVie.trim() : null,
+        publicCible: ['CITOYEN', 'ENTREPRISE', 'MIXTE'].includes(publicCible) ? publicCible : null,
+        statutEsenegal: typeof statutEsenegal === 'string' && statutEsenegal.trim().length > 0 ? statutEsenegal.trim() : null,
+        besoinSiTiers: typeof besoinSiTiers === 'string' && besoinSiTiers.trim().length > 0 ? besoinSiTiers.trim() : null,
+        mode: 'AJOUT_MANUEL_DU',
+        ajoutePar: user?.id ?? null,
+      },
+    });
+
+    try {
+      await app.prisma.auditLog.create({
+        data: {
+          userId: user.id, userEmail: user.email, userRole: user.role,
+          action: 'CREATE', resource: 'service-guichet', resourceId: created.id,
+          resourceLabel: `${code} — ${intituleClean}`,
+          ipAddress: req.headers['x-forwarded-for']?.toString() || req.ip,
+          userAgent: req.headers['user-agent'],
+        },
+      });
+    } catch {}
+
+    return reply.status(201).send(created);
   });
 
   // ===========================================================================
