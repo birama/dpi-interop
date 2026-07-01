@@ -58,7 +58,7 @@ docker run -d --name pins-api \
   --env-file backend/.env \
   -v /opt/dpi-interop/uploads:/app/uploads \
   --restart always \
-  dpi-interop-backend
+  questionnaire-interop-backend
 
 echo "Waiting for backend..."
 for i in $(seq 1 12); do
@@ -82,7 +82,7 @@ docker run -d --name pins-frontend \
   -p 443:443 \
   -v /opt/dpi-interop/certs:/etc/nginx/certs:ro \
   --restart always \
-  dpi-interop-frontend
+  questionnaire-interop-frontend
 
 sleep 5
 docker ps --format '{{.Names}}' | grep -q pins-frontend || { echo "FAIL: Frontend"; docker logs pins-frontend --tail 10; exit 1; }
