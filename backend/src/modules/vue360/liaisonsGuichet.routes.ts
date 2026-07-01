@@ -25,6 +25,27 @@ import { FastifyInstance } from 'fastify';
 export async function liaisonsGuichetRoutes(app: FastifyInstance) {
 
   // ===========================================================================
+  // GET /services-guichet/:id — Détail d'un ServiceGuichet
+  //   Inclut les liaisons et leur CasUsageMVP
+  // ===========================================================================
+  app.get('/services-guichet/:id', { onRequest: [app.authenticate] }, async (req: any, reply: any) => {
+    const svc = await app.prisma.serviceGuichet.findUnique({
+      where: { id: req.params.id },
+      include: {
+        liaisons: {
+          orderBy: { dateAjout: 'desc' },
+          select: {
+            id: true, mode: true, note: true, dateAjout: true,
+            casUsage: { select: { id: true, code: true, titre: true, domaine: true, typologie: true } },
+          },
+        },
+      },
+    });
+    if (!svc) return reply.status(404).send({ error: 'ServiceGuichet non trouvé' });
+    return reply.send(svc);
+  });
+
+  // ===========================================================================
   // GET /services-guichet — Liste des ServiceGuichet (filtres optionnels)
   //   ?avecLiaisons=true : inclut les liaisons existantes et leur CasUsageMVP
   // ===========================================================================
