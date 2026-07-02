@@ -342,6 +342,11 @@ export const documentsApi = {
   create: (data: any) => api.post('/documents', data),
   update: (id: string, data: any) => api.patch(`/documents/${id}`, data),
   delete: (id: string) => api.delete(`/documents/${id}`),
+  upload: (file: File) => {
+    const fd = new FormData();
+    fd.append('file', file);
+    return api.post('/documents/upload', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
+  },
 };
 
 // ============================================================================

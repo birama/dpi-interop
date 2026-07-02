@@ -1030,6 +1030,34 @@ async function casUsageDetailRoutes(app: FastifyInstance) {
 // DOCUMENTS RÉFÉRENCE
 // ============================================================================
 async function documentsRoutes(app: FastifyInstance) {
+  // Register multipart for file uploads
+  try { const m = await import('@fastify/multipart'); await app.register(m.default, { limits: { fileSize: 50 * 1024 * 1024 } }); } catch {}
+
+  // File upload endpoint (admin only)
+  app.post('/upload', { onRequest: [app.authenticateAdmin] }, async (req: any, reply: any) => {
+    try {
+      const data = await req.file();
+      if (!data) return reply.status(400).send({ error: 'Fichier requis' });
+      const buffer = await data.toBuffer();
+      const originalName = data.filename;
+      const safeName = `${Date.now()}-${originalName.replace(/[^a-zA-Z0-9._-]/g, '_')}`;
+      const fs = await import('fs');
+      const path = await import('path');
+      const uploadDir = '/app/uploads/documents';
+      if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
+      const filePath = path.join(uploadDir, safeName);
+      fs.writeFileSync(filePath, buffer);
+      const sizeMo = Math.round((buffer.length / (1024 * 1024)) * 100) / 100;
+      return reply.send({
+        fichierNom: originalName,
+        fichierPath: `/uploads/documents/${safeName}`,
+        tailleMo: sizeMo > 0 ? sizeMo : null,
+      });
+    } catch (err: any) {
+      return reply.status(500).send({ error: 'Erreur upload: ' + (err.message || 'inconnue') });
+    }
+  });
+
   // List (accessible à tous les utilisateurs connectés)
   app.get('/', { onRequest: [app.authenticate] }, async (req: any, reply: any) => {
     const where: any = {};

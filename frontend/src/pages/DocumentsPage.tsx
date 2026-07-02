@@ -8,7 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { documentsApi } from '@/services/api';
 import { useAuthStore } from '@/store/auth';
 import { useToast } from '@/components/ui/use-toast';
-import { FileText, Download, Plus, X, Pencil, Trash2, Loader2, Scale, Cpu, BookOpen, FileCheck } from 'lucide-react';
+import { FileText, Download, Plus, X, Pencil, Trash2, Loader2, Scale, Cpu, BookOpen, FileCheck, Upload } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const CATEGORIES: Record<string, { label: string; icon: any; color: string }> = {
@@ -139,8 +139,33 @@ export function DocumentsPage() {
                 </div>
                 <div><Label className="text-xs">Taille (Mo)</Label><Input type="number" value={form.tailleMo || ''} onChange={e => setForm({ ...form, tailleMo: parseFloat(e.target.value) || null })} className="h-8 text-sm" /></div>
               </div>
-              <div><Label className="text-xs">Nom du fichier</Label><Input value={form.fichierNom || ''} onChange={e => setForm({ ...form, fichierNom: e.target.value })} className="h-8 text-sm" placeholder="Ex: RGI-Senegal-2026.pdf" /></div>
-              <div><Label className="text-xs">Chemin / URL du fichier</Label><Input value={form.fichierPath || ''} onChange={e => setForm({ ...form, fichierPath: e.target.value })} className="h-8 text-sm" placeholder="Ex: /uploads/documents/rgi.pdf ou URL Drive" /></div>
+              <div>
+                <Label className="text-xs">Fichier</Label>
+                {form.fichierPath ? (
+                  <div className="flex items-center gap-2 p-2 bg-green-50 border border-green-200 rounded text-xs">
+                    <FileText className="w-3.5 h-3.5 text-green-600" />
+                    <span className="text-green-700 truncate flex-1">{form.fichierNom} ({form.tailleMo ? form.tailleMo + ' Mo' : '—'})</span>
+                    <button onClick={() => setForm({ ...form, fichierNom: '', fichierPath: '', tailleMo: '' })} className="text-red-500 hover:text-red-700"><X className="w-3.5 h-3.5" /></button>
+                  </div>
+                ) : (
+                  <div className="flex gap-2">
+                    <label className="flex-1 flex items-center gap-2 px-3 py-2 border rounded-md cursor-pointer hover:bg-gray-50 text-sm text-gray-600">
+                      <Upload className="w-4 h-4" />
+                      Parcourir les fichiers...
+                      <input type="file" className="hidden" onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+                        try {
+                          const res = await documentsApi.upload(file);
+                          setForm({ ...form, fichierNom: res.data.fichierNom, fichierPath: res.data.fichierPath, tailleMo: res.data.tailleMo });
+                          toast({ title: 'Fichier téléversé' });
+                        } catch { toast({ title: 'Erreur téléversement', variant: 'destructive' }); }
+                      }} />
+                    </label>
+                  </div>
+                )}
+              </div>
+              <div><Label className="text-xs">Ou lien Drive / URL externe</Label><Input value={form.fichierPath || ''} onChange={e => setForm({ ...form, fichierPath: e.target.value, fichierNom: e.target.value ? form.fichierNom || e.target.value.split('/').pop() || '' : form.fichierNom })} className="h-8 text-sm" placeholder="https://drive.google.com/... ou URL" /></div>
               <Button size="sm" className="bg-teal hover:bg-teal-dark" disabled={!form.titre || !form.fichierNom || !form.fichierPath}
                 onClick={() => {
                   const d = { titre: form.titre, description: form.description, categorie: form.categorie, fichierNom: form.fichierNom, fichierPath: form.fichierPath, tailleMo: form.tailleMo };
