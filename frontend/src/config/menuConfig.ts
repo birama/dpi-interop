@@ -77,6 +77,7 @@ export const MENU_SECTIONS: MenuSection[] = [
       { name: 'Couverture referentiels', href: '/registres/couverture', icon: Database },
       { name: 'Correspondance e-senegal', href: '/catalogue/correspondance-esenegal', icon: Globe },
       { name: 'Services guichet', href: '/catalogue/services-guichet', icon: Globe },
+      { name: 'Institutions', href: '/catalogue/institutions', icon: Building2 },
     ],
   },
   {

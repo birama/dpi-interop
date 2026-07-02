@@ -41,6 +41,7 @@ import { PropositionDetailPage } from '@/modules/vue360/catalogue/PropositionDet
 import { ParcoursMetierPage, ServicesTechniquesPage } from '@/modules/vue360/catalogue/TypologieListPage';
 import { CorrespondanceEsenegalPage } from '@/pages/CorrespondanceEsenegalPage';
 import { ServicesGuichetPage } from '@/pages/ServicesGuichetPage';
+import { InstitutionsCataloguePage } from '@/pages/InstitutionsCataloguePage';
 import { AdoptionRequestsPage } from '@/modules/vue360/du/AdoptionRequestsPage';
 import { DocumentsPage } from '@/pages/DocumentsPage';
 import { NotFoundPage } from '@/pages/NotFoundPage';
@@ -455,6 +456,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <ServicesGuichetPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/catalogue/institutions"
+            element={
+              <ProtectedRoute>
+                <InstitutionsCataloguePage />
               </ProtectedRoute>
             }
           />
