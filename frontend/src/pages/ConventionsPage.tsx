@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -117,16 +117,15 @@ export function ConventionsPage() {
         <Card className="border-l-4 border-l-gold"><CardContent className="pt-4"><p className="text-xs text-gray-500">En attente</p><p className="text-2xl font-bold text-gold">{convList.length - signees}</p></CardContent></Card>
       </div>
 
-      {/* Formulaire création/édition */}
+      {/* Modal création/édition */}
       {showForm && (
-        <Card className="border-2 border-teal/30">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-navy">{editing ? 'Modifier la convention' : 'Nouvelle convention'}</CardTitle>
-              <button onClick={closeForm}><X className="w-5 h-5 text-gray-400" /></button>
+        <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/40 pt-10 overflow-y-auto">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl mx-4 mb-10">
+            <div className="flex items-center justify-between px-4 py-3 border-b">
+              <h2 className="text-sm font-bold text-navy">{editing ? 'Modifier la convention' : 'Nouvelle convention'}</h2>
+              <button onClick={closeForm}><X className="w-5 h-5 text-gray-400 hover:text-gray-600" /></button>
             </div>
-          </CardHeader>
-          <CardContent className="space-y-4">
+            <div className="px-4 py-4 space-y-4">
             {/* Institutions */}
             <div className="grid grid-cols-2 gap-4">
               <div>
@@ -185,15 +184,16 @@ export function ConventionsPage() {
               <Textarea value={form.observations} onChange={e => setForm({ ...form, observations: e.target.value })} rows={2} />
             </div>
 
-            <div className="flex space-x-2">
+            <div className="flex justify-end gap-2 pt-3 border-t">
+              <Button variant="outline" onClick={closeForm}>Annuler</Button>
               <Button onClick={handleSave} disabled={!form.objet || (!editing && (!form.institutionAId || !form.institutionBId))} className="bg-teal hover:bg-teal-dark">
                 {(createMut.isPending || updateMut.isPending) ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
                 {editing ? 'Mettre à jour' : 'Créer'}
               </Button>
-              <Button variant="outline" onClick={closeForm}>Annuler</Button>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+          </div>
+        </div>
       )}
 
       {/* Tableau */}
