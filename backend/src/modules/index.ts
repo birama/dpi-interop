@@ -90,6 +90,14 @@ async function xroadRoutes(app: FastifyInstance) {
     try { await app.prisma.auditLog.create({ data: { userId: req.user.id, userEmail: req.user.email, userRole: req.user.role, action: 'UPDATE', resource: 'xroad-readiness', resourceId: institutionId, ipAddress: req.headers['x-forwarded-for']?.toString() || req.ip, userAgent: req.headers['user-agent'] } }); } catch {}
     return reply.send(readiness);
   });
+
+  // Delete
+  app.delete('/:institutionId', { onRequest: [app.authenticateAdmin] }, async (req: any, reply: any) => {
+    const { institutionId } = req.params;
+    await app.prisma.xRoadReadiness.delete({ where: { institutionId } });
+    try { await app.prisma.auditLog.create({ data: { userId: req.user.id, userEmail: req.user.email, userRole: req.user.role, action: 'DELETE', resource: 'xroad-readiness', resourceId: institutionId, ipAddress: req.headers['x-forwarded-for']?.toString() || req.ip, userAgent: req.headers['user-agent'] } }); } catch {}
+    return reply.send({ success: true });
+  });
 }
 
 // Graphe endpoint — agrège questionnaires + CasUsageMVP

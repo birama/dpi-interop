@@ -8,7 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { api } from '@/services/api';
 import { useAuthStore } from '@/store/auth';
 import { useToast } from '@/components/ui/use-toast';
-import { Loader2, CheckCircle, Circle, AlertTriangle, Clock, Pencil, X } from 'lucide-react';
+import { Loader2, CheckCircle, Circle, AlertTriangle, Clock, Pencil, X, Plus, Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const JALONS = [
@@ -44,6 +44,8 @@ export function XRoadPipelinePage() {
 
   const [editing, setEditing] = useState<any>(null);
   const [form, setForm] = useState<any>({});
+  const [showAdd, setShowAdd] = useState(false);
+  const [addInstSearch, setAddInstSearch] = useState('');
 
   const { data, isLoading } = useQuery({
     queryKey: ['xroad-readiness'],
@@ -55,10 +57,21 @@ export function XRoadPipelinePage() {
       api.put(`/xroad-readiness/${institutionId}`, body),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['xroad-readiness'] });
-      setEditing(null);
+      setEditing(null); setShowAdd(false); setAddInstSearch('');
       toast({ title: 'Pipeline mis à jour' });
     },
     onError: (e: any) => toast({ title: 'Erreur', description: e?.response?.data?.message || 'Échec de la mise à jour', variant: 'destructive' }),
+  });
+
+  const deleteMut = useMutation({
+    mutationFn: (institutionId: string) => api.delete(`/xroad-readiness/${institutionId}`),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['xroad-readiness'] }); toast({ title: 'Agence retirée du pipeline' }); },
+  });
+
+  const { data: allInst } = useQuery({
+    queryKey: ['xroad-institutions-list'],
+    queryFn: () => api.get('/institutions').then(r => r.data),
+    staleTime: 120_000,
   });
 
   if (isLoading) return <div className="flex items-center justify-center h-64"><Loader2 className="w-8 h-8 animate-spin text-teal" /></div>;
@@ -100,9 +113,16 @@ export function XRoadPipelinePage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-navy">Pipeline de déploiement X-Road</h1>
-        <p className="text-gray-500 mt-1">État réel des agences pilotes — synchronisé avec DAT PexOne v0.5</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-navy">Pipeline de déploiement X-Road</h1>
+          <p className="text-gray-500 mt-1">État réel des agences pilotes — synchronisé avec DAT PexOne v0.5</p>
+        </div>
+        {isAdmin && (
+          <Button size="sm" className="bg-teal hover:bg-teal-dark" onClick={() => setShowAdd(true)}>
+            <Plus className="w-3.5 h-3.5 mr-1" /> Ajouter une agence
+          </Button>
+        )}
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -176,9 +196,15 @@ export function XRoadPipelinePage() {
                     </td>
                     {isAdmin && (
                       <td className="p-3 text-center">
-                        <button onClick={() => openEdit(r)} className="p-1.5 hover:bg-teal-50 rounded" title="Modifier">
-                          <Pencil className="w-3.5 h-3.5 text-teal" />
-                        </button>
+                        <div className="flex items-center justify-center gap-1">
+                          <button onClick={() => openEdit(r)} className="p-1.5 hover:bg-teal-50 rounded" title="Modifier">
+                            <Pencil className="w-3.5 h-3.5 text-teal" />
+                          </button>
+                          <button onClick={() => { if (confirm(`Retirer ${r.institution?.code} du pipeline ?`)) deleteMut.mutate(r.institution?.id); }}
+                            className="p-1.5 hover:bg-red-50 rounded" title="Supprimer">
+                            <Trash2 className="w-3.5 h-3.5 text-red-400" />
+                          </button>
+                        </div>
                       </td>
                     )}
                   </tr>
@@ -345,6 +371,52 @@ export function XRoadPipelinePage() {
                   {updateMut.isPending ? <Loader2 className="w-3.5 h-3.5 animate-spin mr-1" /> : null}
                   Enregistrer
                 </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Ajouter une agence */}
+      {showAdd && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/40" onClick={() => { setShowAdd(false); setAddInstSearch(''); }} />
+          <div className="relative bg-white rounded-xl shadow-2xl w-full max-w-lg mx-4 max-h-[80vh] flex flex-col">
+            <div className="bg-navy text-white px-5 py-3 rounded-t-xl flex items-center justify-between">
+              <h3 className="font-bold text-sm">Ajouter une agence au pipeline</h3>
+              <button onClick={() => { setShowAdd(false); setAddInstSearch(''); }}><X className="w-4 h-4" /></button>
+            </div>
+            <div className="p-3">
+              <Input
+                autoFocus
+                value={addInstSearch}
+                onChange={e => setAddInstSearch(e.target.value)}
+                placeholder="Rechercher par code ou nom..."
+                className="h-8 text-sm"
+              />
+            </div>
+            <div className="overflow-y-auto flex-1 px-3 pb-3">
+              <div className="space-y-1">
+                {(allInst?.data || []).filter((i: any) => {
+                  if (!addInstSearch) return true;
+                  const q = addInstSearch.toLowerCase();
+                  return i.code?.toLowerCase().includes(q) || i.nom?.toLowerCase().includes(q);
+                }).filter((i: any) => !readiness.some((r: any) => r.institution?.id === i.id))
+                .slice(0, 30).map((i: any) => (
+                  <button
+                    key={i.id}
+                    onClick={() => {
+                      updateMut.mutate({ institutionId: i.id, body: { serveurDedie: 'NON_DEMARRE', connectiviteReseau: 'NON_DEMARRE', certificatsSSL: 'NON_DEMARRE', securityServerInstall: 'NON_DEMARRE', premierServicePublie: 'NON_DEMARRE', premierEchangeReussi: 'NON_DEMARRE', hebergement: 'SENUM_CENTRALISE' } });
+                    }}
+                    className="w-full text-left px-3 py-2 rounded hover:bg-teal-50 text-sm flex justify-between"
+                  >
+                    <span className="font-mono text-teal text-xs">{i.code}</span>
+                    <span className="text-gray-700 truncate ml-2">{i.nom}</span>
+                  </button>
+                ))}
+                {(allInst?.data || []).filter((i: any) => !readiness.some((r: any) => r.institution?.id === i.id)).length === 0 && (
+                  <p className="text-center text-gray-400 text-sm py-4">Toutes les institutions sont déjà dans le pipeline.</p>
+                )}
               </div>
             </div>
           </div>
