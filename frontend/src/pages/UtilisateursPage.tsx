@@ -66,6 +66,7 @@ export function UtilisateursPage() {
   const [resetPasswordUser, setResetPasswordUser] = useState<UserItem | null>(null);
   const [showBulkModal, setShowBulkModal] = useState(false);
   const [bulkResults, setBulkResults] = useState<BulkResult[] | null>(null);
+  const [deleteUser, setDeleteUser] = useState<UserItem | null>(null);
 
   // Forms
   const [createForm, setCreateForm] = useState({ email: '', password: '', role: 'INSTITUTION', institutionId: '', ptfId: '', organisationId: '', mustChangePassword: true });
@@ -318,7 +319,7 @@ export function UtilisateursPage() {
                         <KeyRound className="w-3.5 h-3.5 text-gold" />
                       </button>
                       <button
-                        onClick={() => { if (confirm(`Supprimer ${user.email} ?`)) deleteUserMut.mutate(user.id); }}
+                        onClick={() => setDeleteUser(user)}
                         className="p-1 hover:bg-red-50 rounded"
                         title="Supprimer"
                       >
@@ -335,6 +336,40 @@ export function UtilisateursPage() {
           </table>
         </div>
       </Card>
+
+      {/* ============ DELETE MODAL ============ */}
+      {deleteUser && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-sm mx-4">
+            <div className="flex items-center justify-between px-4 py-3 border-b">
+              <h2 className="text-sm font-bold text-navy">Confirmer la suppression</h2>
+              <button onClick={() => setDeleteUser(null)}><X className="w-4 h-4 text-gray-400 hover:text-gray-600" /></button>
+            </div>
+            <div className="px-4 py-4 space-y-3">
+              <div className="flex items-center gap-3 p-3 bg-red-50 border border-red-200 rounded">
+                <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
+                <p className="text-sm text-red-800">
+                  Cette action est <strong>irréversible</strong>. L'utilisateur perdra immédiatement l'accès à la plateforme.
+                </p>
+              </div>
+              <div className="text-sm space-y-1">
+                <div className="flex justify-between"><span className="text-gray-500">Email</span> <span className="font-medium">{deleteUser.email}</span></div>
+                <div className="flex justify-between"><span className="text-gray-500">Rôle</span> <span className={cn('px-1.5 py-0.5 rounded text-xs', ROLE_COLORS[deleteUser.role] || 'bg-gray-100')}>{ROLE_LABELS[deleteUser.role] || deleteUser.role}</span></div>
+                {deleteUser.institution && <div className="flex justify-between"><span className="text-gray-500">Institution</span> <span className="text-xs">{deleteUser.institution.code} — {deleteUser.institution.nom}</span></div>}
+              </div>
+            </div>
+            <div className="flex justify-end gap-2 px-4 py-3 border-t bg-gray-50 rounded-b-lg">
+              <Button size="sm" variant="outline" onClick={() => setDeleteUser(null)}>Annuler</Button>
+              <Button size="sm" className="bg-red-600 hover:bg-red-700 text-white"
+                onClick={() => { deleteUserMut.mutate(deleteUser.id); setDeleteUser(null); }}
+                disabled={deleteUserMut.isPending}>
+                {deleteUserMut.isPending ? <Loader2 className="w-3.5 h-3.5 animate-spin mr-1" /> : <Trash2 className="w-3.5 h-3.5 mr-1" />}
+                Supprimer
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ============ CREATE MODAL ============ */}
       {showCreateModal && (
