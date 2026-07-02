@@ -84,7 +84,7 @@ function LiaisonLine({ l, isAdmin, onConfirm, onDelete }: {
 }
 
 // ---- Page ----
-export function ServicesGuichetPage() {
+export function ServicesGuichetPage({ embedded }: { embedded?: boolean }) {
   const user = useAuthStore((s) => s.user);
   const isAdmin = user?.role === 'ADMIN';
   const qc = useQueryClient();
@@ -187,8 +187,8 @@ export function ServicesGuichetPage() {
     <div className="space-y-5">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-navy">Services guichet (e-sénégal)</h1>
-          <p className="text-sm text-gray-600 mt-1">Revue des démarches guichet, de leurs liaisons au catalogue PINS, et validation des correspondances.</p>
+          {!embedded && <h1 className="text-2xl font-bold text-navy">Services guichet (e-sénégal)</h1>}
+          {!embedded && <p className="text-sm text-gray-600 mt-1">Revue des démarches guichet, de leurs liaisons au catalogue PINS, et validation des correspondances.</p>}
         </div>
         {isAdmin && (
           <Button onClick={() => setShowAdd(true)} className="gap-2"><Plus className="h-4 w-4" /> Ajouter une démarche</Button>

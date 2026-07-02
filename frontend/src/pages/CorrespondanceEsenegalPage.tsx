@@ -131,7 +131,7 @@ function downloadCsv(rows: CasUsageRow[]) {
   URL.revokeObjectURL(url);
 }
 
-export function CorrespondanceEsenegalPage() {
+export function CorrespondanceEsenegalPage({ embedded }: { embedded?: boolean }) {
   const [domaine, setDomaine] = useState<string>('');
   const [publicCible, setPublicCible] = useState<string>('');
   const [expose, setExpose] = useState<'ALL' | 'OUI' | 'NON'>('ALL');
@@ -177,11 +177,8 @@ export function CorrespondanceEsenegalPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-navy">Correspondance PINS ↔ e-sénégal</h1>
-          <p className="text-sm text-gray-600 mt-1">
-            Grille jointe cas d'usage interop (backbone) ↔ services guichet citoyen (e-sénégal / TELEDAC).
-            Création / suppression des liaisons : depuis la fiche d'un cas d'usage.
-          </p>
+          {!embedded && <h1 className="text-2xl font-bold text-navy">Correspondance PINS ↔ e-sénégal</h1>}
+          {!embedded && <p className="text-sm text-gray-600 mt-1">Grille jointe cas d'usage interop (backbone) ↔ services guichet citoyen (e-sénégal / TELEDAC).</p>}
         </div>
         <Button onClick={() => downloadCsv(rows)} variant="outline" className="gap-2">
           <FileDown className="h-4 w-4" /> Exporter CSV

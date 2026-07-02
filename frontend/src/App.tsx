@@ -39,8 +39,7 @@ import { RegistresCouverturePage } from '@/modules/vue360/registres/RegistresCou
 import { CataloguePropositionsPage } from '@/modules/vue360/catalogue/CataloguePropositionsPage';
 import { PropositionDetailPage } from '@/modules/vue360/catalogue/PropositionDetailPage';
 import { ParcoursMetierPage, ServicesTechniquesPage } from '@/modules/vue360/catalogue/TypologieListPage';
-import { CorrespondanceEsenegalPage } from '@/pages/CorrespondanceEsenegalPage';
-import { ServicesGuichetPage } from '@/pages/ServicesGuichetPage';
+import { GuichetPage } from '@/pages/GuichetPage';
 import { InstitutionsCataloguePage } from '@/pages/InstitutionsCataloguePage';
 import { AdoptionRequestsPage } from '@/modules/vue360/du/AdoptionRequestsPage';
 import { DocumentsPage } from '@/pages/DocumentsPage';
@@ -445,17 +444,17 @@ function App() {
           />
           <Route
             path="/catalogue/correspondance-esenegal"
-            element={
-              <ProtectedRoute>
-                <CorrespondanceEsenegalPage />
-              </ProtectedRoute>
-            }
+            element={<Navigate to="/catalogue/guichet" replace />}
           />
           <Route
             path="/catalogue/services-guichet"
+            element={<Navigate to="/catalogue/guichet" replace />}
+          />
+          <Route
+            path="/catalogue/guichet"
             element={
               <ProtectedRoute>
-                <ServicesGuichetPage />
+                <GuichetPage />
               </ProtectedRoute>
             }
           />
