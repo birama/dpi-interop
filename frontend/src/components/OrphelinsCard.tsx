@@ -30,22 +30,25 @@ interface OrphelinsData {
 }
 
 function OrphelinsCard() {
-  const { data, isLoading } = useQuery<OrphelinsData>({
+  const { data, isLoading, isError } = useQuery<OrphelinsData>({
     queryKey: ['orphelins-coherence'],
     queryFn: () => api.get('/use-cases/orphelins').then(r => r.data),
     staleTime: 60000,
+    retry: false,
   });
 
   const { data: violations } = useQuery<any>({
     queryKey: ['orphelins-violations'],
     queryFn: () => api.get('/use-cases/orphelins/violations').then(r => r.data),
     staleTime: 60000,
+    retry: false,
   });
 
   if (isLoading) return null;
+  if (isError || !data) return null;
 
-  const d = data!;
-  const v = violations!;
+  const d = data;
+  const v = violations || {};
   const hasViolations = v.techsPRIORISEsansMetier?.total > 0 || v.metiersAvancesSansTech?.total > 0;
 
   return (
