@@ -1,0 +1,608 @@
+{
+  "meta": {
+    "operation": "Proposition d'enrichissement relationnel — 38 cas pilotes financiers",
+    "date": "2026-07-02",
+    "auteur_proposition": "Claude Code (modèle) — validation humaine Birama Diop avant exécution",
+    "perimetre": "38 cas EN_PRODUCTION_360 / QUALIFIE / PRIORISE de FINANCES_PUBLIQUES + frontières",
+    "regles_attribution": "Préfixe de titre (Douanes.Get* → DGD fournisseur, Impots.* → DGID fournisseur, Tresor.* → DGCPT fournisseur, ANSD.* → ANSD, DCEF.* / Budget.* / BCEAO.* explicites). Sens du flux respecté : le fournisseur est le détenteur de la donnée, le consommateur est l'administration qui en a besoin.",
+    "conventions": "A_ARBITRER = Claude Code pas sûr, validation humaine requise. Registres en mode CONSOMME pour les consultations, ALIMENTE pour les notifications/push, CREE pour les créations."
+  },
+  "projets_ndt_reference": {
+    "PRJ_4.2": "Plateforme Publique Numérique (authentification, signature, paiement, interopérabilité) — socle PINS",
+    "PRJ_4.2-GIZ": "GIZ Goin'Digital — Cartographie des cas d'usage financiers PINS",
+    "PRJ_4.1": "Recensement biométrique et identité fondationnelle (e-ID)",
+    "PRJ_6.2": "Guichet Unique et espaces de proximité du service public",
+    "PRJ_6.3": "Dématérialisation des processus internes de l'administration",
+    "PRJ_6.4": "Dématérialisation des services aux usagers (agents, entreprises, citoyens)"
+  },
+  "propositions": [
+    {
+      "code": "PINS-TECH-0051",
+      "titre": "Réconciliation recettes douanières-trésor",
+      "statut": "EN_PRODUCTION_360",
+      "domaine": "FINANCES_PUBLIQUES",
+      "institutions": [
+        { "code": "DGD", "role": "FOURNISSEUR", "justification": "DGD détient les données de recettes douanières" },
+        { "code": "DGCPT", "role": "CONSOMMATEUR", "justification": "Le Trésor consomme les données de recettes pour le rapprochement" },
+        { "code": "DGID", "role": "CONSOMMATEUR", "justification": "La DGID consomme le résultat du rapprochement" }
+      ],
+      "registres": [
+        { "code": "GAINDE", "mode": "CONSOMME", "justification": "Système de dédouanement — source des recettes douanières" },
+        { "code": "ASTER", "mode": "CONSOMME", "justification": "Système comptable du Trésor pour rapprochement" }
+      ],
+      "projet_ndt": "PRJ_4.2",
+      "note": "Déjà partiellement peuplé en base (DGD FOURNISSEUR, DGCPT PARTIE_PRENANTE). Compléter le rôle DGCPT → CONSOMMATEUR, ajouter DGID + registres."
+    },
+    {
+      "code": "PINS-METIER-550",
+      "titre": "Réconciliation fiscalo-douanière DGD ↔ DGID",
+      "statut": "PRIORISE",
+      "domaine": "FINANCES_PUBLIQUES",
+      "institutions": [
+        { "code": "DGD", "role": "FOURNISSEUR", "justification": "Données de déclarations douanières" },
+        { "code": "DGID", "role": "FOURNISSEUR", "justification": "Données de déclarations fiscales des contribuables" },
+        { "code": "DGCPT", "role": "CONSOMMATEUR", "justification": "Le Trésor consomme le résultat du croisement" }
+      ],
+      "registres": [
+        { "code": "GAINDE", "mode": "CONSOMME", "justification": "Source déclarations douanières" },
+        { "code": "SENTAX", "mode": "CONSOMME", "justification": "Source déclarations fiscales" },
+        { "code": "NINEA", "mode": "CONSOMME", "justification": "Pivot entreprise pour le croisement" }
+      ],
+      "projet_ndt": "PRJ_4.2-GIZ",
+      "note": "Croisement emblématique. DGID et DGD sont tous deux fournisseurs (de leurs données respectives)."
+    },
+    {
+      "code": "PINS-METIER-551",
+      "titre": "Cycle Liquidation → Recouvrement → Mainlevée (BAE)",
+      "statut": "PRIORISE",
+      "domaine": "FINANCES_PUBLIQUES",
+      "institutions": [
+        { "code": "DGD", "role": "FOURNISSEUR", "justification": "La Douane émet la liquidation et le bon à enlever" },
+        { "code": "DGCPT", "role": "CONSOMMATEUR", "justification": "Le Trésor reçoit les ordres de recouvrement" },
+        { "code": "DGID", "role": "CONSOMMATEUR", "justification": "La DGID reçoit les confirmations pour le dossier fiscal du contribuable" }
+      ],
+      "registres": [
+        { "code": "GAINDE", "mode": "CONSOMME", "justification": "Source liquidation douanière" },
+        { "code": "ASTER", "mode": "ALIMENTE", "justification": "Le flux alimente le système comptable Trésor" },
+        { "code": "SENTAX", "mode": "ALIMENTE", "justification": "Le flux met à jour le dossier fiscal" }
+      ],
+      "projet_ndt": "PRJ_4.2-GIZ",
+      "note": "Boucle complète liquidation→recouvrement→mainlevée. Chaque étape a un registre cible différent."
+    },
+    {
+      "code": "PINS-METIER-552",
+      "titre": "Notification des encaissements et quittances Trésor → DGID",
+      "statut": "PRIORISE",
+      "domaine": "FINANCES_PUBLIQUES",
+      "institutions": [
+        { "code": "DGCPT", "role": "FOURNISSEUR", "justification": "Le Trésor émet les quittances et encaissements" },
+        { "code": "DGID", "role": "CONSOMMATEUR", "justification": "La DGID met à jour le compte fiscal du contribuable" }
+      ],
+      "registres": [
+        { "code": "ASTER", "mode": "CONSOMME", "justification": "Source des encaissements" },
+        { "code": "SENTAX", "mode": "ALIMENTE", "justification": "Le flux met à jour le compte fiscal" }
+      ],
+      "projet_ndt": "PRJ_4.2-GIZ",
+      "note": "Flux unidirectionnel Trésor → DGID. Sens clair."
+    },
+    {
+      "code": "PINS-METIER-560",
+      "titre": "Tableau de bord macroéconomique temps réel",
+      "statut": "QUALIFIE",
+      "domaine": "FINANCES_PUBLIQUES",
+      "institutions": [
+        { "code": "ANSD", "role": "CONSOMMATEUR", "justification": "L'ANSD agrège les indicateurs pour le tableau de bord" },
+        { "code": "DGCPT", "role": "FOURNISSEUR", "justification": "Données d'exécution budgétaire" },
+        { "code": "DGID", "role": "FOURNISSEUR", "justification": "Données de recettes fiscales" },
+        { "code": "DGD", "role": "FOURNISSEUR", "justification": "Données de commerce extérieur" },
+        { "code": "MFB", "role": "CONSOMMATEUR", "justification": "Le ministère des Finances est destinataire du tableau de bord" }
+      ],
+      "registres": [
+        { "code": "SIGIF", "mode": "CONSOMME", "justification": "Source exécution budgétaire" }
+      ],
+      "projet_ndt": "PRJ_6.3",
+      "note": "A_ARBITRER : le rattachement NDT. Tableau de bord macro → PRJ_6.3 (processus internes) semble le plus proche. Alternative : PRJ_5.4 (entrepôt de données)."
+    },
+    {
+      "code": "PINS-METIER-561",
+      "titre": "Suivi temps réel de l'exécution du PRES",
+      "statut": "QUALIFIE",
+      "domaine": "FINANCES_PUBLIQUES",
+      "institutions": [
+        { "code": "MFB", "role": "FOURNISSEUR", "justification": "Le MEF pilote l'exécution du PRES" },
+        { "code": "DGCPT", "role": "FOURNISSEUR", "justification": "Données de trésorerie" },
+        { "code": "ANSD", "role": "CONSOMMATEUR", "justification": "Agrégation statistique" }
+      ],
+      "registres": [
+        { "code": "SIGIF", "mode": "CONSOMME", "justification": "Source budgétaire" }
+      ],
+      "projet_ndt": "PRJ_6.3",
+      "note": "A_ARBITRER : cas macro pilotage PRES. Les institutions précises sont à confirmer."
+    },
+    {
+      "code": "PINS-METIER-562",
+      "titre": "Production accélérée des comptes nationaux",
+      "statut": "QUALIFIE",
+      "domaine": "FINANCES_PUBLIQUES",
+      "institutions": [
+        { "code": "ANSD", "role": "CONSOMMATEUR", "justification": "L'ANSD produit les comptes nationaux" },
+        { "code": "DGCPT", "role": "FOURNISSEUR", "justification": "Données de finances publiques" },
+        { "code": "DGID", "role": "FOURNISSEUR", "justification": "Données fiscales" },
+        { "code": "DGD", "role": "FOURNISSEUR", "justification": "Données de commerce extérieur" }
+      ],
+      "registres": [
+        { "code": "SIGIF", "mode": "CONSOMME", "justification": "Source finances publiques" }
+      ],
+      "projet_ndt": "PRJ_5.4",
+      "note": "A_ARBITRER : NDT pertinent. PRJ_5.4 (entrepôt de données national) colle mieux que PRJ_6.x pour la production statistique."
+    },
+    {
+      "code": "PINS-METIER-563",
+      "titre": "Coordination temps réel de l'aide internationale",
+      "statut": "QUALIFIE",
+      "domaine": "FINANCES_PUBLIQUES",
+      "institutions": [
+        { "code": "MFB", "role": "FOURNISSEUR", "justification": "A_ARBITRER : DCEF (Direction de la Coopération Économique et Financière) serait plus précis mais n'existe pas en base. MFB comme proxy." },
+        { "code": "ANSD", "role": "CONSOMMATEUR", "justification": "Agrégation statistique" }
+      ],
+      "registres": [],
+      "projet_ndt": "PRJ_6.3",
+      "note": "A_ARBITRER : cas le plus incertain du lot macro. Les institutions précises (DCEF ?) ne sont pas en base. À confirmer ou laisser non peuplé."
+    },
+    {
+      "code": "PINS-METIER-564",
+      "titre": "Signaux faibles et alertes macroéconomiques",
+      "statut": "QUALIFIE",
+      "domaine": "FINANCES_PUBLIQUES",
+      "institutions": [
+        { "code": "ANSD", "role": "CONSOMMATEUR", "justification": "L'ANSD produit les alertes" },
+        { "code": "MFB", "role": "CONSOMMATEUR", "justification": "Le MEF est destinataire des alertes" }
+      ],
+      "registres": [],
+      "projet_ndt": "PRJ_5.4",
+      "note": "A_ARBITRER : pas de registre évident. Les données viennent probablement de multiples sources agrégées."
+    },
+    {
+      "code": "PINS-PROP-TECH-0001",
+      "titre": "SENTAX.TransmettreRolesEtPrisesEnCharge",
+      "statut": "QUALIFIE",
+      "domaine": "FINANCES_PUBLIQUES",
+      "institutions": [
+        { "code": "DGID", "role": "FOURNISSEUR", "justification": "La DGID opère SENTAX, détient les rôles d'impôt" },
+        { "code": "DGCPT", "role": "CONSOMMATEUR", "justification": "Le Trésor reçoit les rôles pour le recouvrement" }
+      ],
+      "registres": [
+        { "code": "SENTAX", "mode": "CONSOMME", "justification": "Source des rôles et PEC" },
+        { "code": "ASTER", "mode": "ALIMENTE", "justification": "Le flux alimente le système comptable Trésor" }
+      ],
+      "projet_ndt": "PRJ_4.2",
+      "note": "Cas SENTAX qualifié mais code PROP jamais promu (dette identifiée). Ne pas renommer dans cette passe."
+    },
+    {
+      "code": "PINS-TECH-3010",
+      "titre": "ANSD.GetIndicateursConjoncturels",
+      "statut": "QUALIFIE",
+      "domaine": "FINANCES_PUBLIQUES",
+      "institutions": [
+        { "code": "ANSD", "role": "FOURNISSEUR", "justification": "L'ANSD expose les indicateurs conjoncturels" }
+      ],
+      "registres": [],
+      "projet_ndt": "PRJ_5.4",
+      "note": "Service de consultation exposé par l'ANSD. Consommateurs : multiples administrations."
+    },
+    {
+      "code": "PINS-TECH-3011",
+      "titre": "BCEAO.GetIndicateursMonetaires",
+      "statut": "QUALIFIE",
+      "domaine": "FINANCES_PUBLIQUES",
+      "institutions": [
+        { "code": "ANSD", "role": "CONSOMMATEUR", "justification": "A_ARBITRER : ANSD proxy, la BCEAO n'est pas une institution en base" }
+      ],
+      "registres": [],
+      "projet_ndt": "PRJ_5.4",
+      "note": "A_ARBITRER : la BCEAO n'est pas dans la table institutions. Soit on la crée, soit on laisse consommateur vide et on note le besoin."
+    },
+    {
+      "code": "PINS-TECH-3012",
+      "titre": "Ministeres.PushIndicateursPRES",
+      "statut": "QUALIFIE",
+      "domaine": "FINANCES_PUBLIQUES",
+      "institutions": [
+        { "code": "MFB", "role": "FOURNISSEUR", "justification": "A_ARBITRER : fournisseur générique 'ministères', MFB comme principal contributeur" }
+      ],
+      "registres": [],
+      "projet_ndt": "PRJ_6.3",
+      "note": "A_ARBITRER : fournisseur multi-ministères. MFB est un proxy, le cas réel couvre probablement tous les ministères sectoriels."
+    },
+    {
+      "code": "PINS-TECH-3013",
+      "titre": "Budget.GetExecutionParMesurePRES",
+      "statut": "QUALIFIE",
+      "domaine": "FINANCES_PUBLIQUES",
+      "institutions": [
+        { "code": "MFB", "role": "FOURNISSEUR", "justification": "Le MEF/DGB détient les données d'exécution budgétaire" },
+        { "code": "ANSD", "role": "CONSOMMATEUR", "justification": "Agrégation statistique" }
+      ],
+      "registres": [
+        { "code": "SIGIF", "mode": "CONSOMME", "justification": "Source exécution budgétaire" }
+      ],
+      "projet_ndt": "PRJ_6.3",
+      "note": ""
+    },
+    {
+      "code": "PINS-TECH-3014",
+      "titre": "Sectoriels.GetIndicateursActivite",
+      "statut": "QUALIFIE",
+      "domaine": "FINANCES_PUBLIQUES",
+      "institutions": [
+        { "code": "ANSD", "role": "CONSOMMATEUR", "justification": "L'ANSD agrège les indicateurs sectoriels" }
+      ],
+      "registres": [],
+      "projet_ndt": "PRJ_5.4",
+      "note": "A_ARBITRER : fournisseurs sectoriels multiples, pas d'institution unique. ANSD comme consommateur pivot."
+    },
+    {
+      "code": "PINS-TECH-3015",
+      "titre": "DCEF.GetEngagementsBailleurs",
+      "statut": "QUALIFIE",
+      "domaine": "FINANCES_PUBLIQUES",
+      "institutions": [
+        { "code": "MFB", "role": "FOURNISSEUR", "justification": "A_ARBITRER : la DCEF (Direction Coopération Économique et Financière) n'est pas en base. MFB comme proxy." }
+      ],
+      "registres": [],
+      "projet_ndt": "PRJ_6.3",
+      "note": "A_ARBITRER : DCEF absente de la table institutions. À créer ?"
+    },
+    {
+      "code": "PINS-TECH-3016",
+      "titre": "DCEF.GetDecaissementsParProjet",
+      "statut": "QUALIFIE",
+      "domaine": "FINANCES_PUBLIQUES",
+      "institutions": [
+        { "code": "MFB", "role": "FOURNISSEUR", "justification": "Proxy DCEF" }
+      ],
+      "registres": [],
+      "projet_ndt": "PRJ_6.3",
+      "note": "A_ARBITRER : même situation que 3015."
+    },
+    {
+      "code": "PINS-TECH-3017",
+      "titre": "MEPC.PushAlertesMacroeconomiques",
+      "statut": "QUALIFIE",
+      "domaine": "FINANCES_PUBLIQUES",
+      "institutions": [
+        { "code": "MFB", "role": "FOURNISSEUR", "justification": "A_ARBITRER : MEPC (Ministère de l'Économie, du Plan et de la Coopération) n'est pas en base. MFB proxy." }
+      ],
+      "registres": [],
+      "projet_ndt": "PRJ_6.3",
+      "note": "A_ARBITRER : MEPC absent. À créer comme institution ?"
+    },
+    {
+      "code": "PINS-TECH-5058",
+      "titre": "DRS-SFD.VerifierAgrementSFD",
+      "statut": "QUALIFIE",
+      "domaine": "FINANCES_PUBLIQUES",
+      "institutions": [
+        { "code": "MFB", "role": "FOURNISSEUR", "justification": "La DRS-SFD (Direction de la Réglementation de la Surveillance des SFD) est sous le MEF" }
+      ],
+      "registres": [
+        { "code": "REG-ASSOC", "mode": "CONSOMME", "justification": "Registre des associations — les SFD sont souvent des mutuelles/associations" }
+      ],
+      "projet_ndt": "PRJ_6.4",
+      "note": "A_ARBITRER : DRS-SFD absente. MFB proxy. Domaine précis (microfinance/SFD) pas couvert par les registres existants."
+    },
+    {
+      "code": "PINS-METIER-609",
+      "titre": "Vérification du NIN",
+      "statut": "PRIORISE",
+      "domaine": "FINANCES_PUBLIQUES",
+      "institutions": [
+        { "code": "DAF", "role": "FOURNISSEUR", "justification": "La DAF détient le fichier CNI / NIN" },
+        { "code": "DGID", "role": "CONSOMMATEUR", "justification": "La DGID vérifie le NIN pour l'identification fiscale" }
+      ],
+      "registres": [
+        { "code": "REG-NIN", "mode": "CONSOMME", "justification": "Numéro d'Identification National" }
+      ],
+      "projet_ndt": "PRJ_4.1",
+      "note": "A_ARBITRER : cas frontière identité/finances. Domaine FINANCES_PUBLIQUES mais le NIN est un service identité. PRJ_4.1 (identité fondationnelle) colle mieux que PRJ_4.2."
+    },
+    {
+      "code": "PINS-METIER-610",
+      "titre": "Preuve de vie",
+      "statut": "PRIORISE",
+      "domaine": "FINANCES_PUBLIQUES",
+      "institutions": [
+        { "code": "DAF", "role": "FOURNISSEUR", "justification": "Fichier biométrique" },
+        { "code": "DGCPT", "role": "CONSOMMATEUR", "justification": "Le Trésor vérifie la preuve de vie pour les pensions" },
+        { "code": "CSS", "role": "CONSOMMATEUR", "justification": "La CSS vérifie pour les prestations" },
+        { "code": "IPRES", "role": "CONSOMMATEUR", "justification": "L'IPRES vérifie pour les pensions de retraite" }
+      ],
+      "registres": [
+        { "code": "RNEC", "mode": "CONSOMME", "justification": "Registre d'état civil pour certificat de vie/décès" }
+      ],
+      "projet_ndt": "PRJ_4.1",
+      "note": "A_ARBITRER : cas frontière identité/prestations sociales. Les consommateurs DGCPT/CSS/IPRES sont solides, le domaine FINANCES_PUBLIQUES est discutable (plutôt PROTECTION_SOCIALE ou IDENTITE_NUMERIQUE)."
+    },
+    {
+      "code": "PINS-METIER-613",
+      "titre": "Vérification et récupération des informations d'une entreprise via le NINEA",
+      "statut": "PRIORISE",
+      "domaine": "CLIMAT_AFFAIRES",
+      "institutions": [
+        { "code": "ANSD", "role": "FOURNISSEUR", "justification": "L'ANSD opère le NINEA" },
+        { "code": "DGID", "role": "CONSOMMATEUR", "justification": "La DGID consomme les informations entreprise pour le dossier fiscal" },
+        { "code": "DGD", "role": "CONSOMMATEUR", "justification": "La Douane vérifie le statut d'opérateur du commerce extérieur" }
+      ],
+      "registres": [
+        { "code": "NINEA", "mode": "CONSOMME", "justification": "Source NINEA" }
+      ],
+      "projet_ndt": "PRJ_4.2",
+      "note": "Hors FINANCES_PUBLIQUES (CLIMAT_AFFAIRES) mais pertinent pour le périmètre finances. Cas déjà partiellement peuplé (0004)."
+    },
+    {
+      "code": "PINS-METIER-615",
+      "titre": "Suivi de la TVA suspendue",
+      "statut": "PRIORISE",
+      "domaine": "CLIMAT_AFFAIRES",
+      "institutions": [
+        { "code": "DGID", "role": "FOURNISSEUR", "justification": "La DGID gère le régime de suspension de TVA" },
+        { "code": "APIX", "role": "CONSOMMATEUR", "justification": "L'APIX suit les entreprises sous régime privilégié" },
+        { "code": "DGD", "role": "CONSOMMATEUR", "justification": "La Douane applique la suspension à l'import" }
+      ],
+      "registres": [
+        { "code": "SENTAX", "mode": "CONSOMME", "justification": "Source régime TVA des entreprises" },
+        { "code": "NINEA", "mode": "CONSOMME", "justification": "Pivot entreprise" }
+      ],
+      "projet_ndt": "PRJ_4.2",
+      "note": "Hors FINANCES_PUBLIQUES (CLIMAT_AFFAIRES) mais pertinent finances. Cas APIX-DGID-DGD, bien cerné."
+    },
+    {
+      "code": "PINS-TECH-0002",
+      "titre": "Consultation des declarations douanieres via Douanes.GetDeclarations",
+      "statut": "PRIORISE",
+      "domaine": "FINANCES_PUBLIQUES",
+      "institutions": [
+        { "code": "DGD", "role": "FOURNISSEUR", "justification": "La Douane expose ses déclarations" },
+        { "code": "DGCPT", "role": "CONSOMMATEUR", "justification": "Le Trésor consulte pour le recouvrement" },
+        { "code": "DGID", "role": "CONSOMMATEUR", "justification": "La DGID consulte pour le croisement fiscal" }
+      ],
+      "registres": [
+        { "code": "GAINDE", "mode": "CONSOMME", "justification": "Système de dédouanement" }
+      ],
+      "projet_ndt": "PRJ_4.2-GIZ",
+      "note": "Déjà partiellement peuplé (DGD FOURNISSEUR, DGCPT/DGID CONSOMMATEURS). Registre à ajouter."
+    },
+    {
+      "code": "PINS-TECH-0004",
+      "titre": "Consultation NINEA pour controles inter-administrations",
+      "statut": "PRIORISE",
+      "domaine": "FINANCES_PUBLIQUES",
+      "institutions": [
+        { "code": "ANSD", "role": "FOURNISSEUR", "justification": "L'ANSD expose le NINEA" },
+        { "code": "DGID", "role": "CONSOMMATEUR", "justification": "Contrôle fiscal" },
+        { "code": "DGD", "role": "CONSOMMATEUR", "justification": "Contrôle douanier" },
+        { "code": "DGCPT", "role": "CONSOMMATEUR", "justification": "Contrôle Trésor" },
+        { "code": "CSS", "role": "CONSOMMATEUR", "justification": "Immatriculation employeur" },
+        { "code": "IPRES", "role": "CONSOMMATEUR", "justification": "Affiliation retraite" },
+        { "code": "ARCOP", "role": "CONSOMMATEUR", "justification": "Éligibilité marchés publics" },
+        { "code": "APIX", "role": "CONSOMMATEUR", "justification": "Guichet entreprises" }
+      ],
+      "registres": [
+        { "code": "NINEA", "mode": "CONSOMME", "justification": "Source NINEA" }
+      ],
+      "projet_ndt": "PRJ_4.2",
+      "note": "Déjà bien peuplé (8 stakeholders). Modèle de référence."
+    },
+    {
+      "code": "PINS-TECH-0014",
+      "titre": "Transmission des quittances du Tresor vers la DGID",
+      "statut": "PRIORISE",
+      "domaine": "FINANCES_PUBLIQUES",
+      "institutions": [
+        { "code": "DGCPT", "role": "FOURNISSEUR", "justification": "Le Trésor émet les quittances" },
+        { "code": "DGID", "role": "CONSOMMATEUR", "justification": "La DGID met à jour le compte fiscal" }
+      ],
+      "registres": [
+        { "code": "ASTER", "mode": "CONSOMME", "justification": "Source quittances Trésor" },
+        { "code": "SENTAX", "mode": "ALIMENTE", "justification": "Mise à jour compte fiscal" }
+      ],
+      "projet_ndt": "PRJ_4.2-GIZ",
+      "note": "Déjà partiellement peuplé (DGCPT INITIATEUR). Ajouter les rôles FOURNISSEUR/CONSOMMATEUR + registres."
+    },
+    {
+      "code": "PINS-TECH-0015",
+      "titre": "Transmission de l'etat des recouvrements du Tresor vers les Douanes",
+      "statut": "PRIORISE",
+      "domaine": "FINANCES_PUBLIQUES",
+      "institutions": [
+        { "code": "DGCPT", "role": "FOURNISSEUR", "justification": "Le Trésor transmet l'état des recouvrements" },
+        { "code": "DGD", "role": "CONSOMMATEUR", "justification": "La Douane reçoit l'état des recouvrements" }
+      ],
+      "registres": [
+        { "code": "ASTER", "mode": "CONSOMME", "justification": "Source état des recouvrements" },
+        { "code": "GAINDE", "mode": "ALIMENTE", "justification": "Mise à jour statut recouvrement dans GAINDE" }
+      ],
+      "projet_ndt": "PRJ_4.2-GIZ",
+      "note": "Déjà partiellement peuplé (DGCPT INITIATEUR). Ajouter rôles + registres."
+    },
+    {
+      "code": "PINS-TECH-0056",
+      "titre": "Notification de paiement / encaissement DGCPT",
+      "statut": "PRIORISE",
+      "domaine": "FINANCES_PUBLIQUES",
+      "institutions": [
+        { "code": "DGCPT", "role": "FOURNISSEUR", "justification": "Le Trésor notifie les encaissements" },
+        { "code": "DGID", "role": "CONSOMMATEUR", "justification": "La DGID met à jour le compte fiscal" },
+        { "code": "DGD", "role": "CONSOMMATEUR", "justification": "La Douane met à jour le statut du BAE" }
+      ],
+      "registres": [
+        { "code": "ASTER", "mode": "CONSOMME", "justification": "Source encaissements" },
+        { "code": "SENTAX", "mode": "ALIMENTE", "justification": "Mise à jour compte fiscal" }
+      ],
+      "projet_ndt": "PRJ_4.2-GIZ",
+      "note": ""
+    },
+    {
+      "code": "PINS-TECH-2001",
+      "titre": "Douanes.GetDeclarationsDouanieres",
+      "statut": "PRIORISE",
+      "domaine": "FINANCES_PUBLIQUES",
+      "institutions": [
+        { "code": "DGD", "role": "FOURNISSEUR", "justification": "La Douane expose ses déclarations" }
+      ],
+      "registres": [
+        { "code": "GAINDE", "mode": "CONSOMME", "justification": "Source déclarations douanières" }
+      ],
+      "projet_ndt": "PRJ_4.2-GIZ",
+      "note": "Service GIZ Finances. Consommateurs : DGID, DGCPT (croisement fiscal)."
+    },
+    {
+      "code": "PINS-TECH-2002",
+      "titre": "Impots.GetDeclarationsFiscales",
+      "statut": "PRIORISE",
+      "domaine": "FINANCES_PUBLIQUES",
+      "institutions": [
+        { "code": "DGID", "role": "FOURNISSEUR", "justification": "La DGID expose les déclarations fiscales" }
+      ],
+      "registres": [
+        { "code": "SENTAX", "mode": "CONSOMME", "justification": "Source déclarations fiscales" }
+      ],
+      "projet_ndt": "PRJ_4.2-GIZ",
+      "note": "Service GIZ Finances."
+    },
+    {
+      "code": "PINS-TECH-2003",
+      "titre": "Impots.GetContribuablesCGE",
+      "statut": "PRIORISE",
+      "domaine": "FINANCES_PUBLIQUES",
+      "institutions": [
+        { "code": "DGID", "role": "FOURNISSEUR", "justification": "La DGID tient le fichier des contribuables CGE" }
+      ],
+      "registres": [
+        { "code": "SENTAX", "mode": "CONSOMME", "justification": "Source contribuables CGE" }
+      ],
+      "projet_ndt": "PRJ_4.2-GIZ",
+      "note": "Service GIZ Finances. CGE = Centre des Grandes Entreprises."
+    },
+    {
+      "code": "PINS-TECH-2004",
+      "titre": "Douanes.GetContribuablesActifs",
+      "statut": "PRIORISE",
+      "domaine": "FINANCES_PUBLIQUES",
+      "institutions": [
+        { "code": "DGD", "role": "FOURNISSEUR", "justification": "La Douane expose les opérateurs actifs du commerce extérieur" }
+      ],
+      "registres": [
+        { "code": "GAINDE", "mode": "CONSOMME", "justification": "Source opérateurs actifs" }
+      ],
+      "projet_ndt": "PRJ_4.2-GIZ",
+      "note": "Service GIZ Finances."
+    },
+    {
+      "code": "PINS-TECH-2005",
+      "titre": "Douanes.PushDeclarationLiquidee",
+      "statut": "PRIORISE",
+      "domaine": "FINANCES_PUBLIQUES",
+      "institutions": [
+        { "code": "DGD", "role": "FOURNISSEUR", "justification": "La Douane pousse la déclaration liquidée" },
+        { "code": "DGCPT", "role": "CONSOMMATEUR", "justification": "Le Trésor reçoit pour recouvrement" },
+        { "code": "DGID", "role": "CONSOMMATEUR", "justification": "La DGID reçoit pour le dossier fiscal" }
+      ],
+      "registres": [
+        { "code": "GAINDE", "mode": "CONSOMME", "justification": "Source déclaration liquidée" },
+        { "code": "ASTER", "mode": "ALIMENTE", "justification": "Alimente le système comptable Trésor" }
+      ],
+      "projet_ndt": "PRJ_4.2-GIZ",
+      "note": "Service GIZ Finances. Push = notification active, pas consultation."
+    },
+    {
+      "code": "PINS-TECH-2006",
+      "titre": "Tresor.ValiderPaiement",
+      "statut": "PRIORISE",
+      "domaine": "FINANCES_PUBLIQUES",
+      "institutions": [
+        { "code": "DGCPT", "role": "FOURNISSEUR", "justification": "Le Trésor valide le paiement" },
+        { "code": "DGD", "role": "CONSOMMATEUR", "justification": "La Douane reçoit la validation pour mainlevée" }
+      ],
+      "registres": [
+        { "code": "ASTER", "mode": "CONSOMME", "justification": "Source validation paiement" },
+        { "code": "GAINDE", "mode": "ALIMENTE", "justification": "Déclenche la mainlevée dans GAINDE" }
+      ],
+      "projet_ndt": "PRJ_4.2-GIZ",
+      "note": "Service GIZ Finances. Flux Trésor → Douane."
+    },
+    {
+      "code": "PINS-TECH-2007",
+      "titre": "Tresor.PushQuittance",
+      "statut": "PRIORISE",
+      "domaine": "FINANCES_PUBLIQUES",
+      "institutions": [
+        { "code": "DGCPT", "role": "FOURNISSEUR", "justification": "Le Trésor émet la quittance" },
+        { "code": "DGID", "role": "CONSOMMATEUR", "justification": "La DGID met à jour le compte fiscal" }
+      ],
+      "registres": [
+        { "code": "ASTER", "mode": "CONSOMME", "justification": "Source quittance" },
+        { "code": "SENTAX", "mode": "ALIMENTE", "justification": "Mise à jour compte fiscal" }
+      ],
+      "projet_ndt": "PRJ_4.2-GIZ",
+      "note": "Service GIZ Finances."
+    },
+    {
+      "code": "PINS-TECH-2008a",
+      "titre": "Impots.GetAttestationImposition",
+      "statut": "PRIORISE",
+      "domaine": "FINANCES_PUBLIQUES",
+      "institutions": [
+        { "code": "DGID", "role": "FOURNISSEUR", "justification": "La DGID délivre l'attestation" }
+      ],
+      "registres": [
+        { "code": "SENTAX", "mode": "CONSOMME", "justification": "Source attestation" }
+      ],
+      "projet_ndt": "PRJ_4.2-GIZ",
+      "note": "Service GIZ Finances. Consommateur principal : ARCOP / marchés publics, guichet unique."
+    },
+    {
+      "code": "PINS-TECH-2008b",
+      "titre": "Impots.GetConformiteFiscale",
+      "statut": "PRIORISE",
+      "domaine": "FINANCES_PUBLIQUES",
+      "institutions": [
+        { "code": "DGID", "role": "FOURNISSEUR", "justification": "La DGID atteste la conformité fiscale" }
+      ],
+      "registres": [
+        { "code": "SENTAX", "mode": "CONSOMME", "justification": "Source conformité fiscale" }
+      ],
+      "projet_ndt": "PRJ_4.2-GIZ",
+      "note": "Service GIZ Finances."
+    },
+    {
+      "code": "PINS-TECH-2008c",
+      "titre": "Impots.GetSituationFiscaleDetaillee",
+      "statut": "PRIORISE",
+      "domaine": "FINANCES_PUBLIQUES",
+      "institutions": [
+        { "code": "DGID", "role": "FOURNISSEUR", "justification": "La DGID expose la situation fiscale détaillée" }
+      ],
+      "registres": [
+        { "code": "SENTAX", "mode": "CONSOMME", "justification": "Source situation fiscale" }
+      ],
+      "projet_ndt": "PRJ_4.2-GIZ",
+      "note": "Service GIZ Finances."
+    }
+  ],
+  "reclassement_domaine": [
+    { "code": "PINS-METIER-103", "titre": "Quitus fiscal en temps réel", "domaine_actuel": null, "domaine_cible": "FINANCES_PUBLIQUES" },
+    { "code": "PINS-METIER-104", "titre": "Télépaiement fiscal via X-Road (E.Taxes ↔ SIGIF)", "domaine_actuel": null, "domaine_cible": "FINANCES_PUBLIQUES" },
+    { "code": "PINS-METIER-105", "titre": "Référentiel NINEA via PINS (migration ESB → X-Road)", "domaine_actuel": null, "domaine_cible": "FINANCES_PUBLIQUES" },
+    { "code": "PINS-METIER-106", "titre": "Détection contribuables à risque (croisement multi-sources)", "domaine_actuel": null, "domaine_cible": "FINANCES_PUBLIQUES" },
+    { "code": "PINS-METIER-108", "titre": "Fiscalité locale (TéléDAC / GFILOC / SIGIF)", "domaine_actuel": null, "domaine_cible": "FINANCES_PUBLIQUES" },
+    { "code": "PINS-TECH-0009", "titre": "Reconciliation fiscale DGCPT vers DGID", "domaine_actuel": null, "domaine_cible": "FINANCES_PUBLIQUES" },
+    { "code": "PINS-TECH-0038", "titre": "Qualification fiscale des beneficiaires RNU", "domaine_actuel": null, "domaine_cible": "FINANCES_PUBLIQUES" }
+  ],
+  "compteurs": {
+    "total_propositions": 38,
+    "avec_A_ARBITRER": 10,
+    "reclassements_domaine": 7,
+    "deja_partiellement_peuple": 5
+  }
+}
