@@ -251,27 +251,35 @@ export function RoadmapPage() {
                 </div>
               )}
 
-              {/* Formulaire CU */}
-              {showCUForm === phase.id ? (
-                <div className="mt-3 border-2 border-dashed border-teal/30 rounded-lg p-3 space-y-2">
-                  <div className="flex items-center justify-between">
-                    <h4 className="font-medium text-navy text-xs">{editingCU ? 'Modifier' : 'Nouveau cas d\'usage'}</h4>
-                    <button onClick={() => { setShowCUForm(null); setEditingCU(null); }}><X className="w-4 h-4 text-gray-400" /></button>
+              {/* Modal CU */}
+              {showCUForm === phase.id && (
+                <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/40 pt-20">
+                  <div className="bg-white rounded-lg shadow-xl w-full max-w-md mx-4">
+                    <div className="flex items-center justify-between px-4 py-3 border-b">
+                      <h3 className="font-bold text-sm text-navy">{editingCU ? 'Modifier le cas d\'usage' : 'Nouveau cas d\'usage'}</h3>
+                      <button onClick={() => { setShowCUForm(null); setEditingCU(null); }}><X className="w-4 h-4 text-gray-400 hover:text-gray-600" /></button>
+                    </div>
+                    <div className="px-4 py-4 space-y-3">
+                      <div className="grid grid-cols-3 gap-2">
+                        <div><Label className="text-xs">Code</Label><Input value={cuForm.code} onChange={e => setCuForm({ ...cuForm, code: e.target.value })} className="h-8 text-sm" disabled={!!editingCU} /></div>
+                        <div className="col-span-2"><Label className="text-xs">Titre</Label><Input value={cuForm.titre} onChange={e => setCuForm({ ...cuForm, titre: e.target.value })} className="h-8 text-sm" /></div>
+                      </div>
+                      <div className="grid grid-cols-4 gap-2">
+                        <div><Label className="text-xs">Source</Label><Input value={cuForm.institutionSourceCode || ''} onChange={e => setCuForm({ ...cuForm, institutionSourceCode: e.target.value })} className="h-8 text-sm" /></div>
+                        <div><Label className="text-xs">Cible</Label><Input value={cuForm.institutionCibleCode || ''} onChange={e => setCuForm({ ...cuForm, institutionCibleCode: e.target.value })} className="h-8 text-sm" /></div>
+                        <div><Label className="text-xs">Impact</Label><select value={cuForm.impact} onChange={e => setCuForm({ ...cuForm, impact: e.target.value })} className="w-full h-8 px-2 text-sm border rounded-md"><option value="FAIBLE">Faible</option><option value="MOYEN">Moyen</option><option value="ELEVE">Eleve</option><option value="CRITIQUE">Critique</option></select></div>
+                        <div><Label className="text-xs">Axe</Label><select value={cuForm.axePrioritaire || ''} onChange={e => setCuForm({ ...cuForm, axePrioritaire: e.target.value })} className="w-full h-8 px-2 text-sm border rounded-md"><option value="Finances publiques">Finances</option><option value="Protection sociale">Protection sociale</option><option value="Climat des affaires">Climat affaires</option><option value="Services citoyens">Citoyens</option><option value="Transversal">Transversal</option></select></div>
+                      </div>
+                      <div><Label className="text-xs">Donnees echangees</Label><Input value={cuForm.donneesEchangees || ''} onChange={e => setCuForm({ ...cuForm, donneesEchangees: e.target.value })} className="h-8 text-sm" /></div>
+                    </div>
+                    <div className="flex justify-end gap-2 px-4 py-3 border-t bg-gray-50 rounded-b-lg">
+                      <Button size="sm" variant="outline" onClick={() => { setShowCUForm(null); setEditingCU(null); }}>Annuler</Button>
+                      <Button size="sm" onClick={() => handleSaveCU(phase.id)} disabled={!cuForm.code || !cuForm.titre} className="bg-teal hover:bg-teal-dark">{editingCU ? 'Mettre a jour' : 'Creer'}</Button>
+                    </div>
                   </div>
-                  <div className="grid grid-cols-3 gap-2">
-                    <div><Label className="text-[10px]">Code</Label><Input value={cuForm.code} onChange={e => setCuForm({ ...cuForm, code: e.target.value })} className="h-7 text-xs" disabled={!!editingCU} /></div>
-                    <div className="col-span-2"><Label className="text-[10px]">Titre</Label><Input value={cuForm.titre} onChange={e => setCuForm({ ...cuForm, titre: e.target.value })} className="h-7 text-xs" /></div>
-                  </div>
-                  <div className="grid grid-cols-4 gap-2">
-                    <div><Label className="text-[10px]">Source</Label><Input value={cuForm.institutionSourceCode || ''} onChange={e => setCuForm({ ...cuForm, institutionSourceCode: e.target.value })} className="h-7 text-xs" /></div>
-                    <div><Label className="text-[10px]">Cible</Label><Input value={cuForm.institutionCibleCode || ''} onChange={e => setCuForm({ ...cuForm, institutionCibleCode: e.target.value })} className="h-7 text-xs" /></div>
-                    <div><Label className="text-[10px]">Impact</Label><select value={cuForm.impact} onChange={e => setCuForm({ ...cuForm, impact: e.target.value })} className="w-full h-7 px-1 text-xs border rounded-md"><option value="FAIBLE">Faible</option><option value="MOYEN">Moyen</option><option value="ELEVE">Eleve</option><option value="CRITIQUE">Critique</option></select></div>
-                    <div><Label className="text-[10px]">Axe</Label><select value={cuForm.axePrioritaire || ''} onChange={e => setCuForm({ ...cuForm, axePrioritaire: e.target.value })} className="w-full h-7 px-1 text-xs border rounded-md"><option value="Finances publiques">Finances</option><option value="Protection sociale">Protection sociale</option><option value="Climat des affaires">Climat affaires</option><option value="Services citoyens">Citoyens</option><option value="Transversal">Transversal</option></select></div>
-                  </div>
-                  <div><Label className="text-[10px]">Donnees echangees</Label><Input value={cuForm.donneesEchangees || ''} onChange={e => setCuForm({ ...cuForm, donneesEchangees: e.target.value })} className="h-7 text-xs" /></div>
-                  <Button size="sm" onClick={() => handleSaveCU(phase.id)} disabled={!cuForm.code || !cuForm.titre} className="bg-teal hover:bg-teal-dark h-7 text-xs">{editingCU ? 'Mettre a jour' : 'Creer'}</Button>
                 </div>
-              ) : (
+              )}
+              {showCUForm !== phase.id && (
                 <Button variant="outline" size="sm" className="mt-2 h-7 text-xs" onClick={() => { setShowCUForm(phase.id); setEditingCU(null); setCuForm({ ...EMPTY_CU }); }}>
                   <Plus className="w-3 h-3 mr-1" /> Cas d'usage
                 </Button>
