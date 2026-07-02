@@ -27,6 +27,7 @@ export function FinancementsPage() {
   const [tab, setTab] = useState<'overview' | 'orphelins' | 'experts'>('overview');
   const [expandedPTF, setExpandedPTF] = useState<string | null>(null);
   const [expandedProg, setExpandedProg] = useState<string | null>(null);
+  const [orphSearch, setOrphSearch] = useState('');
 
   // Modals
   const [modal, setModal] = useState<{ type: string; data?: any } | null>(null);
@@ -217,7 +218,6 @@ export function FinancementsPage() {
 
       {/* ===== TAB 2 : ORPHELINS ===== */}
       {tab === 'orphelins' && (() => {
-        const [orphSearch, setOrphSearch] = useState('');
         const filtered = orphelins.filter((cu: any) => {
           if (!orphSearch) return true;
           const t = orphSearch.toLowerCase();
