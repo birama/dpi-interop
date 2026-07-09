@@ -53,7 +53,7 @@ export function PartenaireManifestationsPage() {
       qc.invalidateQueries({ queryKey: ['partenaire-manifestation-cas'] });
       toast({
         title: 'Manifestation soumise',
-        description: 'Votre manifestation a été transmise à la Delivery Unit MCTN pour validation.',
+        description: 'Votre manifestation a été transmise à la Delivery Unit MTN pour validation.',
       });
       setConfirmSubmit(null);
     },
@@ -249,7 +249,7 @@ export function PartenaireManifestationsPage() {
       )}
 
       <p className="text-xs text-gray-500 italic">
-        Les manifestations soumises sont étudiées par la Delivery Unit MCTN. Après validation,
+        Les manifestations soumises sont étudiées par la Delivery Unit MTN. Après validation,
         elles deviennent visibles dans le tableau de bord de coordination des partenaires.
       </p>
 
@@ -259,7 +259,7 @@ export function PartenaireManifestationsPage() {
           <DialogHeader>
             <DialogTitle>Soumettre la manifestation ?</DialogTitle>
             <DialogDescription>
-              Une fois soumise, votre manifestation passe en validation auprès de la Delivery Unit MCTN
+              Une fois soumise, votre manifestation passe en validation auprès de la Delivery Unit MTN
               et ne sera plus modifiable de votre côté.
             </DialogDescription>
           </DialogHeader>

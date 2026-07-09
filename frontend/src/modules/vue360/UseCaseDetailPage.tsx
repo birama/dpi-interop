@@ -23,6 +23,7 @@ import { ManifestationsPtfBlock } from './ManifestationsPtfBlock';
 import { ProjetsNationauxBlock } from './ProjetsNationauxBlock';
 import { DataContractBlock } from './DataContractBlock';
 import { LiaisonsGuichetBlock } from './LiaisonsGuichetBlock';
+import { AvisFormelFeed } from './AvisFormelFeed';
 
 export function UseCaseDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -148,6 +149,14 @@ export function UseCaseDetailPage() {
 
           {/* Contrat de données (entrée / sortie / lecture) */}
           <DataContractBlock cu={cu} />
+
+          {/* Avis formels simplifiés (append-only) */}
+          <AvisFormelFeed
+            casUsageId={cu.id}
+            casUsageCode={cu.code}
+            casUsageTitre={cu.titre}
+            editable={['FULL', 'DETAILED'].includes(visibility)}
+          />
 
           {/* Specs techniques (accordion) */}
           {(cu.donneesEchangees || cu.description) && (

@@ -85,7 +85,7 @@ export function PartenaireCataloguePage() {
             Aucun cas dans vos domaines d'intérêt pour le moment.
             <br />
             <span className="text-xs">
-              Pour étendre votre périmètre, contactez la Delivery Unit MCTN : du@mctn.gouv.sn
+              Pour étendre votre périmètre, contactez la Delivery Unit MTN : du@mtn.gouv.sn
             </span>
           </CardContent>
         </Card>

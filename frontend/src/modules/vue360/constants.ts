@@ -77,3 +77,9 @@ export function formatTimeAgo(dateStr: string): string {
 export function daysUntil(dateStr: string): number {
   return Math.ceil((new Date(dateStr).getTime() - Date.now()) / 86400000);
 }
+
+export const AVIS_FORMEL_SENS_STYLES: Record<string, { bg: string; icon: string; label: string }> = {
+  FAVORABLE:   { bg: 'bg-teal/15 text-teal',      icon: '✓', label: 'Favorable' },
+  RESERVE:     { bg: 'bg-amber-50 text-amber-700', icon: '⚠', label: 'Réservé' },
+  DEFAVORABLE: { bg: 'bg-red-100 text-red-700',    icon: '✗', label: 'Défavorable' },
+};

@@ -307,7 +307,7 @@ export function PropositionDetailPage() {
           <div className="flex items-center gap-2">
             <Zap className="w-4 h-4 text-gold" />
             <span className="text-sm font-bold text-navy">Actions Delivery Unit</span>
-            <span className="text-[10px] text-gray-500">Réservé administrateurs MCTN</span>
+            <span className="text-[10px] text-gray-500">Réservé administrateurs MTN</span>
           </div>
           <div className="flex flex-wrap gap-2">
             <button

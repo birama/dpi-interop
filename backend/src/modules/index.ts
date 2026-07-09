@@ -13,6 +13,8 @@ import { notificationsMeRoutes, notificationsRoutes } from './vue360/notificatio
 import { catalogueRoutes, suggestionsRoutes } from './vue360/catalogue.routes.js';
 import { liaisonsGuichetRoutes } from './vue360/liaisonsGuichet.routes.js';
 import { institutionsCatalogueRoutes } from './vue360/institutionsCatalogue.routes.js';
+import { contratDonneesRoutes } from './vue360/contratDonnees.routes.js';
+import { avisFormelRoutes } from './vue360/avisFormel.routes.js';
 import { newDealRoutes } from './vue360/newDeal.routes.js';
 import { adminBailleurRoutes, adminManifestationsRoutes, adminPtfRoutes, partenaireRoutes } from './partenaire/routes.js';
 import { partenaireTechniqueRoutes, adminOrganisationRoutes } from './partenaire-technique/routes.js';
@@ -1182,6 +1184,8 @@ export async function registerRoutes(app: FastifyInstance) {
       api.register(duArbitrageRoutes, { prefix: '/du/arbitrage' });
       api.register(catalogueRoutes, { prefix: '/catalogue' });
       api.register(liaisonsGuichetRoutes, { prefix: '/catalogue' });
+      api.register(contratDonneesRoutes, { prefix: '/use-cases' });
+      api.register(avisFormelRoutes, { prefix: '/use-cases' });
       api.register(institutionsCatalogueRoutes, { prefix: '/catalogue' });
       api.register(suggestionsRoutes, { prefix: '/catalogue/suggestions' });
       api.register(registresCouvertureRoutes, { prefix: '/registres' });

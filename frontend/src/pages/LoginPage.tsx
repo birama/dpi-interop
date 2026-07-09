@@ -151,7 +151,7 @@ export function LoginPage() {
 
         <div className="mt-6 text-center text-sm text-gray-500">
           <p>Vous n'avez pas de compte ?</p>
-          <p>Contactez l'administrateur PINS (MCTN / SENUM SA)</p>
+          <p>Contactez l'administrateur PINS (MTN / SENUM SA)</p>
         </div>
       </CardContent>
     </Card>

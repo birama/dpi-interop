@@ -96,8 +96,8 @@ export function PartenaireProfilPage() {
             </div>
           )}
           <p className="text-xs italic text-gray-500 mt-4">
-            Pour modifier vos domaines d'intérêt, contactez la Delivery Unit MCTN :
-            <a href="mailto:du@mctn.gouv.sn" className="ml-1 text-teal-700 hover:underline">du@mctn.gouv.sn</a>
+            Pour modifier vos domaines d'intérêt, contactez la Delivery Unit MTN :
+            <a href="mailto:du@mtn.gouv.sn" className="ml-1 text-teal-700 hover:underline">du@mtn.gouv.sn</a>
           </p>
         </CardContent>
       </Card>

@@ -69,14 +69,14 @@ export function CguAcceptancePage() {
                   techniques et financiers au Sénégal en matière d'interopérabilité.</li>
                 <li>Ne pas extraire, copier, diffuser ou réutiliser les données hors de ce cadre sans
                   autorisation expresse du Ministère de la Communication, des Télécommunications et du
-                  Numérique (MCTN).</li>
+                  Numérique (MTN).</li>
                 <li>Respecter la confidentialité des informations accessibles, notamment celles
                   signalées comme à diffusion restreinte.</li>
-                <li>Informer le MCTN de tout changement affectant l'identité ou les fonctions du point
+                <li>Informer le MTN de tout changement affectant l'identité ou les fonctions du point
                   focal désigné de mon institution.</li>
                 <li>Respecter les principes de souveraineté des données publiques sénégalaises et les
                   lois nationales relatives à la protection des données personnelles.</li>
-                <li>Signaler à la Delivery Unit MCTN toute anomalie ou tout usage abusif constaté sur
+                <li>Signaler à la Delivery Unit MTN toute anomalie ou tout usage abusif constaté sur
                   la plateforme.</li>
               </ul>
               <p className="text-xs italic text-gray-500 mt-4">

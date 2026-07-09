@@ -184,7 +184,7 @@ export function AdminPtfDetailPage() {
               </div>
             )}
             <p className="text-xs italic text-gray-500 mt-4 border-t pt-3">
-              Les domaines sont modifiables sur demande à la Delivery Unit MCTN.
+              Les domaines sont modifiables sur demande à la Delivery Unit MTN.
               Un cas est <i>éligible</i> s'il est priorisé, à financer et dans le périmètre du PTF.
             </p>
           </CardContent>

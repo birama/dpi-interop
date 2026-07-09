@@ -50,6 +50,7 @@ model User {
   statusHistoryAuteur   UseCaseStatusHistory[] @relation("StatusHistoryAuteur")
   notificationsVue360   Notification[]         @relation("UserNotifications")
   registresUsageAjoutes CasUsageRegistre[]     @relation("RegistreUsageAjoute")
+  avisFormelsAuteur     AvisFormel[]           @relation("AvisFormelAuteur")
 
   // Catalogue propositions (P8)
   adoptionsEffectuees     CasUsageMVP[]      @relation("CasUsageAdoptePar")
@@ -297,7 +298,7 @@ enum ManifestationType {
 /// PTF Phase 2 — Cycle de vie d'une manifestation
 enum ManifestationStatus {
   DRAFT // Brouillon, modifiable par le partenaire
-  EN_VALIDATION // Soumise, en attente de validation MCTN
+  EN_VALIDATION // Soumise, en attente de validation MTN
   PUBLIE // Validee, publique sur le tableau de bord coordination
   REJETE // Refusee par la DU
   RETIRE // Retiree par le partenaire
@@ -343,6 +344,13 @@ enum FeedbackType {
   REFUS_MOTIVE
   QUESTION
   CONTRE_PROPOSITION
+}
+
+/// Sens d'un avis formel simplifié (dispositif permanent, hors workflow consultation)
+enum AvisFormelSens {
+  FAVORABLE
+  RESERVE
+  DEFAVORABLE
 }
 
 /// Statut d'une consultation adressée à une partie prenante
@@ -393,6 +401,7 @@ model Institution {
   // Vue 360° — relations inverses
   stakeholders      UseCaseStakeholder[]
   notificationsInst Notification[]       @relation("InstitutionNotifications")
+  avisFormels       AvisFormel[]
 
   // Catalogue propositions (P8)
   casUsagesAdoptes CasUsageMVP[]           @relation("CasUsageAdopte")
@@ -1186,6 +1195,7 @@ model CasUsageMVP {
   donneesEntree         String?                 @db.Text // Contrat : données d'entrée (clé d'appel)
   donneesSortie         String?                 @db.Text // Contrat : données de sortie (réponse)
   donneesLecture        String?                 @db.Text // Contrat : données lues dans le registre producteur
+  dureeRetention        String?                 @db.Text // Contrat : durée de conservation des données
   registresConcernes    String?
   axePrioritaire        String?
   impact                ImpactLevel          @default(MOYEN)
@@ -1255,6 +1265,12 @@ model CasUsageMVP {
   // Liaison vers les services guichet e-sénégal (frontière backbone/front)
   liaisonsGuichet LiaisonGuichet[]
 
+  // Contrat de données — versions historiques
+  contratDonneesVersions ContratDonneesVersion[]
+
+  // Avis formels simplifiés (append-only)
+  avisFormels AvisFormel[]
+
   // Faisabilité (atelier use cases potentiels)
   faisabilite FaisabiliteCas?
 
@@ -1270,6 +1286,31 @@ model CasUsageMVP {
   @@index([aFinancer])
   @@index([domaine])
   @@map("cas_usage_mvp")
+}
+
+/// Version inaltérable du contrat de données d'un cas d'usage.
+/// Chaque mise à jour crée une nouvelle version. Les champs courants
+/// (donneesEntree, donneesSortie, donneesLecture, baseLegale, dureeRetention)
+/// sont conservés sur CasUsageMVP pour compatibilité.
+model ContratDonneesVersion {
+  id                String   @id @default(cuid())
+  casUsageId        String
+  versionNumber     Int
+  donneesEntree     String?  @db.Text
+  donneesSortie     String?  @db.Text
+  donneesLecture    String?  @db.Text
+  baseLegale        String?  @db.Text
+  dureeRetention    String?  @db.Text
+  auteurUserId      String
+  auteurNom         String
+  auteurInstitution String
+  createdAt         DateTime @default(now())
+
+  casUsage CasUsageMVP @relation(fields: [casUsageId], references: [id], onDelete: Cascade)
+
+  @@unique([casUsageId, versionNumber])
+  @@index([casUsageId, createdAt])
+  @@map("contrat_donnees_version")
 }
 
 // ============================================================================
@@ -1410,7 +1451,7 @@ model Financement {
   observations    String?
 
   // PTF Phase 2 — Articulation amont/aval
-  // Un Financement peut être issu de la validation MCTN d'une ManifestationInteret
+  // Un Financement peut être issu de la validation MTN d'une ManifestationInteret
   // de type FINANCEMENT (option de conversion offerte à l'admin lors du validate).
   // Champ nullable : un Financement peut aussi être saisi directement (engagement
   // hérité d'avant le module PTF, ou intégré sans passer par le workflow partenaire).
@@ -1649,6 +1690,29 @@ model UseCaseFeedback {
   @@index([auteurUserId])
   @@index([consultationId])
   @@map("use_case_feedback")
+}
+
+/// Avis formel simplifié, append-only, indépendant du workflow consultation.
+/// Chaque avis est horodaté, signé institutionnellement, et NON MODIFIABLE.
+model AvisFormel {
+  id                    String         @id @default(cuid())
+  casUsageId            String
+  institutionId         String
+  sens                  AvisFormelSens
+  commentaire           String         @db.Text
+  auteurUserId          String
+  auteurNom             String
+  auteurFonction        String?
+  auteurInstitutionNom  String
+  dateDepot             DateTime       @default(now())
+
+  casUsage    CasUsageMVP @relation(fields: [casUsageId], references: [id], onDelete: Cascade)
+  institution Institution @relation(fields: [institutionId], references: [id])
+  auteur      User        @relation("AvisFormelAuteur", fields: [auteurUserId], references: [id])
+
+  @@index([casUsageId, dateDepot])
+  @@index([institutionId])
+  @@map("avis_formel")
 }
 
 /// Journal inaltérable des transitions d'état d'un cas d'usage

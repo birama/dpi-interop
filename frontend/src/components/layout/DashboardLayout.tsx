@@ -129,7 +129,7 @@ export function DashboardLayout() {
         />
       )}
 
-      {/* Sidebar - FIXED, charte SENUM/MCTN navy */}
+      {/* Sidebar - FIXED, charte SENUM/MTN navy */}
       <aside
         className={cn(
           'fixed inset-y-0 left-0 z-50 bg-navy flex flex-col transition-all duration-300 ease-in-out',
@@ -412,7 +412,7 @@ export function DashboardLayout() {
 
         {/* Footer */}
         <footer className="py-4 px-6 border-t border-gray-200 text-center text-xs sm:text-sm text-gray-500">
-          SENUM / MCTN — Plateforme Nationale d'Interoperabilite PINS — Senegal
+          SENUM / MTN — Plateforme Nationale d'Interoperabilite PINS — Senegal
         </footer>
       </div>
     </div>

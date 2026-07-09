@@ -45,7 +45,7 @@ export default {
           DEFAULT: 'hsl(var(--card))',
           foreground: 'hsl(var(--card-foreground))',
         },
-        // SENUM/MCTN Brand colors — Charte institutionnelle
+        // SENUM/MTN Brand colors — Charte institutionnelle
         navy: {
           DEFAULT: '#0C1F3A',
           light: '#1A3354',

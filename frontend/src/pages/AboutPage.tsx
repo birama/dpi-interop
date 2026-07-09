@@ -181,7 +181,7 @@ export function AboutPage() {
 
       {/* Footer */}
       <div className="py-4 text-center text-xs text-gray-400 bg-navy-dark">
-        SENUM / MCTN — République du Sénégal — {new Date().getFullYear()}
+        SENUM / MTN — République du Sénégal — {new Date().getFullYear()}
       </div>
     </div>
   );

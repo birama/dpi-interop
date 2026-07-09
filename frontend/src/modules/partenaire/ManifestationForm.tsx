@@ -165,7 +165,7 @@ export function ManifestationForm({
       qc.invalidateQueries({ queryKey: ['partenaire-manifestation-cas', casUsageId] });
       toast({
         title: 'Manifestation soumise',
-        description: 'Votre manifestation a été transmise à la Delivery Unit MCTN pour validation.',
+        description: 'Votre manifestation a été transmise à la Delivery Unit MTN pour validation.',
       });
       reset();
       onSuccess?.();
@@ -214,7 +214,7 @@ export function ManifestationForm({
           {ptf?.contactNom && <p><span className="text-gray-500">Point focal PTF :</span> {ptf.contactNom}</p>}
           {ptf?.contactEmail && <p><span className="text-gray-500">Email :</span> {ptf.contactEmail}</p>}
           <p className="italic text-gray-500 mt-1">
-            Pour modifier ces informations, contactez la DU MCTN.
+            Pour modifier ces informations, contactez la DU MTN.
           </p>
         </div>
 
