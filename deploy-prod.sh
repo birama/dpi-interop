@@ -1,93 +1,123 @@
 #!/bin/bash
-set -e
+# ============================================================================
+# PINS — Script de déploiement production
+# À exécuter depuis /opt/dpi-interop/questionnaire-interop
+# Prérequis : backend/.env existant, pins-db accessible, Docker installé
+# ============================================================================
+set -euo pipefail
 
-cd /opt/dpi-interop/questionnaire-interop
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+cd "$SCRIPT_DIR"
 
-echo "=== 1. Code update ==="
-if [ -d .git ]; then
-  git pull origin main || { echo "FAIL: git pull"; exit 1; }
+TIMESTAMP=$(date +%Y%m%d_%H%M)
+BACKUP_DIR="/opt/dpi-interop/backups"
+COMPOSE_FILE="docker-compose.prod.yml"
+ENV_FILE="backend/.env"
+
+log()  { echo "[$(date -u +"%Y-%m-%dT%H:%M:%SZ")] $1"; }
+fail() { log "FAIL: $1"; exit 1; }
+
+echo ""
+echo "╔══════════════════════════════════════════════════════════════╗"
+echo "║    PINS — Déploiement production                            ║"
+echo "║    $(date)                    ║"
+echo "╚══════════════════════════════════════════════════════════════╝"
+echo ""
+
+# ============================================================================
+# Pré-vérifications
+# ============================================================================
+[ -f "$ENV_FILE" ] || fail "$ENV_FILE introuvable — créer le avant de déployer"
+[ -f "$COMPOSE_FILE" ] || fail "$COMPOSE_FILE introuvable"
+
+# ============================================================================
+# Étape 1 — Backup pg_dump AVANT toute modification
+# ============================================================================
+log "Étape 1/6 — Backup base de données"
+mkdir -p "$BACKUP_DIR"
+
+BACKUP_FILE="$BACKUP_DIR/prod_avant_deploy_${TIMESTAMP}.sql"
+if docker exec pins-db pg_dump -U pins -d questionnaire_interop --no-owner --no-acl > "$BACKUP_FILE" 2>/dev/null; then
+  SIZE=$(stat -c%s "$BACKUP_FILE" 2>/dev/null || echo 0)
+  if [ "$SIZE" -lt 1000000 ]; then
+    rm -f "$BACKUP_FILE"
+    fail "Backup trop petit : $SIZE octets (< 1 Mo), dump probablement incomplet"
+  fi
+  log "Backup OK : $(basename "$BACKUP_FILE") ($(numfmt --to=iec $SIZE 2>/dev/null || echo ${SIZE} bytes))"
 else
-  echo "No .git found — initializing from remote..."
-  git init
-  git remote add origin https://github.com/birama/dpi-interop.git
-  git fetch origin main
-  git reset --hard origin/main
+  fail "pg_dump a échoué — vérifier que pins-db est accessible"
 fi
-echo "Git OK: $(git log --oneline -1)"
 
-echo "=== 2. Preserve .env ==="
-if [ ! -f backend/.env ]; then
-  echo "Creating backend/.env..."
-  cat > backend/.env <<'ENVEOF'
-NODE_ENV=production
-HOST=0.0.0.0
-PORT=3000
-DATABASE_URL=postgresql://pins:HTvhrQvm3mZgZeAwOUxnqYvDvpsSSeio24OSTvMojs@pins-db:5432/questionnaire_interop?schema=public
-JWT_SECRET=36c3dfcd5ae98a1612b8898bfba0b16dac9afba709b4274282d717508a2711121b3d9ead0ebc92556ad6e9c4657f6f269cf3ede72284976fda40c87ada549823
-JWT_EXPIRES_IN=7d
-CORS_ORIGIN=https://dpi-interop.sec.gouv.sn
-RATE_LIMIT_MAX=1000
-RATE_LIMIT_TIMEWINDOW=60000
-LOG_LEVEL=info
-ENVEOF
-fi
-echo ".env present: $(wc -l < backend/.env) lines"
+# ============================================================================
+# Étape 2 — Git pull
+# ============================================================================
+log "Étape 2/6 — Mise à jour du code"
+COMMIT_BEFORE=$(git log --oneline -1 2>/dev/null || echo "unknown")
 
-echo "=== 3. Ensure PostgreSQL ==="
-if docker ps --format '{{.Names}}' | grep -q pins-db; then
-  echo "pins-db running"
-else
-  echo "FAIL: pins-db not running. Start it manually."
-  exit 1
-fi
-docker exec pins-db pg_isready -U pins || { echo "FAIL: DB not ready"; exit 1; }
+git pull origin main || fail "git pull a échoué"
 
-echo "=== 4. Network ==="
-docker network create pins-net 2>/dev/null || true
-docker network connect pins-net pins-db 2>/dev/null || true
+COMMIT_AFTER=$(git log --oneline -1)
+log "Avant : $COMMIT_BEFORE"
+log "Après : $COMMIT_AFTER"
 
-echo "=== 5. Build ==="
-docker compose -f docker-compose.prod.yml build backend frontend
-echo "Build OK"
+# ============================================================================
+# Étape 3 — Build des images
+# ============================================================================
+log "Étape 3/6 — Build des images Docker"
+docker compose -f "$COMPOSE_FILE" build backend frontend || fail "Build Docker échoué"
+log "Build OK"
 
-echo "=== 6. Backend ==="
-docker rm -f pins-api 2>/dev/null || true
-mkdir -p /opt/dpi-interop/uploads
-docker run -d --name pins-api \
+# ============================================================================
+# Étape 4 — Migration (AVANT démarrage du nouveau backend)
+# ============================================================================
+log "Étape 4/6 — Migration Prisma"
+# Arrêter l'ancien backend pour libérer les connexions DB
+docker stop pins-api 2>/dev/null || true
+
+# Exécuter la migration via un conteneur temporaire
+docker run --rm \
   --network pins-net \
-  --env-file backend/.env \
-  -v /opt/dpi-interop/uploads:/app/uploads \
-  --restart always \
-  questionnaire-interop-backend
+  -v "$(pwd)/backend/prisma:/app/prisma:ro" \
+  --env-file "$ENV_FILE" \
+  --entrypoint npx \
+  questionnaire-interop-backend \
+  prisma migrate deploy || fail "Migration Prisma échouée"
 
-echo "Waiting for backend..."
+log "Migration OK"
+
+# ============================================================================
+# Étape 5 — Démarrage des conteneurs
+# ============================================================================
+log "Étape 5/6 — Démarrage des conteneurs"
+docker compose -f "$COMPOSE_FILE" up -d backend frontend || fail "docker compose up échoué"
+log "Conteneurs démarrés"
+
+# ============================================================================
+# Étape 6 — Health check
+# ============================================================================
+log "Étape 6/6 — Health check"
 for i in $(seq 1 12); do
-  if docker exec pins-api wget -qO- http://127.0.0.1:3000/health 2>/dev/null; then
-    echo ""
-    echo "Backend OK after ${i}0s"
+  if curl -sf http://localhost/health > /dev/null 2>&1; then
+    log "Health OK après ${i}0 secondes"
     break
   fi
-  [ $i -eq 12 ] && { echo "FAIL: Backend timeout"; docker logs pins-api --tail 20; exit 1; }
+  if [ $i -eq 12 ]; then
+    log "Logs pins-api (30 dernières lignes) :"
+    docker logs pins-api --tail 30 2>&1 || true
+    fail "Health check timeout (> 120s) — voir logs ci-dessus"
+  fi
   sleep 10
 done
 
-echo "=== 7. Migrations ==="
-docker exec pins-api sh -c "npx prisma migrate deploy 2>&1" || echo "Migration step completed (check output above)"
-
-echo "=== 8. Frontend (HTTPS) ==="
-docker rm -f pins-frontend 2>/dev/null || true
-docker run -d --name pins-frontend \
-  --network pins-net \
-  -p 80:80 \
-  -p 443:443 \
-  -v /opt/dpi-interop/certs:/etc/nginx/certs:ro \
-  --restart always \
-  questionnaire-interop-frontend
-
-sleep 5
-docker ps --format '{{.Names}}' | grep -q pins-frontend || { echo "FAIL: Frontend"; docker logs pins-frontend --tail 10; exit 1; }
-curl -sf http://localhost/ > /dev/null || { echo "FAIL: Not serving"; exit 1; }
-
+# ============================================================================
+# Récapitulatif
+# ============================================================================
 echo ""
-echo "=== DEPLOYMENT SUCCESSFUL ==="
-docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
+echo "╔══════════════════════════════════════════════════════════════╗"
+echo "║    DÉPLOIEMENT RÉUSSI                                       ║"
+echo "╠══════════════════════════════════════════════════════════════╣"
+echo "║    Backup : $(basename "$BACKUP_FILE")"
+echo "║    Commit : $COMMIT_AFTER"
+echo "╚══════════════════════════════════════════════════════════════╝"
+echo ""
+docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}" | grep -E "NAMES|pins-"
