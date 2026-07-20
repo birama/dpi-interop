@@ -408,6 +408,9 @@ model Institution {
   pressentieSur    InstitutionPressentie[]
   adoptionRequests AdoptionRequest[]
 
+  // Recensement GouvNum
+  projetsRecenses ProjetRecense[]
+
   // Audit
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1891,4 +1894,140 @@ model LiaisonGuichet {
   @@unique([casUsageId, serviceGuichetId])
   @@index([serviceGuichetId])
   @@map("liaison_guichet")
+}
+
+// ============================================================================
+// RECENSEMENT DES PROJETS NUMÉRIQUES DE L'ÉTAT (GouvNum)
+// ============================================================================
+
+enum TypeStructure {
+  MINISTERE
+  DIRECTION
+  AGENCE
+  ETABLISSEMENT_PUBLIC
+  SOCIETE_NATIONALE
+  PROJET_PROGRAMME
+  AUTRE
+}
+
+enum StatutAvancement {
+  IDEE_CONCEPTION
+  ETUDE_CADRAGE
+  EN_REALISATION
+  EN_PRODUCTION
+  EN_REFONTE
+  SUSPENDU
+}
+
+enum BudgetFourchette {
+  MOINS_50_MILLIONS
+  DE_50_A_200_MILLIONS
+  DE_200_MILLIONS_A_1_MILLIARD
+  PLUS_1_MILLIARD
+  NON_CHIFFRE
+}
+
+enum SourceFinancement {
+  BUDGET_NATIONAL
+  PARTENAIRE_TECHNIQUE_FINANCIER
+  PARTENARIAT_PUBLIC_PRIVE
+  RESSOURCES_PROPRES
+  NON_FINANCE
+  AUTRE
+}
+
+enum OuiNonPrevu {
+  OUI
+  NON
+  PREVU
+}
+
+enum HebergementProjet {
+  CLOUD_SOUVERAIN_SENUM
+  DATACENTER_STRUCTURE
+  CLOUD_ETRANGER
+  NON_DEFINI
+}
+
+enum OuiNonEnCours {
+  OUI
+  NON
+  EN_COURS
+}
+
+enum OuiNonADeterminer {
+  OUI
+  NON
+  A_DETERMINER
+}
+
+enum StatutTraitement {
+  A_QUALIFIER
+  QUALIFIE
+  RETENU_COMITE
+  ECARTE
+}
+
+enum Origine {
+  PUBLIQUE
+  AUTHENTIFIEE
+}
+
+model ProjetRecense {
+  id String @id @default(uuid())
+
+  // Traçabilité source
+  origine       Origine @default(PUBLIQUE)
+  institutionId String?
+  institution   Institution? @relation(fields: [institutionId], references: [id])
+
+  // Bloc 1 - Structure declarante (obligatoire)
+  ministereTutelle String
+  ministereAutre   String?
+  structureNom     String
+  typeStructure    TypeStructure
+
+  // Bloc 2 - Contact (obligatoire)
+  contactNom        String
+  contactFonction   String
+  contactEmail      String
+  contactTelephone  String?
+
+  // Bloc 3 - Projet (obligatoire)
+  intitule                     String
+  description                  String
+  natures                      String[]
+  statutAvancement             StatutAvancement
+  anneeDebut                   Int?
+  anneeFin                     Int?
+  budgetFourchette             BudgetFourchette
+  budgetMontant                Float?
+  sourceFinancement            SourceFinancement
+  sourceFinancementPrecision   String?
+
+  // Bloc 4 - Qualification interoperabilite et architecture (facultatif)
+  echangeDonnees        OuiNonPrevu?
+  echangeDonneesDetail  String?
+  registresConcernes    String[]
+  hebergement           HebergementProjet?
+  dossierArchitecture   OuiNonEnCours?
+  souhaitAccompagnement OuiNonADeterminer?
+
+  // Bloc 5 - Complement (facultatif)
+  observations String?
+
+  // Metadonnees
+  dateSoumission  DateTime         @default(now())
+  ipTronquee      String?
+  sessionRef      String
+  statutTraitement StatutTraitement @default(A_QUALIFIER)
+  notesInternes   String?
+
+  @@index([dateSoumission])
+  @@index([ministereTutelle])
+  @@index([statutAvancement])
+  @@index([statutTraitement])
+  @@index([sessionRef])
+  @@index([contactEmail])
+  @@map("projets_recenses")
 }

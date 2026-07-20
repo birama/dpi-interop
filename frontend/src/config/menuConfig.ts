@@ -18,7 +18,14 @@ import {
   Grid3X3, Wallet, Radar, Shield, BarChart3, Upload, Inbox, Briefcase, Tags,
   Users as UsersGroup,
   Globe,
+  ClipboardList,
+  QrCode as QrCodeIcon,
 } from 'lucide-react';
+
+// Rôles autorisés pour la section GouvNum.
+// À tenir en sync avec RECENSEMENT_ADMIN_ROLES dans backend/src/modules/recensement/service.ts
+// À tenir en sync avec RECENSEMENT_ADMIN_ROLES (backend/recensement/service.ts)
+const GOUVNUM_ROLES: Array<'INSTITUTION' | 'ADMIN' | 'PARTENAIRE_TECHNIQUE'> = ['ADMIN', 'INSTITUTION'];
 
 // Re-export types pour MenuConfig utilise dans DashboardLayout
 export interface MenuItem {
@@ -110,6 +117,20 @@ export const MENU_SECTIONS: MenuSection[] = [
       { name: 'Audit & Sessions', href: '/admin/audit', icon: Shield },
       { name: 'Rapports', href: '/reports', icon: BarChart3 },
       { name: 'Import Word', href: '/admin/import', icon: Upload },
+    ],
+  },
+  {
+    // GouvNum — Gouvernance numerique (recensement, comite architecture, portefeuille projets).
+    // RBAC aligne sur RECENSEMENT_ADMIN_ROLES (backend/recensement/service.ts).
+    // Ajouter un role dans GOUVNUM_ROLES suffit pour elargir l'acces.
+    id: 'gouvnum',
+    label: 'GouvNum',
+    icon: ClipboardList,
+    roles: GOUVNUM_ROLES,
+    items: [
+      { name: 'Déclarer un projet', href: '/gouvnum/declarer', icon: FileText },
+      { name: 'Nos projets déclarés', href: '/admin/recensement', icon: ClipboardList },
+      { name: 'QR code du formulaire', href: '/admin/gouvnum/qr-code', icon: QrCodeIcon, roles: ['ADMIN'] },
     ],
   },
   {

@@ -20,6 +20,8 @@ import { adminBailleurRoutes, adminManifestationsRoutes, adminPtfRoutes, partena
 import { partenaireTechniqueRoutes, adminOrganisationRoutes } from './partenaire-technique/routes.js';
 import { adminAccompagnementRoutes } from './accompagnement/admin.routes.js';
 import { partenaireTechAccompagnementRoutes } from './accompagnement/partenaire-tech.routes.js';
+import { recensementRoutes } from './recensement/routes.js';
+import { recensementAdminRoutes } from './recensement/admin.routes.js';
 
 // Inline routes for conventions and xroad
 async function conventionsRoutes(app: FastifyInstance) {
@@ -1193,6 +1195,12 @@ export async function registerRoutes(app: FastifyInstance) {
       api.register(notificationsMeRoutes, { prefix: '/me' });
       api.register(notificationsRoutes, { prefix: '/notifications' });
       api.register(newDealRoutes, { prefix: '/new-deal' });
+
+      // Public — hors authentification
+      api.register(recensementRoutes, { prefix: '/public' });
+
+      // Admin — recensement GouvNum (RBAC ADMIN)
+      api.register(recensementAdminRoutes, { prefix: '/admin/recensement' });
     },
     { prefix: '/api' }
   );

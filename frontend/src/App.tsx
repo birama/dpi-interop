@@ -44,6 +44,7 @@ import { InstitutionsCataloguePage } from '@/pages/InstitutionsCataloguePage';
 import { AdoptionRequestsPage } from '@/modules/vue360/du/AdoptionRequestsPage';
 import { DocumentsPage } from '@/pages/DocumentsPage';
 import { NotFoundPage } from '@/pages/NotFoundPage';
+import { RecensementPage } from '@/pages/RecensementPage';
 import { CguAcceptancePage } from '@/pages/partenaire/CguAcceptancePage';
 import { PartenaireDashboardPage } from '@/pages/partenaire/PartenaireDashboardPage';
 import { PartenaireCataloguePage } from '@/pages/partenaire/PartenaireCataloguePage';
@@ -63,6 +64,9 @@ import { PartenaireTechniqueProfilPage } from '@/pages/partenaire-tech/Partenair
 import { PartenaireTechniqueMesCasPage } from '@/pages/partenaire-tech/PartenaireTechniqueMesCasPage';
 import { PartenaireTechniqueAccompagnementDetailPage } from '@/pages/partenaire-tech/PartenaireTechniqueAccompagnementDetailPage';
 import { OrganisationsPage } from '@/pages/OrganisationsPage';
+import { AdminRecensementPage } from '@/pages/AdminRecensementPage';
+import { GouvNumDeclarerPage } from '@/pages/GouvNumDeclarerPage';
+import { AdminQrCodePage } from '@/pages/AdminQrCodePage';
 import { useLocation } from 'react-router-dom';
 
 // Protected Route wrapper
@@ -157,6 +161,9 @@ function App() {
 
         {/* PTF Phase 1 — Acceptation CGU (hors ProtectedRoute pour éviter boucle de redirect) */}
         <Route path="/partenaire/cgu" element={<CguAcceptancePage />} />
+
+        {/* Recensement des projets numériques — formulaire public (GouvNum) */}
+        <Route path="/recensement" element={<RecensementPage />} />
 
         {/* Protected routes */}
         <Route element={<DashboardLayout />}>
@@ -626,6 +633,33 @@ function App() {
             element={
               <ProtectedRoute adminOnly>
                 <AdminManifestationsPage />
+              </ProtectedRoute>
+            }
+          />
+          {/* Recensement des projets numériques — back-office GouvNum (ADMIN + INSTITUTION) */}
+          <Route
+            path="/admin/recensement"
+            element={
+              <ProtectedRoute allowedRoles={['ADMIN', 'INSTITUTION']}>
+                <AdminRecensementPage />
+              </ProtectedRoute>
+            }
+          />
+          {/* Déclaration de projet pour utilisateurs connectés (pré-remplie) */}
+          <Route
+            path="/gouvnum/declarer"
+            element={
+              <ProtectedRoute allowedRoles={['ADMIN', 'INSTITUTION']}>
+                <GouvNumDeclarerPage />
+              </ProtectedRoute>
+            }
+          />
+          {/* QR code du formulaire (ADMIN seulement) */}
+          <Route
+            path="/admin/gouvnum/qr-code"
+            element={
+              <ProtectedRoute adminOnly>
+                <AdminQrCodePage />
               </ProtectedRoute>
             }
           />
