@@ -37,23 +37,8 @@ const ministeres = [
   'Autre',
 ] as const;
 
-export const recensementSchema = z.object({
-  // Bloc 1 - Structure
-  ministereTutelle: z.enum(ministeres),
-  ministereAutre: z.string().max(200).optional(),
-  structureNom: z.string().min(1, 'La structure est requise').max(300),
-  typeStructure: z.enum([
-    'MINISTERE', 'DIRECTION', 'AGENCE', 'ETABLISSEMENT_PUBLIC',
-    'SOCIETE_NATIONALE', 'PROJET_PROGRAMME', 'AUTRE',
-  ]),
-
-  // Bloc 2 - Contact
-  contactNom: z.string().min(1, 'Le nom est requis').max(200),
-  contactFonction: z.string().min(1, 'La fonction est requise').max(300),
-  contactEmail: z.string().email('Email invalide').max(200),
-  contactTelephone: z.string().max(50).optional().or(z.literal('')),
-
-  // Bloc 3 - Projet
+// Schéma d'un projet individuel (sans structure ni contact — portés par le parent)
+const projetSchema = z.object({
   intitule: z.string().min(1, 'L\'intitulé est requis').max(500),
   description: z.string().min(1, 'La description est requise').max(500),
   natures: z.array(z.string().max(200)).min(1, 'Au moins une nature est requise'),
@@ -74,7 +59,7 @@ export const recensementSchema = z.object({
   ]),
   sourceFinancementPrecision: z.string().max(300).optional().or(z.literal('')),
 
-  // Bloc 4 - Qualification (tout facultatif)
+  // Qualification (facultatif)
   echangeDonnees: z.enum(['OUI', 'NON', 'PREVU']).optional().nullable(),
   echangeDonneesDetail: z.string().max(500).optional().or(z.literal('')),
   registresConcernes: z.array(z.string().max(200)).optional().default([]),
@@ -83,15 +68,44 @@ export const recensementSchema = z.object({
   ]).optional().nullable(),
   dossierArchitecture: z.enum(['OUI', 'NON', 'EN_COURS']).optional().nullable(),
   souhaitAccompagnement: z.enum(['OUI', 'NON', 'A_DETERMINER']).optional().nullable(),
-
-  // Bloc 5 - Complement
   observations: z.string().max(2000).optional().or(z.literal('')),
+});
 
-  // Honeypot (champ invisible pour les robots)
+// Schéma unitaire historique (rétrocompatible)
+export const recensementSchema = z.object({
+  ministereTutelle: z.enum(ministeres),
+  ministereAutre: z.string().max(200).optional(),
+  structureNom: z.string().min(1, 'La structure est requise').max(300),
+  typeStructure: z.enum([
+    'MINISTERE', 'DIRECTION', 'AGENCE', 'ETABLISSEMENT_PUBLIC',
+    'SOCIETE_NATIONALE', 'PROJET_PROGRAMME', 'AUTRE',
+  ]),
+  contactNom: z.string().min(1, 'Le nom est requis').max(200),
+  contactFonction: z.string().min(1, 'La fonction est requise').max(300),
+  contactEmail: z.string().email('Email invalide').max(200),
+  contactTelephone: z.string().max(50).optional().or(z.literal('')),
   website: z.string().max(0).optional().or(z.literal('')),
-
-  // Session ref (pour regroupement des soumissions)
   sessionRef: z.string().max(100).optional(),
+}).merge(projetSchema);
+
+// Schéma multi-projets : structure + contact en tête, projets en tableau
+export const recensementMultiSchema = z.object({
+  ministereTutelle: z.enum(ministeres),
+  ministereAutre: z.string().max(200).optional(),
+  structureNom: z.string().min(1, 'La structure est requise').max(300),
+  typeStructure: z.enum([
+    'MINISTERE', 'DIRECTION', 'AGENCE', 'ETABLISSEMENT_PUBLIC',
+    'SOCIETE_NATIONALE', 'PROJET_PROGRAMME', 'AUTRE',
+  ]),
+  contactNom: z.string().min(1, 'Le nom est requis').max(200),
+  contactFonction: z.string().min(1, 'La fonction est requise').max(300),
+  contactEmail: z.string().email('Email invalide').max(200),
+  contactTelephone: z.string().max(50).optional().or(z.literal('')),
+  website: z.string().max(0).optional().or(z.literal('')),
+  sessionRef: z.string().max(100).optional(),
+  projets: z.array(projetSchema).min(1, 'Au moins un projet est requis').max(20),
 });
 
 export type RecensementInput = z.infer<typeof recensementSchema>;
+export type RecensementMultiInput = z.infer<typeof recensementMultiSchema>;
+export type ProjetInput = z.infer<typeof projetSchema>;

@@ -1,13 +1,69 @@
 import { FastifyInstance } from 'fastify';
-import { RecensementInput } from './schema.js';
+import { RecensementInput, ProjetInput } from './schema.js';
 import crypto from 'crypto';
 
 // Rôles autorisés pour l'accès au back-office recensement.
 // Simple constante : pour élargir, ajouter un rôle ici suffit.
 export const RECENSEMENT_ADMIN_ROLES = ['ADMIN'] as const;
 
+interface StructureContact {
+  ministereTutelle: string;
+  ministereAutre?: string;
+  structureNom: string;
+  typeStructure: string;
+  contactNom: string;
+  contactFonction: string;
+  contactEmail: string;
+  contactTelephone?: string;
+}
+
 export class RecensementService {
   constructor(private app: FastifyInstance) {}
+
+  async createFromProjet(
+    projet: ProjetInput,
+    sc: StructureContact,
+    ipTronquee: string,
+    existingSessionRef: string | undefined,
+    origine: string,
+    institutionId: string | null,
+  ) {
+    const sessionRef = existingSessionRef || crypto.randomUUID();
+
+    return this.app.prisma.projetRecense.create({
+      data: {
+        origine: origine as any,
+        institutionId,
+        ministereTutelle: sc.ministereTutelle,
+        ministereAutre: sc.ministereAutre || null,
+        structureNom: sc.structureNom,
+        typeStructure: sc.typeStructure as any,
+        contactNom: sc.contactNom,
+        contactFonction: sc.contactFonction,
+        contactEmail: sc.contactEmail,
+        contactTelephone: sc.contactTelephone || null,
+        intitule: projet.intitule,
+        description: projet.description,
+        natures: projet.natures,
+        statutAvancement: projet.statutAvancement as any,
+        anneeDebut: projet.anneeDebut ?? null,
+        anneeFin: projet.anneeFin ?? null,
+        budgetFourchette: projet.budgetFourchette as any,
+        budgetMontant: projet.budgetMontant ?? null,
+        sourceFinancement: projet.sourceFinancement as any,
+        sourceFinancementPrecision: projet.sourceFinancementPrecision || null,
+        echangeDonnees: (projet.echangeDonnees ?? null) as any,
+        echangeDonneesDetail: projet.echangeDonneesDetail || null,
+        registresConcernes: projet.registresConcernes || [],
+        hebergement: (projet.hebergement ?? null) as any,
+        dossierArchitecture: (projet.dossierArchitecture ?? null) as any,
+        souhaitAccompagnement: (projet.souhaitAccompagnement ?? null) as any,
+        observations: projet.observations || null,
+        ipTronquee,
+        sessionRef,
+      },
+    });
+  }
 
   async create(
     data: RecensementInput,
