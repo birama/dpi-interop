@@ -87,7 +87,11 @@ describe('Security — deny-by-default RBAC', () => {
     { method: 'GET', url: '/api/admin/ptf' },
     // Organisations
     { method: 'GET', url: '/api/admin/organisations' },
-    // Recensement qualification (ADMIN only)
+    // Recensement back-office (ADMIN only)
+    { method: 'GET', url: '/api/admin/recensement' },
+    { method: 'GET', url: '/api/admin/recensement/stats' },
+    { method: 'GET', url: '/api/admin/recensement/00000000-0000-0000-0000-000000000000' },
+    { method: 'GET', url: '/api/admin/recensement/export/csv' },
     { method: 'PATCH', url: '/api/admin/recensement/00000000-0000-0000-0000-000000000000/qualification' },
   ];
 
@@ -128,45 +132,7 @@ describe('Security — deny-by-default RBAC', () => {
   });
 
   // =========================================================================
-  // 3. Recensement back-office — INSTITUTION peut voir (pas exporter)
-  // =========================================================================
-  describe('Recensement — INSTITUTION autorisé sur lecture', () => {
-    it('GET /api/admin/recensement → 200 pour INSTITUTION', async () => {
-      const res = await app.inject({
-        method: 'GET', url: '/api/admin/recensement',
-        headers: { Authorization: `Bearer ${institutionToken}` },
-      });
-      expect(res.statusCode).toBe(200);
-    });
-
-    it('GET /api/admin/recensement/stats → 200 pour INSTITUTION', async () => {
-      const res = await app.inject({
-        method: 'GET', url: '/api/admin/recensement/stats',
-        headers: { Authorization: `Bearer ${institutionToken}` },
-      });
-      expect(res.statusCode).toBe(200);
-    });
-
-    it('GET /api/admin/recensement/export/csv → 200 pour INSTITUTION (accès OK, données filtrées serveur)', async () => {
-      const res = await app.inject({
-        method: 'GET', url: '/api/admin/recensement/export/csv',
-        headers: { Authorization: `Bearer ${institutionToken}` },
-      });
-      expect(res.statusCode).toBe(200);
-    });
-
-    it('PATCH qualification → 403 pour INSTITUTION', async () => {
-      const res = await app.inject({
-        method: 'PATCH', url: '/api/admin/recensement/fake-id/qualification',
-        headers: { Authorization: `Bearer ${institutionToken}` },
-        payload: { statutTraitement: 'QUALIFIE' },
-      });
-      expect(res.statusCode).toBe(403);
-    });
-  });
-
-  // =========================================================================
-  // 4. Routes authentifiées — INSTITUTION peut accéder
+  // 3. Routes authentifiées — INSTITUTION peut accéder
   // =========================================================================
   const AUTH_ROUTES = [
     { method: 'GET', url: '/api/institutions' },
