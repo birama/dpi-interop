@@ -20,7 +20,7 @@ function generateTempPassword(): string {
 
 export async function adminBailleurRoutes(app: FastifyInstance) {
   // POST /admin/users/bailleur — création d'un compte BAILLEUR (ADMIN only)
-  app.post('/', { onRequest: [app.authenticateAdmin] }, async (req: any, reply: any) => {
+  app.post('/', { onRequest: [app.authenticateAdmin], config: { access: ['ADMIN'] } }, async (req: any, reply: any) => {
     const { email, ptfId, password, nomComplet, fonction } = req.body as {
       email?: string;
       ptfId?: string;
@@ -102,7 +102,7 @@ function isBailleur(req: any): boolean {
 
 export async function partenaireRoutes(app: FastifyInstance) {
   // POST /partenaire/cgu/accept — acceptation des CGU (BAILLEUR, sans vérif CGU préalable)
-  app.post('/cgu/accept', { onRequest: [app.authenticate] }, async (req: any, reply: any) => {
+  app.post('/cgu/accept', { onRequest: [app.authenticate], config: { access: ['BAILLEUR'] } }, async (req: any, reply: any) => {
     if (req.user.role !== 'BAILLEUR') {
       return reply.status(403).send({ error: 'Réservé aux comptes Partenaire Technique et Financier' });
     }
@@ -140,7 +140,7 @@ export async function partenaireRoutes(app: FastifyInstance) {
   // ===========================================================================
 
   // GET /partenaire/dashboard — KPIs + 5 derniers cas éligibles
-  app.get('/dashboard', { onRequest: [app.authenticate] }, async (req: any, reply: any) => {
+  app.get('/dashboard', { onRequest: [app.authenticate], config: { access: ['BAILLEUR'] } }, async (req: any, reply: any) => {
     if (!isBailleur(req)) return reply.status(403).send({ error: 'Réservé aux comptes PTF' });
     const ptfId = req.user.ptfId;
     if (!ptfId) return reply.status(400).send({ error: 'Compte PTF non rattaché à un partenaire' });
@@ -181,7 +181,7 @@ export async function partenaireRoutes(app: FastifyInstance) {
   });
 
   // GET /partenaire/catalogue — liste filtrée
-  app.get('/catalogue', { onRequest: [app.authenticate] }, async (req: any, reply: any) => {
+  app.get('/catalogue', { onRequest: [app.authenticate], config: { access: ['BAILLEUR'] } }, async (req: any, reply: any) => {
     if (!isBailleur(req)) return reply.status(403).send({ error: 'Réservé aux comptes PTF' });
     const ptfId = req.user.ptfId;
     if (!ptfId) return reply.status(400).send({ error: 'Compte PTF non rattaché à un partenaire' });
@@ -232,7 +232,7 @@ export async function partenaireRoutes(app: FastifyInstance) {
   });
 
   // GET /partenaire/cas/:id — Vue 360 BAILLEUR (champs sensibles masqués)
-  app.get('/cas/:id', { onRequest: [app.authenticate] }, async (req: any, reply: any) => {
+  app.get('/cas/:id', { onRequest: [app.authenticate], config: { access: ['BAILLEUR'] } }, async (req: any, reply: any) => {
     if (!isBailleur(req)) return reply.status(403).send({ error: 'Réservé aux comptes PTF' });
     const ptfId = req.user.ptfId;
     if (!ptfId) return reply.status(400).send({ error: 'Compte PTF non rattaché à un partenaire' });
@@ -313,7 +313,7 @@ export async function partenaireRoutes(app: FastifyInstance) {
   });
 
   // GET /partenaire/profil — Profil PTF connecté (lecture seule)
-  app.get('/profil', { onRequest: [app.authenticate] }, async (req: any, reply: any) => {
+  app.get('/profil', { onRequest: [app.authenticate], config: { access: ['BAILLEUR'] } }, async (req: any, reply: any) => {
     if (!isBailleur(req)) return reply.status(403).send({ error: 'Réservé aux comptes PTF' });
     const user = await app.prisma.user.findUnique({
       where: { id: req.user.id },
@@ -453,7 +453,7 @@ export async function partenaireRoutes(app: FastifyInstance) {
 
   // GET /partenaire/manifestations — liste des manifestations du PTF connecté
   // Query: statut?, casUsageId?
-  app.get('/manifestations', { onRequest: [app.authenticate] }, async (req: any, reply: any) => {
+  app.get('/manifestations', { onRequest: [app.authenticate], config: { access: ['BAILLEUR'] } }, async (req: any, reply: any) => {
     if (!isBailleur(req)) return reply.status(403).send({ error: 'Réservé aux comptes PTF' });
     const ptfId = req.user.ptfId;
     if (!ptfId) return reply.status(400).send({ error: 'Compte PTF non rattaché à un partenaire' });
@@ -495,7 +495,7 @@ export async function partenaireRoutes(app: FastifyInstance) {
   });
 
   // GET /partenaire/manifestations/:id — détail
-  app.get('/manifestations/:id', { onRequest: [app.authenticate] }, async (req: any, reply: any) => {
+  app.get('/manifestations/:id', { onRequest: [app.authenticate], config: { access: ['BAILLEUR'] } }, async (req: any, reply: any) => {
     if (!isBailleur(req)) return reply.status(403).send({ error: 'Réservé aux comptes PTF' });
     const ptfId = req.user.ptfId;
     if (!ptfId) return reply.status(400).send({ error: 'Compte PTF non rattaché à un partenaire' });
@@ -527,7 +527,7 @@ export async function partenaireRoutes(app: FastifyInstance) {
 
   // POST /partenaire/manifestations — création en DRAFT
   // Body: { casUsageId, type, commentaire, fenetreTemporelle?, montantEstime?, devise?, instrumentFinancier? }
-  app.post('/manifestations', { onRequest: [app.authenticate] }, async (req: any, reply: any) => {
+  app.post('/manifestations', { onRequest: [app.authenticate], config: { access: ['BAILLEUR'] } }, async (req: any, reply: any) => {
     if (!isBailleur(req)) return reply.status(403).send({ error: 'Réservé aux comptes PTF' });
     const ptfId = req.user.ptfId;
     if (!ptfId) return reply.status(400).send({ error: 'Compte PTF non rattaché à un partenaire' });
@@ -576,7 +576,7 @@ export async function partenaireRoutes(app: FastifyInstance) {
   });
 
   // PUT /partenaire/manifestations/:id — modification (uniquement si DRAFT)
-  app.put('/manifestations/:id', { onRequest: [app.authenticate] }, async (req: any, reply: any) => {
+  app.put('/manifestations/:id', { onRequest: [app.authenticate], config: { access: ['BAILLEUR'] } }, async (req: any, reply: any) => {
     if (!isBailleur(req)) return reply.status(403).send({ error: 'Réservé aux comptes PTF' });
     const ptfId = req.user.ptfId;
     if (!ptfId) return reply.status(400).send({ error: 'Compte PTF non rattaché à un partenaire' });
@@ -610,7 +610,7 @@ export async function partenaireRoutes(app: FastifyInstance) {
   });
 
   // POST /partenaire/manifestations/:id/submit — DRAFT -> EN_VALIDATION
-  app.post('/manifestations/:id/submit', { onRequest: [app.authenticate] }, async (req: any, reply: any) => {
+  app.post('/manifestations/:id/submit', { onRequest: [app.authenticate], config: { access: ['BAILLEUR'] } }, async (req: any, reply: any) => {
     if (!isBailleur(req)) return reply.status(403).send({ error: 'Réservé aux comptes PTF' });
     const ptfId = req.user.ptfId;
     if (!ptfId) return reply.status(400).send({ error: 'Compte PTF non rattaché à un partenaire' });
@@ -634,7 +634,7 @@ export async function partenaireRoutes(app: FastifyInstance) {
   });
 
   // DELETE /partenaire/manifestations/:id — uniquement si DRAFT
-  app.delete('/manifestations/:id', { onRequest: [app.authenticate] }, async (req: any, reply: any) => {
+  app.delete('/manifestations/:id', { onRequest: [app.authenticate], config: { access: ['BAILLEUR'] } }, async (req: any, reply: any) => {
     if (!isBailleur(req)) return reply.status(403).send({ error: 'Réservé aux comptes PTF' });
     const ptfId = req.user.ptfId;
     if (!ptfId) return reply.status(400).send({ error: 'Compte PTF non rattaché à un partenaire' });
@@ -689,7 +689,7 @@ async function computeManifestationKpis(app: FastifyInstance, where: any): Promi
 export async function adminManifestationsRoutes(app: FastifyInstance) {
   // GET /api/admin/manifestations
   // Query : statut?, ptfId?, casUsageId?, domaine?, dateDebut?, dateFin?, page=1, pageSize=20
-  app.get('/', { onRequest: [app.authenticateAdmin] }, async (req: any, reply: any) => {
+  app.get('/', { onRequest: [app.authenticateAdmin], config: { access: ['ADMIN'] } }, async (req: any, reply: any) => {
     const q = req.query as any;
     const where: any = {};
     if (q.statut) where.statut = q.statut;
@@ -761,7 +761,7 @@ export async function adminManifestationsRoutes(app: FastifyInstance) {
   });
 
   // GET /api/admin/manifestations/:id — détail enrichi + historique journal_audit_ptf
-  app.get('/:id', { onRequest: [app.authenticateAdmin] }, async (req: any, reply: any) => {
+  app.get('/:id', { onRequest: [app.authenticateAdmin], config: { access: ['ADMIN'] } }, async (req: any, reply: any) => {
     const m: any = await app.prisma.manifestationInteret.findUnique({
       where: { id: req.params.id },
       include: {
@@ -804,7 +804,7 @@ export async function adminManifestationsRoutes(app: FastifyInstance) {
 export async function adminPtfRoutes(app: FastifyInstance) {
   // GET /api/admin/ptf — liste des comptes BAILLEUR enrichis
   // Query : domaine?, actif? ('true'|'false'), page, pageSize
-  app.get('/', { onRequest: [app.authenticateAdmin] }, async (req: any, reply: any) => {
+  app.get('/', { onRequest: [app.authenticateAdmin], config: { access: ['ADMIN'] } }, async (req: any, reply: any) => {
     const q = req.query as any;
     const page = Math.max(1, parseInt(q.page, 10) || 1);
     const pageSize = Math.min(100, Math.max(1, parseInt(q.pageSize, 10) || 20));
@@ -931,7 +931,7 @@ export async function adminPtfRoutes(app: FastifyInstance) {
   });
 
   // GET /api/admin/ptf/:id — fiche détaillée d'un BAILLEUR
-  app.get('/:id', { onRequest: [app.authenticateAdmin] }, async (req: any, reply: any) => {
+  app.get('/:id', { onRequest: [app.authenticateAdmin], config: { access: ['ADMIN'] } }, async (req: any, reply: any) => {
     const u: any = await app.prisma.user.findUnique({
       where: { id: req.params.id },
       select: {
@@ -1009,7 +1009,7 @@ export async function adminPtfRoutes(app: FastifyInstance) {
   });
 
   // GET /api/admin/ptf/:id/manifestations — manifestations d'un BAILLEUR
-  app.get('/:id/manifestations', { onRequest: [app.authenticateAdmin] }, async (req: any, reply: any) => {
+  app.get('/:id/manifestations', { onRequest: [app.authenticateAdmin], config: { access: ['ADMIN'] } }, async (req: any, reply: any) => {
     const u: any = await app.prisma.user.findUnique({ where: { id: req.params.id }, select: { id: true, ptfId: true, role: true } });
     if (!u || u.role !== 'BAILLEUR' || !u.ptfId) return reply.status(404).send({ error: 'Compte PTF introuvable' });
 

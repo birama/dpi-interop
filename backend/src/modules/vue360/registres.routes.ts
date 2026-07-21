@@ -14,7 +14,7 @@ export async function registresCouvertureRoutes(app: FastifyInstance) {
   // =========================================================================
   // GET /couverture — Vue agrégée par référentiel
   // =========================================================================
-  app.get('/couverture', { onRequest: [app.authenticate] }, async (_req: any, reply: any) => {
+  app.get('/couverture', { onRequest: [app.authenticate], config: { access: 'authenticated' } }, async (_req: any, reply: any) => {
     // Tous les registres avec compteurs
     const registres = await app.prisma.registreNational.findMany({
       orderBy: [{ domaine: 'asc' }, { code: 'asc' }],
@@ -102,7 +102,7 @@ export async function registresCouvertureRoutes(app: FastifyInstance) {
   // =========================================================================
   // GET /:id/cas-usages — Cas d'usage associés à un référentiel
   // =========================================================================
-  app.get('/:id/cas-usages', { onRequest: [app.authenticate] }, async (req: any, reply: any) => {
+  app.get('/:id/cas-usages', { onRequest: [app.authenticate], config: { access: 'authenticated' } }, async (req: any, reply: any) => {
     const { id } = req.params;
 
     const registre = await app.prisma.registreNational.findUnique({ where: { id } });
@@ -139,7 +139,7 @@ export async function registresUseCaseRoutes(app: FastifyInstance) {
   // =========================================================================
   // POST /:id/registres — Rattacher un registre à un cas d'usage
   // =========================================================================
-  app.post('/:id/registres', { onRequest: [app.authenticate] }, async (req: any, reply: any) => {
+  app.post('/:id/registres', { onRequest: [app.authenticate], config: { access: 'authenticated' } }, async (req: any, reply: any) => {
     const { id: casUsageId } = req.params;
     const { registreId, mode, champsConcernes, volumetrieEst, criticite } = req.body as any;
     const user = req.user;
@@ -172,7 +172,7 @@ export async function registresUseCaseRoutes(app: FastifyInstance) {
   // =========================================================================
   // GET /:id/similaires — Détecteur de doublons
   // =========================================================================
-  app.get('/:id/similaires', { onRequest: [app.authenticate] }, async (req: any, reply: any) => {
+  app.get('/:id/similaires', { onRequest: [app.authenticate], config: { access: 'authenticated' } }, async (req: any, reply: any) => {
     const { id: casUsageId } = req.params;
 
     // Trouver les registres du CU courant

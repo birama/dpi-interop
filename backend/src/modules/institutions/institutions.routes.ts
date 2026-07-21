@@ -16,6 +16,7 @@ export async function institutionsRoutes(app: FastifyInstance) {
       security: [{ bearerAuth: [] }],
       ...institutionSchemas.list,
     },
+    config: { access: 'authenticated' },
     handler: institutionsController.findAll.bind(institutionsController),
   });
 
@@ -27,6 +28,7 @@ export async function institutionsRoutes(app: FastifyInstance) {
       description: 'Statistiques sur les institutions',
       security: [{ bearerAuth: [] }],
     },
+    config: { access: ['ADMIN'] },
     handler: institutionsController.getStats.bind(institutionsController),
   });
 
@@ -44,6 +46,7 @@ export async function institutionsRoutes(app: FastifyInstance) {
         },
       },
     },
+    config: { access: 'authenticated' },
     handler: institutionsController.findOne.bind(institutionsController),
   });
 
@@ -56,6 +59,7 @@ export async function institutionsRoutes(app: FastifyInstance) {
       security: [{ bearerAuth: [] }],
       ...institutionSchemas.create,
     },
+    config: { access: ['ADMIN'] },
     handler: institutionsController.create.bind(institutionsController),
   });
 
@@ -73,6 +77,7 @@ export async function institutionsRoutes(app: FastifyInstance) {
         },
       },
     },
+    config: { access: ['ADMIN'] },
     handler: institutionsController.update.bind(institutionsController),
   });
 
@@ -90,6 +95,7 @@ export async function institutionsRoutes(app: FastifyInstance) {
         },
       },
     },
+    config: { access: ['ADMIN'] },
     handler: institutionsController.delete.bind(institutionsController),
   });
 }

@@ -41,7 +41,7 @@ async function resolveVisibility(app: any, req: any, casUsageId: string) {
 export async function contratDonneesRoutes(app: FastifyInstance) {
 
   // GET /:id/contrat-donnees — Valeurs courantes + flag _editable
-  app.get('/:id/contrat-donnees', { onRequest: [app.authenticate] }, async (req: any, reply: any) => {
+  app.get('/:id/contrat-donnees', { onRequest: [app.authenticate], config: { access: 'authenticated' } }, async (req: any, reply: any) => {
     const { id } = req.params;
     const { level, cu } = await resolveVisibility(app, req, id);
     if (level === 'NONE' || !cu) return reply.status(404).send({ error: 'Cas d\'usage non trouvé' });
@@ -70,7 +70,7 @@ export async function contratDonneesRoutes(app: FastifyInstance) {
   });
 
   // GET /:id/contrat-donnees/versions — Historique complet
-  app.get('/:id/contrat-donnees/versions', { onRequest: [app.authenticate] }, async (req: any, reply: any) => {
+  app.get('/:id/contrat-donnees/versions', { onRequest: [app.authenticate], config: { access: 'authenticated' } }, async (req: any, reply: any) => {
     const { id } = req.params;
     const { level, cu } = await resolveVisibility(app, req, id);
     if (level === 'NONE' || !cu) return reply.status(404).send({ error: 'Cas d\'usage non trouvé' });
@@ -84,7 +84,7 @@ export async function contratDonneesRoutes(app: FastifyInstance) {
   });
 
   // POST /:id/contrat-donnees — Créer une nouvelle version
-  app.post('/:id/contrat-donnees', { onRequest: [app.authenticate] }, async (req: any, reply: any) => {
+  app.post('/:id/contrat-donnees', { onRequest: [app.authenticate], config: { access: 'authenticated' } }, async (req: any, reply: any) => {
     const { id } = req.params;
     const { donneesEntree, donneesSortie, donneesLecture, baseLegale, dureeRetention } = req.body as any;
 

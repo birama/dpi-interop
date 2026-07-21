@@ -42,7 +42,7 @@ export async function useCasesWriteRoutes(app: FastifyInstance) {
   // =========================================================================
   // POST / — Création d'un cas d'usage (déclaration)
   // =========================================================================
-  app.post('/', { onRequest: [app.authenticate] }, async (req: any, reply: any) => {
+  app.post('/', { onRequest: [app.authenticate], config: { access: 'authenticated' } }, async (req: any, reply: any) => {
     const { titre, resumeMetier, baseLegale, description, donneesEchangees,
             institutionCibleCode, axePrioritaire, impact, complexite,
             stakeholders, registresAssocies,
@@ -236,7 +236,7 @@ export async function useCasesWriteRoutes(app: FastifyInstance) {
   // =========================================================================
   // POST /:id/transition — Transition d'état
   // =========================================================================
-  app.post('/:id/transition', { onRequest: [app.authenticate] }, async (req: any, reply: any) => {
+  app.post('/:id/transition', { onRequest: [app.authenticate], config: { access: 'authenticated' } }, async (req: any, reply: any) => {
     const { id } = req.params;
     const { statusTo, motif, pieceJustif } = req.body as any;
     const user = req.user;
@@ -335,7 +335,7 @@ export async function useCasesWriteRoutes(app: FastifyInstance) {
   // =========================================================================
   // POST /:id/stakeholders — Ajout stakeholder / auto-saisine
   // =========================================================================
-  app.post('/:id/stakeholders', { onRequest: [app.authenticate] }, async (req: any, reply: any) => {
+  app.post('/:id/stakeholders', { onRequest: [app.authenticate], config: { access: 'authenticated' } }, async (req: any, reply: any) => {
     const { id } = req.params;
     const { institutionId, role, motifAutoSaisine, typeConcernement } = req.body as any;
     const user = req.user;
@@ -455,7 +455,7 @@ export async function useCasesWriteRoutes(app: FastifyInstance) {
   // =========================================================================
   // POST /:id/stakeholders/:sid/withdraw — Retrait spontane par l'institution
   // =========================================================================
-  app.post('/:id/stakeholders/:sid/withdraw', { onRequest: [app.authenticate] }, async (req: any, reply: any) => {
+  app.post('/:id/stakeholders/:sid/withdraw', { onRequest: [app.authenticate], config: { access: 'authenticated' } }, async (req: any, reply: any) => {
     const { id, sid } = req.params;
     const { motif } = req.body as any;
     const user = req.user;
@@ -540,7 +540,7 @@ export async function useCasesWriteRoutes(app: FastifyInstance) {
   // =========================================================================
   // DELETE /:id/stakeholders/:sid — Eviction DU (motivee, anti-reinscription)
   // =========================================================================
-  app.delete('/:id/stakeholders/:sid', { onRequest: [app.authenticateAdmin] }, async (req: any, reply: any) => {
+  app.delete('/:id/stakeholders/:sid', { onRequest: [app.authenticateAdmin], config: { access: ['ADMIN'] } }, async (req: any, reply: any) => {
     const { id, sid } = req.params;
     const { motif } = req.body as any;
     const user = req.user;
@@ -614,7 +614,7 @@ export async function useCasesWriteRoutes(app: FastifyInstance) {
 export async function consultationRoutes(app: FastifyInstance) {
 
   // POST /:id/feedback — Soumission d'un avis formel
-  app.post('/:id/feedback', { onRequest: [app.authenticate] }, async (req: any, reply: any) => {
+  app.post('/:id/feedback', { onRequest: [app.authenticate], config: { access: 'authenticated' } }, async (req: any, reply: any) => {
     const { id: consultationId } = req.params;
     const { type, motivation, piecesJointes } = req.body as any;
     const user = req.user;
@@ -700,7 +700,7 @@ export async function consultationRoutes(app: FastifyInstance) {
   });
 
   // POST /:id/relance — Relance d'un stakeholder en retard
-  app.post('/:id/relance', { onRequest: [app.authenticate] }, async (req: any, reply: any) => {
+  app.post('/:id/relance', { onRequest: [app.authenticate], config: { access: 'authenticated' } }, async (req: any, reply: any) => {
     const { id: consultationId } = req.params;
 
     const consultation = await app.prisma.useCaseConsultation.findUnique({
@@ -752,7 +752,7 @@ export async function consultationRoutes(app: FastifyInstance) {
 export async function feedbackRoutes(app: FastifyInstance) {
 
   // PATCH /:id/amend — Amendement d'un avis (crée un nouvel enregistrement lié)
-  app.patch('/:id/amend', { onRequest: [app.authenticate] }, async (req: any, reply: any) => {
+  app.patch('/:id/amend', { onRequest: [app.authenticate], config: { access: 'authenticated' } }, async (req: any, reply: any) => {
     const { id: feedbackId } = req.params;
     const { type, motivation, piecesJointes } = req.body as any;
     const user = req.user;
@@ -797,7 +797,7 @@ export async function feedbackRoutes(app: FastifyInstance) {
 export async function duArbitrageRoutes(app: FastifyInstance) {
 
   // GET / — File d'arbitrage DU
-  app.get('/', { onRequest: [app.authenticateAdmin] }, async (_req: any, reply: any) => {
+  app.get('/', { onRequest: [app.authenticateAdmin], config: { access: ['ADMIN'] } }, async (_req: any, reply: any) => {
 
     // Cas d'usage en consultation ou validation conjointe
     const ouverts = await app.prisma.casUsageMVP.findMany({
@@ -967,7 +967,7 @@ export async function duArbitrageRoutes(app: FastifyInstance) {
   });
 
   // POST /:cuId/convocation — Convoquer les parties prenantes pour un cadrage
-  app.post('/:cuId/convocation', { onRequest: [app.authenticateAdmin] }, async (req: any, reply: any) => {
+  app.post('/:cuId/convocation', { onRequest: [app.authenticateAdmin], config: { access: ['ADMIN'] } }, async (req: any, reply: any) => {
     const { cuId } = req.params;
     const { dateEcheance, motif } = req.body as any;
     const user = req.user;
@@ -1041,7 +1041,7 @@ export async function duArbitrageRoutes(app: FastifyInstance) {
   });
 
   // POST /:cuId/decision — Décision d'arbitrage de la DU
-  app.post('/:cuId/decision', { onRequest: [app.authenticateAdmin] }, async (req: any, reply: any) => {
+  app.post('/:cuId/decision', { onRequest: [app.authenticateAdmin], config: { access: ['ADMIN'] } }, async (req: any, reply: any) => {
     const { cuId } = req.params;
     const { decision, motif } = req.body as any;
     const user = req.user;

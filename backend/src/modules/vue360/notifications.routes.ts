@@ -10,7 +10,7 @@ import { FastifyInstance } from 'fastify';
 
 export async function notificationsMeRoutes(app: FastifyInstance) {
   // GET /api/me/notifications
-  app.get('/notifications', { onRequest: [app.authenticate] }, async (req: any, reply: any) => {
+  app.get('/notifications', { onRequest: [app.authenticate], config: { access: 'authenticated' } }, async (req: any, reply: any) => {
     const userId = req.user.id;
     const { unreadOnly, limit = '50', cursor } = req.query as any;
     const take = Math.min(parseInt(limit) || 50, 100);
@@ -45,7 +45,7 @@ export async function notificationsMeRoutes(app: FastifyInstance) {
   });
 
   // PATCH /api/me/notifications/read-all
-  app.patch('/notifications/read-all', { onRequest: [app.authenticate] }, async (req: any, reply: any) => {
+  app.patch('/notifications/read-all', { onRequest: [app.authenticate], config: { access: 'authenticated' } }, async (req: any, reply: any) => {
     const userId = req.user.id;
     const result = await app.prisma.notification.updateMany({
       where: { userId, lu: false },
@@ -57,7 +57,7 @@ export async function notificationsMeRoutes(app: FastifyInstance) {
 
 export async function notificationsRoutes(app: FastifyInstance) {
   // PATCH /api/notifications/:id/read
-  app.patch('/:id/read', { onRequest: [app.authenticate] }, async (req: any, reply: any) => {
+  app.patch('/:id/read', { onRequest: [app.authenticate], config: { access: 'authenticated' } }, async (req: any, reply: any) => {
     const userId = req.user.id;
     const { id } = req.params;
 

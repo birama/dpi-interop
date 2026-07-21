@@ -26,7 +26,7 @@ import { recensementAdminRoutes } from './recensement/admin.routes.js';
 // Inline routes for conventions and xroad
 async function conventionsRoutes(app: FastifyInstance) {
   // List : ADMIN voit toutes les conventions, INSTITUTION voit celles ou son institution figure
-  app.get('/', { onRequest: [app.authenticate], schema: { tags: ['Conventions'] } }, async (req: any, reply: any) => {
+  app.get('/', { onRequest: [app.authenticate], schema: { tags: ['Conventions'] }, config: { access: 'authenticated' } }, async (req: any, reply: any) => {
     const where: any = {};
     if (req.user.role !== 'ADMIN') {
       if (!req.user.institutionId) return reply.send([]);
@@ -44,7 +44,7 @@ async function conventionsRoutes(app: FastifyInstance) {
   });
 
   // Create
-  app.post('/', { onRequest: [app.authenticateAdmin], schema: { tags: ['Conventions'] } }, async (req: any, reply: any) => {
+  app.post('/', { onRequest: [app.authenticateAdmin], schema: { tags: ['Conventions'] }, config: { access: ['ADMIN'] } }, async (req: any, reply: any) => {
     const convention = await app.prisma.convention.create({
       data: { ...req.body, createdBy: req.user.id },
       include: { institutionA: { select: { id: true, code: true, nom: true } }, institutionB: { select: { id: true, code: true, nom: true } } },
@@ -54,7 +54,7 @@ async function conventionsRoutes(app: FastifyInstance) {
   });
 
   // Update
-  app.patch('/:id', { onRequest: [app.authenticateAdmin], schema: { tags: ['Conventions'] } }, async (req: any, reply: any) => {
+  app.patch('/:id', { onRequest: [app.authenticateAdmin], schema: { tags: ['Conventions'] }, config: { access: ['ADMIN'] } }, async (req: any, reply: any) => {
     const convention = await app.prisma.convention.update({
       where: { id: req.params.id },
       data: req.body,
@@ -65,7 +65,7 @@ async function conventionsRoutes(app: FastifyInstance) {
   });
 
   // Delete
-  app.delete('/:id', { onRequest: [app.authenticateAdmin], schema: { tags: ['Conventions'] } }, async (req: any, reply: any) => {
+  app.delete('/:id', { onRequest: [app.authenticateAdmin], schema: { tags: ['Conventions'] }, config: { access: ['ADMIN'] } }, async (req: any, reply: any) => {
     await app.prisma.convention.delete({ where: { id: req.params.id } });
     try { await app.prisma.auditLog.create({ data: { userId: req.user.id, userEmail: req.user.email, userRole: req.user.role, action: 'DELETE', resource: 'convention', resourceId: req.params.id, ipAddress: req.headers['x-forwarded-for']?.toString() || req.ip, userAgent: req.headers['user-agent'] } }); } catch {}
     return reply.send({ success: true });
@@ -74,7 +74,7 @@ async function conventionsRoutes(app: FastifyInstance) {
 
 async function xroadRoutes(app: FastifyInstance) {
   // Overview
-  app.get('/', { onRequest: [app.authenticateAdmin], schema: { tags: ['X-Road'] } }, async (_req: any, reply: any) => {
+  app.get('/', { onRequest: [app.authenticateAdmin], schema: { tags: ['X-Road'] }, config: { access: ['ADMIN'] } }, async (_req: any, reply: any) => {
     const readiness = await app.prisma.xRoadReadiness.findMany({
       include: { institution: { select: { id: true, code: true, nom: true, ministere: true } } },
       orderBy: { institution: { code: 'asc' } },
@@ -83,7 +83,7 @@ async function xroadRoutes(app: FastifyInstance) {
   });
 
   // Upsert (create or update)
-  app.put('/:institutionId', { onRequest: [app.authenticateAdmin], schema: { tags: ['X-Road'] } }, async (req: any, reply: any) => {
+  app.put('/:institutionId', { onRequest: [app.authenticateAdmin], schema: { tags: ['X-Road'] }, config: { access: ['ADMIN'] } }, async (req: any, reply: any) => {
     const { institutionId } = req.params;
     const readiness = await app.prisma.xRoadReadiness.upsert({
       where: { institutionId },
@@ -96,7 +96,7 @@ async function xroadRoutes(app: FastifyInstance) {
   });
 
   // Delete
-  app.delete('/:institutionId', { onRequest: [app.authenticateAdmin] }, async (req: any, reply: any) => {
+  app.delete('/:institutionId', { onRequest: [app.authenticateAdmin], config: { access: ['ADMIN'] } }, async (req: any, reply: any) => {
     const { institutionId } = req.params;
     await app.prisma.xRoadReadiness.delete({ where: { institutionId } });
     try { await app.prisma.auditLog.create({ data: { userId: req.user.id, userEmail: req.user.email, userRole: req.user.role, action: 'DELETE', resource: 'xroad-readiness', resourceId: institutionId, ipAddress: req.headers['x-forwarded-for']?.toString() || req.ip, userAgent: req.headers['user-agent'] } }); } catch {}
@@ -106,7 +106,7 @@ async function xroadRoutes(app: FastifyInstance) {
 
 // Graphe endpoint — agrège questionnaires + CasUsageMVP
 async function grapheRoutes(app: FastifyInstance) {
-  app.get('/', { onRequest: [app.authenticateAdmin], schema: { tags: ['Reports'] } }, async (_req: any, reply: any) => {
+  app.get('/', { onRequest: [app.authenticateAdmin], schema: { tags: ['Reports'] }, config: { access: ['ADMIN'] } }, async (_req: any, reply: any) => {
     const submissions = await app.prisma.submission.findMany({
       include: {
         institution: true,
@@ -194,7 +194,7 @@ async function grapheRoutes(app: FastifyInstance) {
   });
 
   // PATCH flux — modifier un lien du graphe
-  app.patch('/flux/:id', { onRequest: [app.authenticateAdmin] }, async (req: any, reply: any) => {
+  app.patch('/flux/:id', { onRequest: [app.authenticateAdmin], config: { access: ['ADMIN'] } }, async (req: any, reply: any) => {
     const { id } = req.params;
     const { donnee, mode, frequence, type } = req.body as any;
 
@@ -219,21 +219,21 @@ async function grapheRoutes(app: FastifyInstance) {
 
 // PTF & MVP routes
 async function ptfRoutes(app: FastifyInstance) {
-  app.get('/', { onRequest: [app.authenticateAdmin] }, async (_req: any, reply: any) => {
+  app.get('/', { onRequest: [app.authenticateAdmin], config: { access: ['ADMIN'] } }, async (_req: any, reply: any) => {
     const ptfs = await app.prisma.pTF.findMany({ include: { programmes: { include: { financements: { include: { casUsageMVP: true } }, expertises: true } } }, orderBy: { code: 'asc' } });
     return reply.send(ptfs);
   });
-  app.post('/', { onRequest: [app.authenticateAdmin] }, async (req: any, reply: any) => {
+  app.post('/', { onRequest: [app.authenticateAdmin], config: { access: ['ADMIN'] } }, async (req: any, reply: any) => {
     const ptf = await app.prisma.pTF.create({ data: req.body });
     try { await app.prisma.auditLog.create({ data: { userId: req.user.id, userEmail: req.user.email, userRole: req.user.role, action: 'CREATE', resource: 'ptf', resourceId: ptf.id, resourceLabel: ptf.code || ptf.id, ipAddress: req.headers['x-forwarded-for']?.toString() || req.ip, userAgent: req.headers['user-agent'] } }); } catch {}
     return reply.status(201).send(ptf);
   });
-  app.patch('/:id', { onRequest: [app.authenticateAdmin] }, async (req: any, reply: any) => {
+  app.patch('/:id', { onRequest: [app.authenticateAdmin], config: { access: ['ADMIN'] } }, async (req: any, reply: any) => {
     const ptf = await app.prisma.pTF.update({ where: { id: req.params.id }, data: req.body });
     try { await app.prisma.auditLog.create({ data: { userId: req.user.id, userEmail: req.user.email, userRole: req.user.role, action: 'UPDATE', resource: 'ptf', resourceId: req.params.id, ipAddress: req.headers['x-forwarded-for']?.toString() || req.ip, userAgent: req.headers['user-agent'] } }); } catch {}
     return reply.send(ptf);
   });
-  app.delete('/:id', { onRequest: [app.authenticateAdmin] }, async (req: any, reply: any) => {
+  app.delete('/:id', { onRequest: [app.authenticateAdmin], config: { access: ['ADMIN'] } }, async (req: any, reply: any) => {
     await app.prisma.financement.deleteMany({ where: { programme: { ptfId: req.params.id } } });
     await app.prisma.expertise.deleteMany({ where: { programme: { ptfId: req.params.id } } });
     await app.prisma.programme.deleteMany({ where: { ptfId: req.params.id } });
@@ -244,17 +244,17 @@ async function ptfRoutes(app: FastifyInstance) {
 }
 
 async function programmesRoutes(app: FastifyInstance) {
-  app.post('/', { onRequest: [app.authenticateAdmin] }, async (req: any, reply: any) => {
+  app.post('/', { onRequest: [app.authenticateAdmin], config: { access: ['ADMIN'] } }, async (req: any, reply: any) => {
     const prog = await app.prisma.programme.create({ data: req.body, include: { ptf: true } });
     try { await app.prisma.auditLog.create({ data: { userId: req.user.id, userEmail: req.user.email, userRole: req.user.role, action: 'CREATE', resource: 'programme', resourceId: prog.id, resourceLabel: prog.code || prog.nom || prog.id, ipAddress: req.headers['x-forwarded-for']?.toString() || req.ip, userAgent: req.headers['user-agent'] } }); } catch {}
     return reply.status(201).send(prog);
   });
-  app.patch('/:id', { onRequest: [app.authenticateAdmin] }, async (req: any, reply: any) => {
+  app.patch('/:id', { onRequest: [app.authenticateAdmin], config: { access: ['ADMIN'] } }, async (req: any, reply: any) => {
     const prog = await app.prisma.programme.update({ where: { id: req.params.id }, data: req.body, include: { ptf: true } });
     try { await app.prisma.auditLog.create({ data: { userId: req.user.id, userEmail: req.user.email, userRole: req.user.role, action: 'UPDATE', resource: 'programme', resourceId: req.params.id, ipAddress: req.headers['x-forwarded-for']?.toString() || req.ip, userAgent: req.headers['user-agent'] } }); } catch {}
     return reply.send(prog);
   });
-  app.delete('/:id', { onRequest: [app.authenticateAdmin] }, async (req: any, reply: any) => {
+  app.delete('/:id', { onRequest: [app.authenticateAdmin], config: { access: ['ADMIN'] } }, async (req: any, reply: any) => {
     await app.prisma.financement.deleteMany({ where: { programmeId: req.params.id } });
     await app.prisma.expertise.deleteMany({ where: { programmeId: req.params.id } });
     await app.prisma.programme.delete({ where: { id: req.params.id } });
@@ -265,12 +265,12 @@ async function programmesRoutes(app: FastifyInstance) {
 
 // Financements CRUD
 async function financementsRoutes(app: FastifyInstance) {
-  app.patch('/:id', { onRequest: [app.authenticateAdmin] }, async (req: any, reply: any) => {
+  app.patch('/:id', { onRequest: [app.authenticateAdmin], config: { access: ['ADMIN'] } }, async (req: any, reply: any) => {
     const fin = await app.prisma.financement.update({ where: { id: req.params.id }, data: req.body, include: { casUsageMVP: true, programme: { include: { ptf: true } } } });
     try { await app.prisma.auditLog.create({ data: { userId: req.user.id, userEmail: req.user.email, userRole: req.user.role, action: 'UPDATE', resource: 'financement', resourceId: req.params.id, ipAddress: req.headers['x-forwarded-for']?.toString() || req.ip, userAgent: req.headers['user-agent'] } }); } catch {}
     return reply.send(fin);
   });
-  app.delete('/:id', { onRequest: [app.authenticateAdmin] }, async (req: any, reply: any) => {
+  app.delete('/:id', { onRequest: [app.authenticateAdmin], config: { access: ['ADMIN'] } }, async (req: any, reply: any) => {
     await app.prisma.financement.delete({ where: { id: req.params.id } });
     try { await app.prisma.auditLog.create({ data: { userId: req.user.id, userEmail: req.user.email, userRole: req.user.role, action: 'DELETE', resource: 'financement', resourceId: req.params.id, ipAddress: req.headers['x-forwarded-for']?.toString() || req.ip, userAgent: req.headers['user-agent'] } }); } catch {}
     return reply.send({ success: true });
@@ -279,21 +279,21 @@ async function financementsRoutes(app: FastifyInstance) {
 
 // Expertises CRUD
 async function expertisesRoutes(app: FastifyInstance) {
-  app.get('/', { onRequest: [app.authenticateAdmin] }, async (_req: any, reply: any) => {
+  app.get('/', { onRequest: [app.authenticateAdmin], config: { access: ['ADMIN'] } }, async (_req: any, reply: any) => {
     const experts = await app.prisma.expertise.findMany({ include: { programme: { include: { ptf: true } } }, orderBy: { nom: 'asc' } });
     return reply.send(experts);
   });
-  app.post('/', { onRequest: [app.authenticateAdmin] }, async (req: any, reply: any) => {
+  app.post('/', { onRequest: [app.authenticateAdmin], config: { access: ['ADMIN'] } }, async (req: any, reply: any) => {
     const expert = await app.prisma.expertise.create({ data: req.body, include: { programme: { include: { ptf: true } } } });
     try { await app.prisma.auditLog.create({ data: { userId: req.user.id, userEmail: req.user.email, userRole: req.user.role, action: 'CREATE', resource: 'expertise', resourceId: expert.id, resourceLabel: expert.nom || expert.id, ipAddress: req.headers['x-forwarded-for']?.toString() || req.ip, userAgent: req.headers['user-agent'] } }); } catch {}
     return reply.status(201).send(expert);
   });
-  app.patch('/:id', { onRequest: [app.authenticateAdmin] }, async (req: any, reply: any) => {
+  app.patch('/:id', { onRequest: [app.authenticateAdmin], config: { access: ['ADMIN'] } }, async (req: any, reply: any) => {
     const expert = await app.prisma.expertise.update({ where: { id: req.params.id }, data: req.body, include: { programme: { include: { ptf: true } } } });
     try { await app.prisma.auditLog.create({ data: { userId: req.user.id, userEmail: req.user.email, userRole: req.user.role, action: 'UPDATE', resource: 'expertise', resourceId: req.params.id, ipAddress: req.headers['x-forwarded-for']?.toString() || req.ip, userAgent: req.headers['user-agent'] } }); } catch {}
     return reply.send(expert);
   });
-  app.delete('/:id', { onRequest: [app.authenticateAdmin] }, async (req: any, reply: any) => {
+  app.delete('/:id', { onRequest: [app.authenticateAdmin], config: { access: ['ADMIN'] } }, async (req: any, reply: any) => {
     await app.prisma.expertise.delete({ where: { id: req.params.id } });
     try { await app.prisma.auditLog.create({ data: { userId: req.user.id, userEmail: req.user.email, userRole: req.user.role, action: 'DELETE', resource: 'expertise', resourceId: req.params.id, ipAddress: req.headers['x-forwarded-for']?.toString() || req.ip, userAgent: req.headers['user-agent'] } }); } catch {}
     return reply.send({ success: true });
@@ -301,16 +301,16 @@ async function expertisesRoutes(app: FastifyInstance) {
 }
 
 async function phasesMvpRoutes(app: FastifyInstance) {
-  app.get('/', { onRequest: [app.authenticateAdmin] }, async (_req: any, reply: any) => {
+  app.get('/', { onRequest: [app.authenticateAdmin], config: { access: ['ADMIN'] } }, async (_req: any, reply: any) => {
     const phases = await app.prisma.phaseMVP.findMany({ include: { casUsageMVP: { include: { financements: { include: { programme: { include: { ptf: true } } } } } } }, orderBy: { code: 'asc' } });
     return reply.send(phases);
   });
-  app.post('/', { onRequest: [app.authenticateAdmin] }, async (req: any, reply: any) => {
+  app.post('/', { onRequest: [app.authenticateAdmin], config: { access: ['ADMIN'] } }, async (req: any, reply: any) => {
     const phase = await app.prisma.phaseMVP.create({ data: req.body });
     try { await app.prisma.auditLog.create({ data: { userId: req.user.id, userEmail: req.user.email, userRole: req.user.role, action: 'CREATE', resource: 'phase-mvp', resourceId: phase.id, resourceLabel: phase.code || phase.id, ipAddress: req.headers['x-forwarded-for']?.toString() || req.ip, userAgent: req.headers['user-agent'] } }); } catch {}
     return reply.status(201).send(phase);
   });
-  app.patch('/:id', { onRequest: [app.authenticateAdmin] }, async (req: any, reply: any) => {
+  app.patch('/:id', { onRequest: [app.authenticateAdmin], config: { access: ['ADMIN'] } }, async (req: any, reply: any) => {
     const phase = await app.prisma.phaseMVP.update({ where: { id: req.params.id }, data: req.body });
     try { await app.prisma.auditLog.create({ data: { userId: req.user.id, userEmail: req.user.email, userRole: req.user.role, action: 'UPDATE', resource: 'phase-mvp', resourceId: req.params.id, ipAddress: req.headers['x-forwarded-for']?.toString() || req.ip, userAgent: req.headers['user-agent'] } }); } catch {}
     return reply.send(phase);
@@ -319,7 +319,7 @@ async function phasesMvpRoutes(app: FastifyInstance) {
 
 async function casUsageMvpRoutes(app: FastifyInstance) {
   // List with filters
-  app.get('/', { onRequest: [app.authenticateAdmin] }, async (req: any, reply: any) => {
+  app.get('/', { onRequest: [app.authenticateAdmin], config: { access: ['ADMIN'] } }, async (req: any, reply: any) => {
     const { axe, statut, nonFinance } = req.query as any;
     const where: any = {};
     if (axe) where.axePrioritaire = axe;
@@ -339,7 +339,7 @@ async function casUsageMvpRoutes(app: FastifyInstance) {
   });
 
   // Orphelins endpoint
-  app.get('/orphelins', { onRequest: [app.authenticateAdmin] }, async (_req: any, reply: any) => {
+  app.get('/orphelins', { onRequest: [app.authenticateAdmin], config: { access: ['ADMIN'] } }, async (_req: any, reply: any) => {
     const all = await app.prisma.casUsageMVP.findMany({
       include: { financements: true, phaseMVP: true },
       orderBy: [{ impact: 'desc' }, { code: 'asc' }],
@@ -348,19 +348,19 @@ async function casUsageMvpRoutes(app: FastifyInstance) {
     return reply.send(orphelins);
   });
 
-  app.post('/', { onRequest: [app.authenticateAdmin] }, async (req: any, reply: any) => {
+  app.post('/', { onRequest: [app.authenticateAdmin], config: { access: ['ADMIN'] } }, async (req: any, reply: any) => {
     const cu = await app.prisma.casUsageMVP.create({ data: req.body });
     try { await app.prisma.auditLog.create({ data: { userId: req.user.id, userEmail: req.user.email, userRole: req.user.role, action: 'CREATE', resource: 'cas-usage-mvp', resourceId: cu.id, resourceLabel: cu.code || cu.id, ipAddress: req.headers['x-forwarded-for']?.toString() || req.ip, userAgent: req.headers['user-agent'] } }); } catch {}
     return reply.status(201).send(cu);
   });
-  app.patch('/:id', { onRequest: [app.authenticateAdmin] }, async (req: any, reply: any) => {
+  app.patch('/:id', { onRequest: [app.authenticateAdmin], config: { access: ['ADMIN'] } }, async (req: any, reply: any) => {
     const cu = await app.prisma.casUsageMVP.update({ where: { id: req.params.id }, data: req.body, include: { financements: { include: { programme: { include: { ptf: true } } } } } });
     try { await app.prisma.auditLog.create({ data: { userId: req.user.id, userEmail: req.user.email, userRole: req.user.role, action: 'UPDATE', resource: 'cas-usage-mvp', resourceId: req.params.id, ipAddress: req.headers['x-forwarded-for']?.toString() || req.ip, userAgent: req.headers['user-agent'] } }); } catch {}
     return reply.send(cu);
   });
 
   // Add financement
-  app.post('/:id/financement', { onRequest: [app.authenticateAdmin] }, async (req: any, reply: any) => {
+  app.post('/:id/financement', { onRequest: [app.authenticateAdmin], config: { access: ['ADMIN'] } }, async (req: any, reply: any) => {
     try {
       const { programmeId, statut, typeFinancement, montantAlloue, observations } = req.body as any;
       if (!programmeId) return reply.status(400).send({ error: 'programmeId requis' });
@@ -379,7 +379,7 @@ async function casUsageMvpRoutes(app: FastifyInstance) {
   });
 
   // Financement overview
-  app.get('/overview/stats', { onRequest: [app.authenticateAdmin] }, async (_req: any, reply: any) => {
+  app.get('/overview/stats', { onRequest: [app.authenticateAdmin], config: { access: ['ADMIN'] } }, async (_req: any, reply: any) => {
     const all = await app.prisma.casUsageMVP.findMany({ include: { financements: { include: { programme: { include: { ptf: true } } } }, phaseMVP: true } });
     const finances = all.filter(cu => cu.financements.some(f => f.statut !== 'REFUSE'));
     const orphelins = all.filter(cu => !cu.financements.some(f => f.statut !== 'REFUSE'));
@@ -407,7 +407,7 @@ async function casUsageMvpRoutes(app: FastifyInstance) {
 // FluxInstitution (registre unique)
 async function fluxInstitutionRoutes(app: FastifyInstance) {
   // Get flux for a submission
-  app.get('/submission/:submissionId', { onRequest: [app.authenticate] }, async (req: any, reply: any) => {
+  app.get('/submission/:submissionId', { onRequest: [app.authenticate], config: { access: 'authenticated' } }, async (req: any, reply: any) => {
     const flux = await app.prisma.fluxInstitution.findMany({
       where: { submissionId: req.params.submissionId },
       include: { casUsageMVP: { select: { code: true, titre: true, institutionSourceCode: true, institutionCibleCode: true, donneesEchangees: true } } },
@@ -416,7 +416,7 @@ async function fluxInstitutionRoutes(app: FastifyInstance) {
   });
 
   // Get all CasUsageMVP for an institution (to show in questionnaire)
-  app.get('/available/:institutionCode', { onRequest: [app.authenticate] }, async (req: any, reply: any) => {
+  app.get('/available/:institutionCode', { onRequest: [app.authenticate], config: { access: 'authenticated' } }, async (req: any, reply: any) => {
     const code = req.params.institutionCode;
     const cas = await app.prisma.casUsageMVP.findMany({
       where: { OR: [{ institutionSourceCode: code }, { institutionCibleCode: code }] },
@@ -426,7 +426,7 @@ async function fluxInstitutionRoutes(app: FastifyInstance) {
   });
 
   // Bulk upsert flux institutions for a submission
-  app.put('/submission/:submissionId', { onRequest: [app.authenticate] }, async (req: any, reply: any) => {
+  app.put('/submission/:submissionId', { onRequest: [app.authenticate], config: { access: 'authenticated' } }, async (req: any, reply: any) => {
     const { submissionId } = req.params;
     const items = req.body as any[];
 
@@ -456,7 +456,7 @@ async function fluxInstitutionRoutes(app: FastifyInstance) {
   });
 
   // Propose new flux (creates CasUsageMVP + FluxInstitution)
-  app.post('/propose', { onRequest: [app.authenticate] }, async (req: any, reply: any) => {
+  app.post('/propose', { onRequest: [app.authenticate], config: { access: 'authenticated' } }, async (req: any, reply: any) => {
     const { submissionId, institutionSourceCode, institutionCibleCode, donneesEchangees, description, roleInstitution, modeActuel, frequence } = req.body;
 
     // Create new CasUsageMVP
@@ -494,21 +494,21 @@ async function fluxInstitutionRoutes(app: FastifyInstance) {
 
 // Registres Nationaux
 async function registresNationauxRoutes(app: FastifyInstance) {
-  app.get('/', { onRequest: [app.authenticate] }, async (_req: any, reply: any) => {
+  app.get('/', { onRequest: [app.authenticate], config: { access: 'authenticated' } }, async (_req: any, reply: any) => {
     const registres = await app.prisma.registreNational.findMany({ orderBy: [{ domaine: 'asc' }, { code: 'asc' }] });
     return reply.send(registres);
   });
-  app.post('/', { onRequest: [app.authenticateAdmin] }, async (req: any, reply: any) => {
+  app.post('/', { onRequest: [app.authenticateAdmin], config: { access: ['ADMIN'] } }, async (req: any, reply: any) => {
     const reg = await app.prisma.registreNational.create({ data: req.body });
     try { await app.prisma.auditLog.create({ data: { userId: req.user.id, userEmail: req.user.email, userRole: req.user.role, action: 'CREATE', resource: 'registre-national', resourceId: reg.id, resourceLabel: reg.code || reg.nom || reg.id, ipAddress: req.headers['x-forwarded-for']?.toString() || req.ip, userAgent: req.headers['user-agent'] } }); } catch {}
     return reply.status(201).send(reg);
   });
-  app.patch('/:id', { onRequest: [app.authenticateAdmin] }, async (req: any, reply: any) => {
+  app.patch('/:id', { onRequest: [app.authenticateAdmin], config: { access: ['ADMIN'] } }, async (req: any, reply: any) => {
     const reg = await app.prisma.registreNational.update({ where: { id: req.params.id }, data: req.body });
     try { await app.prisma.auditLog.create({ data: { userId: req.user.id, userEmail: req.user.email, userRole: req.user.role, action: 'UPDATE', resource: 'registre-national', resourceId: req.params.id, ipAddress: req.headers['x-forwarded-for']?.toString() || req.ip, userAgent: req.headers['user-agent'] } }); } catch {}
     return reply.send(reg);
   });
-  app.delete('/:id', { onRequest: [app.authenticateAdmin] }, async (req: any, reply: any) => {
+  app.delete('/:id', { onRequest: [app.authenticateAdmin], config: { access: ['ADMIN'] } }, async (req: any, reply: any) => {
     await app.prisma.registreNational.delete({ where: { id: req.params.id } });
     try { await app.prisma.auditLog.create({ data: { userId: req.user.id, userEmail: req.user.email, userRole: req.user.role, action: 'DELETE', resource: 'registre-national', resourceId: req.params.id, ipAddress: req.headers['x-forwarded-for']?.toString() || req.ip, userAgent: req.headers['user-agent'] } }); } catch {}
     return reply.send({ success: true });
@@ -517,26 +517,26 @@ async function registresNationauxRoutes(app: FastifyInstance) {
 
 // Building Blocks DPI
 async function buildingBlocksRoutes(app: FastifyInstance) {
-  app.get('/', { onRequest: [app.authenticate] }, async (_req: any, reply: any) => {
+  app.get('/', { onRequest: [app.authenticate], config: { access: 'authenticated' } }, async (_req: any, reply: any) => {
     const blocks = await app.prisma.buildingBlock.findMany({ orderBy: [{ couche: 'asc' }, { ordre: 'asc' }] });
     return reply.send(blocks);
   });
-  app.get('/:id', { onRequest: [app.authenticate] }, async (req: any, reply: any) => {
+  app.get('/:id', { onRequest: [app.authenticate], config: { access: 'authenticated' } }, async (req: any, reply: any) => {
     const block = await app.prisma.buildingBlock.findUnique({ where: { id: req.params.id } });
     if (!block) return reply.status(404).send({ error: 'Non trouvé' });
     return reply.send(block);
   });
-  app.post('/', { onRequest: [app.authenticateAdmin] }, async (req: any, reply: any) => {
+  app.post('/', { onRequest: [app.authenticateAdmin], config: { access: ['ADMIN'] } }, async (req: any, reply: any) => {
     const block = await app.prisma.buildingBlock.create({ data: req.body });
     try { await app.prisma.auditLog.create({ data: { userId: req.user.id, userEmail: req.user.email, userRole: req.user.role, action: 'CREATE', resource: 'building-block', resourceId: block.id, resourceLabel: block.nom || block.id, ipAddress: req.headers['x-forwarded-for']?.toString() || req.ip, userAgent: req.headers['user-agent'] } }); } catch {}
     return reply.status(201).send(block);
   });
-  app.patch('/:id', { onRequest: [app.authenticateAdmin] }, async (req: any, reply: any) => {
+  app.patch('/:id', { onRequest: [app.authenticateAdmin], config: { access: ['ADMIN'] } }, async (req: any, reply: any) => {
     const block = await app.prisma.buildingBlock.update({ where: { id: req.params.id }, data: req.body });
     try { await app.prisma.auditLog.create({ data: { userId: req.user.id, userEmail: req.user.email, userRole: req.user.role, action: 'UPDATE', resource: 'building-block', resourceId: req.params.id, ipAddress: req.headers['x-forwarded-for']?.toString() || req.ip, userAgent: req.headers['user-agent'] } }); } catch {}
     return reply.send(block);
   });
-  app.delete('/:id', { onRequest: [app.authenticateAdmin] }, async (req: any, reply: any) => {
+  app.delete('/:id', { onRequest: [app.authenticateAdmin], config: { access: ['ADMIN'] } }, async (req: any, reply: any) => {
     await app.prisma.buildingBlock.delete({ where: { id: req.params.id } });
     try { await app.prisma.auditLog.create({ data: { userId: req.user.id, userEmail: req.user.email, userRole: req.user.role, action: 'DELETE', resource: 'building-block', resourceId: req.params.id, ipAddress: req.headers['x-forwarded-for']?.toString() || req.ip, userAgent: req.headers['user-agent'] } }); } catch {}
     return reply.send({ success: true });
@@ -549,7 +549,7 @@ async function qualificationRoutes(app: FastifyInstance) {
   const STATUT_URGENCE: Record<string, number> = { EN_PRODUCTION: 5, EN_TEST: 4, EN_DEVELOPPEMENT: 4, EN_PREPARATION: 3, PRIORISE: 3, IDENTIFIE: 2, SUSPENDU: 1 };
 
   // GET / — Fusion CasUsageMVP + FluxInstitution
-  app.get('/', { onRequest: [app.authenticateAdmin] }, async (_req: any, reply: any) => {
+  app.get('/', { onRequest: [app.authenticateAdmin], config: { access: ['ADMIN'] } }, async (_req: any, reply: any) => {
     // 1. Tous les CasUsageMVP
     const casUsages = await app.prisma.casUsageMVP.findMany({
       include: { phaseMVP: true, financements: { include: { programme: { include: { ptf: true } } } }, fluxInstitutions: { include: { submission: { include: { institution: { select: { id: true, code: true, nom: true, ministere: true } } } } } } },
@@ -635,7 +635,7 @@ async function qualificationRoutes(app: FastifyInstance) {
   });
 
   // Stats pipeline (fusion)
-  app.get('/stats', { onRequest: [app.authenticateAdmin] }, async (_req: any, reply: any) => {
+  app.get('/stats', { onRequest: [app.authenticateAdmin], config: { access: ['ADMIN'] } }, async (_req: any, reply: any) => {
     const totalCU = await app.prisma.casUsageMVP.count();
     const totalFlux = await app.prisma.fluxInstitution.count({ where: { justificationMetier: { not: null } } });
     const qualifiesInst = await app.prisma.fluxInstitution.count({ where: { justificationMetier: { not: null } } });
@@ -645,7 +645,7 @@ async function qualificationRoutes(app: FastifyInstance) {
   });
 
   // Qualify a flux (admin)
-  app.patch('/:id/qualifier', { onRequest: [app.authenticateAdmin] }, async (req: any, reply: any) => {
+  app.patch('/:id/qualifier', { onRequest: [app.authenticateAdmin], config: { access: ['ADMIN'] } }, async (req: any, reply: any) => {
     const { id } = req.params;
     const body = req.body as any;
 
@@ -681,7 +681,7 @@ async function qualificationRoutes(app: FastifyInstance) {
   });
 
   // Reject
-  app.patch('/:id/rejeter', { onRequest: [app.authenticateAdmin] }, async (req: any, reply: any) => {
+  app.patch('/:id/rejeter', { onRequest: [app.authenticateAdmin], config: { access: ['ADMIN'] } }, async (req: any, reply: any) => {
     const flux = await app.prisma.fluxInstitution.update({
       where: { id: req.params.id },
       data: { qualifie: false, dateQualification: new Date(), qualifiePar: req.user.id, noteQualification: req.body.motif },
@@ -694,7 +694,7 @@ async function qualificationRoutes(app: FastifyInstance) {
 // Users Admin
 async function usersAdminRoutes(app: FastifyInstance) {
   // GET / — list users
-  app.get('/', { onRequest: [app.authenticateAdmin] }, async (req: any, reply: any) => {
+  app.get('/', { onRequest: [app.authenticateAdmin], config: { access: ['ADMIN'] } }, async (req: any, reply: any) => {
     const { role, search } = req.query as any;
     const where: any = {};
     if (role) where.role = role;
@@ -712,7 +712,7 @@ async function usersAdminRoutes(app: FastifyInstance) {
   });
 
   // POST / — create user
-  app.post('/', { onRequest: [app.authenticateAdmin] }, async (req: any, reply: any) => {
+  app.post('/', { onRequest: [app.authenticateAdmin], config: { access: ['ADMIN'] } }, async (req: any, reply: any) => {
     const { email, password, role, institutionId, ptfId, organisationId, mustChangePassword } = req.body as any;
     const finalRole = role || 'INSTITUTION';
 
@@ -744,7 +744,7 @@ async function usersAdminRoutes(app: FastifyInstance) {
   });
 
   // PATCH /:id — update user
-  app.patch('/:id', { onRequest: [app.authenticateAdmin] }, async (req: any, reply: any) => {
+  app.patch('/:id', { onRequest: [app.authenticateAdmin], config: { access: ['ADMIN'] } }, async (req: any, reply: any) => {
     const { email, role, institutionId, ptfId, organisationId, mustChangePassword } = req.body as any;
     const user = await app.prisma.user.update({
       where: { id: req.params.id },
@@ -763,7 +763,7 @@ async function usersAdminRoutes(app: FastifyInstance) {
   });
 
   // POST /:id/reset-password
-  app.post('/:id/reset-password', { onRequest: [app.authenticateAdmin] }, async (req: any, reply: any) => {
+  app.post('/:id/reset-password', { onRequest: [app.authenticateAdmin], config: { access: ['ADMIN'] } }, async (req: any, reply: any) => {
     const { newPassword } = req.body as any;
     const bcrypt = await import('bcrypt');
     const hashedPassword = await bcrypt.hash(newPassword, 10);
@@ -778,7 +778,7 @@ async function usersAdminRoutes(app: FastifyInstance) {
   });
 
   // DELETE /:id
-  app.delete('/:id', { onRequest: [app.authenticateAdmin] }, async (req: any, reply: any) => {
+  app.delete('/:id', { onRequest: [app.authenticateAdmin], config: { access: ['ADMIN'] } }, async (req: any, reply: any) => {
     if (req.params.id === req.user.id) return reply.status(400).send({ error: 'Vous ne pouvez pas vous supprimer vous-même' });
     const adminCount = await app.prisma.user.count({ where: { role: 'ADMIN' } });
     const targetUser = await app.prisma.user.findUnique({ where: { id: req.params.id } });
@@ -789,7 +789,7 @@ async function usersAdminRoutes(app: FastifyInstance) {
   });
 
   // POST /bulk-create
-  app.post('/bulk-create', { onRequest: [app.authenticateAdmin] }, async (req: any, reply: any) => {
+  app.post('/bulk-create', { onRequest: [app.authenticateAdmin], config: { access: ['ADMIN'] } }, async (req: any, reply: any) => {
     const { users: usersList } = req.body as any;
     const bcrypt = await import('bcrypt');
     const results = [];
@@ -818,7 +818,7 @@ async function notificationRoutes(app: FastifyInstance) {
   const { EmailService } = await import('./notifications/email.service.js');
   const emailService = new EmailService(app);
 
-  app.post('/invite/:institutionId', { onRequest: [app.authenticateAdmin] }, async (req: any, reply: any) => {
+  app.post('/invite/:institutionId', { onRequest: [app.authenticateAdmin], config: { access: ['ADMIN'] } }, async (req: any, reply: any) => {
     const inst = await app.prisma.institution.findUnique({ where: { id: req.params.institutionId }, include: { users: true } });
     if (!inst) return reply.status(404).send({ error: 'Institution non trouvée' });
     const user = inst.users[0];
@@ -828,7 +828,7 @@ async function notificationRoutes(app: FastifyInstance) {
     return reply.send({ sent, email: user.email });
   });
 
-  app.post('/relance/:institutionId', { onRequest: [app.authenticateAdmin] }, async (req: any, reply: any) => {
+  app.post('/relance/:institutionId', { onRequest: [app.authenticateAdmin], config: { access: ['ADMIN'] } }, async (req: any, reply: any) => {
     const inst = await app.prisma.institution.findUnique({ where: { id: req.params.institutionId }, include: { users: true } });
     if (!inst) return reply.status(404).send({ error: 'Institution non trouvée' });
     const user = inst.users[0];
@@ -838,7 +838,7 @@ async function notificationRoutes(app: FastifyInstance) {
     return reply.send({ sent, email: user.email });
   });
 
-  app.post('/invite-all', { onRequest: [app.authenticateAdmin] }, async (_req: any, reply: any) => {
+  app.post('/invite-all', { onRequest: [app.authenticateAdmin], config: { access: ['ADMIN'] } }, async (_req: any, reply: any) => {
     const institutions = await app.prisma.institution.findMany({
       include: { users: true, submissions: { where: { status: { in: ['SUBMITTED', 'VALIDATED'] } } } },
     });
@@ -857,7 +857,7 @@ async function notificationRoutes(app: FastifyInstance) {
 // Audit & Session tracking
 async function auditRoutes(app: FastifyInstance) {
   // GET /api/audit/logs — List audit logs with filters
-  app.get('/logs', { onRequest: [app.authenticateAdmin] }, async (req: any, reply: any) => {
+  app.get('/logs', { onRequest: [app.authenticateAdmin], config: { access: ['ADMIN'] } }, async (req: any, reply: any) => {
     const { page = '1', limit = '50', userId, action, resource, dateFrom, dateTo } = req.query as any;
     const pageNum = Math.max(1, parseInt(page));
     const limitNum = Math.min(100, Math.max(1, parseInt(limit)));
@@ -883,7 +883,7 @@ async function auditRoutes(app: FastifyInstance) {
 
   // GET /api/audit/sessions/active — Active sessions with user info
   // Seuil d'inactivité : 10 minutes (cohérent avec cleanup automatique server-side)
-  app.get('/sessions/active', { onRequest: [app.authenticateAdmin] }, async (_req: any, reply: any) => {
+  app.get('/sessions/active', { onRequest: [app.authenticateAdmin], config: { access: ['ADMIN'] } }, async (_req: any, reply: any) => {
     const tenMinAgo = new Date(Date.now() - 10 * 60 * 1000);
     const sessions = await app.prisma.userSession.findMany({
       where: { isActive: true, lastActivityAt: { gte: tenMinAgo } },
@@ -894,7 +894,7 @@ async function auditRoutes(app: FastifyInstance) {
   });
 
   // GET /api/audit/stats — Dashboard stats
-  app.get('/stats', { onRequest: [app.authenticateAdmin] }, async (_req: any, reply: any) => {
+  app.get('/stats', { onRequest: [app.authenticateAdmin], config: { access: ['ADMIN'] } }, async (_req: any, reply: any) => {
     const now = new Date();
     const h24ago = new Date(now.getTime() - 24 * 60 * 60 * 1000);
     const tenMinAgo = new Date(now.getTime() - 10 * 60 * 1000);
@@ -910,7 +910,7 @@ async function auditRoutes(app: FastifyInstance) {
   });
 
   // GET /api/audit/logs/export — CSV export
-  app.get('/logs/export', { onRequest: [app.authenticateAdmin] }, async (_req: any, reply: any) => {
+  app.get('/logs/export', { onRequest: [app.authenticateAdmin], config: { access: ['ADMIN'] } }, async (_req: any, reply: any) => {
     const logs = await app.prisma.auditLog.findMany({ orderBy: { createdAt: 'desc' }, take: 10000 });
     const csv = 'Date,Email,Role,Action,Resource,ResourceId,ResourceLabel,IP\n' +
       logs.map((l: any) => `${l.createdAt.toISOString()},${l.userEmail},${l.userRole},${l.action},${l.resource},${l.resourceId || ''},${(l.resourceLabel || '').replace(/,/g, ';')},${l.ipAddress || ''}`).join('\n');
@@ -918,7 +918,7 @@ async function auditRoutes(app: FastifyInstance) {
   });
 
   // DELETE /api/audit/sessions/:id — Force logout
-  app.delete('/sessions/:id', { onRequest: [app.authenticateAdmin] }, async (req: any, reply: any) => {
+  app.delete('/sessions/:id', { onRequest: [app.authenticateAdmin], config: { access: ['ADMIN'] } }, async (req: any, reply: any) => {
     const session = await app.prisma.userSession.update({
       where: { id: req.params.id },
       data: { isActive: false, logoutAt: new Date() },
@@ -932,7 +932,7 @@ async function auditRoutes(app: FastifyInstance) {
 // RECHERCHE GLOBALE
 // ============================================================================
 async function searchRoutes(app: FastifyInstance) {
-  app.get('/', { onRequest: [app.authenticate] }, async (req: any, reply: any) => {
+  app.get('/', { onRequest: [app.authenticate], config: { access: 'authenticated' } }, async (req: any, reply: any) => {
     const { q, limit = '10' } = req.query as any;
     if (!q || q.trim().length < 2) return reply.send({ casUsage: [], institutions: [], conventions: [], users: [] });
 
@@ -970,7 +970,7 @@ async function searchRoutes(app: FastifyInstance) {
 // CAS D'USAGE 360° — VUE DÉTAILLÉE
 // ============================================================================
 async function casUsageDetailRoutes(app: FastifyInstance) {
-  app.get('/:id', { onRequest: [app.authenticate] }, async (req: any, reply: any) => {
+  app.get('/:id', { onRequest: [app.authenticate], config: { access: 'authenticated' } }, async (req: any, reply: any) => {
     const cu = await app.prisma.casUsageMVP.findUnique({
       where: { id: req.params.id },
       include: {
@@ -1027,7 +1027,7 @@ async function casUsageDetailRoutes(app: FastifyInstance) {
   });
 
   // Update notes
-  app.patch('/:id/notes', { onRequest: [app.authenticateAdmin] }, async (req: any, reply: any) => {
+  app.patch('/:id/notes', { onRequest: [app.authenticateAdmin], config: { access: ['ADMIN'] } }, async (req: any, reply: any) => {
     const { notes } = req.body as any;
     const cu = await app.prisma.casUsageMVP.update({
       where: { id: req.params.id },
@@ -1046,7 +1046,7 @@ async function documentsRoutes(app: FastifyInstance) {
   try { const m = await import('@fastify/multipart'); await app.register(m.default, { limits: { fileSize: 50 * 1024 * 1024 } }); } catch {}
 
   // File upload endpoint (admin only)
-  app.post('/upload', { onRequest: [app.authenticateAdmin] }, async (req: any, reply: any) => {
+  app.post('/upload', { onRequest: [app.authenticateAdmin], config: { access: ['ADMIN'] } }, async (req: any, reply: any) => {
     try {
       const data = await req.file();
       if (!data) return reply.status(400).send({ error: 'Fichier requis' });
@@ -1071,7 +1071,7 @@ async function documentsRoutes(app: FastifyInstance) {
   });
 
   // List (accessible à tous les utilisateurs connectés)
-  app.get('/', { onRequest: [app.authenticate] }, async (req: any, reply: any) => {
+  app.get('/', { onRequest: [app.authenticate], config: { access: 'authenticated' } }, async (req: any, reply: any) => {
     const where: any = {};
     if (req.user.role !== 'ADMIN') where.actif = true;
     const docs = await app.prisma.documentReference.findMany({ where, orderBy: [{ categorie: 'asc' }, { datePublication: 'desc' }] });
@@ -1079,7 +1079,7 @@ async function documentsRoutes(app: FastifyInstance) {
   });
 
   // Create (admin + upload)
-  app.post('/', { onRequest: [app.authenticateAdmin] }, async (req: any, reply: any) => {
+  app.post('/', { onRequest: [app.authenticateAdmin], config: { access: ['ADMIN'] } }, async (req: any, reply: any) => {
     const data = req.body;
     const doc = await app.prisma.documentReference.create({ data: { ...data, uploadePar: req.user.id } });
     try { await app.prisma.auditLog.create({ data: { userId: req.user.id, userEmail: req.user.email, userRole: req.user.role, action: 'CREATE', resource: 'document', resourceId: doc.id, resourceLabel: doc.titre, ipAddress: req.headers['x-forwarded-for']?.toString() || req.ip, userAgent: req.headers['user-agent'] } }); } catch {}
@@ -1087,13 +1087,13 @@ async function documentsRoutes(app: FastifyInstance) {
   });
 
   // Update
-  app.patch('/:id', { onRequest: [app.authenticateAdmin] }, async (req: any, reply: any) => {
+  app.patch('/:id', { onRequest: [app.authenticateAdmin], config: { access: ['ADMIN'] } }, async (req: any, reply: any) => {
     const doc = await app.prisma.documentReference.update({ where: { id: req.params.id }, data: req.body });
     return reply.send(doc);
   });
 
   // Delete
-  app.delete('/:id', { onRequest: [app.authenticateAdmin] }, async (req: any, reply: any) => {
+  app.delete('/:id', { onRequest: [app.authenticateAdmin], config: { access: ['ADMIN'] } }, async (req: any, reply: any) => {
     await app.prisma.documentReference.delete({ where: { id: req.params.id } });
     try { await app.prisma.auditLog.create({ data: { userId: req.user.id, userEmail: req.user.email, userRole: req.user.role, action: 'DELETE', resource: 'document', resourceId: req.params.id, ipAddress: req.headers['x-forwarded-for']?.toString() || req.ip, userAgent: req.headers['user-agent'] } }); } catch {}
     return reply.send({ success: true });

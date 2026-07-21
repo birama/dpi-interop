@@ -94,7 +94,7 @@ export class AuthService {
       organisationId: (user as any).organisationId || undefined,
       cguAccepted: !!(user as any).cguAccepteesAt,
     };
-    const token = this.app.jwt.sign(payload, { expiresIn: '2h' });
+    const token = this.app.jwt.sign(payload as any, { expiresIn: '2h' });
     const refreshToken = this.app.jwt.sign({ ...payload, type: 'refresh' } as any, { expiresIn: '7d' });
 
     // Audit log for successful login

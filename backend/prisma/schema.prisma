@@ -18,7 +18,7 @@ model User {
   id                 String  @id @default(uuid())
   email              String  @unique
   password           String // bcrypt hashed
-  role               Role    @default(INSTITUTION)
+  role               Role    @default(PENDING)
   mustChangePassword Boolean @default(true)
 
   // Relations
@@ -69,6 +69,7 @@ model User {
 }
 
 enum Role {
+  PENDING // Compte créé mais non validé par un ADMIN — aucun accès fonctionnel
   ADMIN
   INSTITUTION
   BAILLEUR

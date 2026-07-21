@@ -39,6 +39,7 @@ export async function submissionsRoutes(app: FastifyInstance) {
         },
       },
     },
+    config: { access: 'authenticated' },
     handler: submissionsController.findAll.bind(submissionsController),
   });
 
@@ -50,6 +51,7 @@ export async function submissionsRoutes(app: FastifyInstance) {
       description: 'Statistiques des soumissions',
       security: [{ bearerAuth: [] }],
     },
+    config: { access: ['ADMIN'] },
     handler: submissionsController.getStats.bind(submissionsController),
   });
 
@@ -67,6 +69,7 @@ export async function submissionsRoutes(app: FastifyInstance) {
         },
       },
     },
+    config: { access: 'authenticated' },
     handler: submissionsController.findOne.bind(submissionsController),
   });
 
@@ -85,6 +88,7 @@ export async function submissionsRoutes(app: FastifyInstance) {
         },
       },
     },
+    config: { access: 'authenticated' },
     handler: submissionsController.create.bind(submissionsController),
   });
 
@@ -102,6 +106,7 @@ export async function submissionsRoutes(app: FastifyInstance) {
         },
       },
     },
+    config: { access: 'authenticated' },
     handler: submissionsController.update.bind(submissionsController),
   });
 
@@ -129,6 +134,7 @@ export async function submissionsRoutes(app: FastifyInstance) {
         },
       },
     },
+    config: { access: 'authenticated' },
     handler: submissionsController.updateStatus.bind(submissionsController),
   });
 
@@ -146,6 +152,7 @@ export async function submissionsRoutes(app: FastifyInstance) {
         },
       },
     },
+    config: { access: 'authenticated' },
     handler: submissionsController.delete.bind(submissionsController),
   });
 
@@ -162,6 +169,7 @@ export async function submissionsRoutes(app: FastifyInstance) {
       description: 'Ajouter/mettre à jour un item d\'infrastructure',
       security: [{ bearerAuth: [] }],
     },
+    config: { access: 'authenticated' },
     handler: async (request: any, reply: any) => {
       const { id } = request.params;
       const { domain, element, disponibilite, qualifications, observations } = request.body;
@@ -187,6 +195,7 @@ export async function submissionsRoutes(app: FastifyInstance) {
       description: 'Mettre à jour tous les items d\'infrastructure',
       security: [{ bearerAuth: [] }],
     },
+    config: { access: 'authenticated' },
     handler: async (request: any, reply: any) => {
       const { id } = request.params;
       const items = request.body as any[];
@@ -231,6 +240,7 @@ export async function submissionsRoutes(app: FastifyInstance) {
       description: 'Supprimer un item d\'infrastructure',
       security: [{ bearerAuth: [] }],
     },
+    config: { access: 'authenticated' },
     handler: async (request: any, reply: any) => {
       const { itemId } = request.params as { itemId: string };
       await app.prisma.infrastructureItem.delete({ where: { id: itemId } });
@@ -244,6 +254,7 @@ export async function submissionsRoutes(app: FastifyInstance) {
   app.put('/:id/niveaux-interop', {
     onRequest: [app.authenticate],
     preHandler: [ensureSubmissionAccess],
+    config: { access: 'authenticated' },
     schema: { tags: ['Submissions'], description: 'Sauvegarder diagnostic niveaux interop', security: [{ bearerAuth: [] }] },
     handler: async (request: any, reply: any) => {
       const { id } = request.params;
@@ -267,6 +278,7 @@ export async function submissionsRoutes(app: FastifyInstance) {
   app.put('/:id/conformite-principes', {
     onRequest: [app.authenticate],
     preHandler: [ensureSubmissionAccess],
+    config: { access: 'authenticated' },
     schema: { tags: ['Submissions'], description: 'Sauvegarder conformité aux 13 principes', security: [{ bearerAuth: [] }] },
     handler: async (request: any, reply: any) => {
       const { id } = request.params;
@@ -290,6 +302,7 @@ export async function submissionsRoutes(app: FastifyInstance) {
   app.put('/:id/dictionnaire', {
     onRequest: [app.authenticate],
     preHandler: [ensureSubmissionAccess],
+    config: { access: 'authenticated' },
     schema: { tags: ['Submissions'], description: 'Sauvegarder dictionnaire de données', security: [{ bearerAuth: [] }] },
     handler: async (request: any, reply: any) => {
       const { id } = request.params;
@@ -312,6 +325,7 @@ export async function submissionsRoutes(app: FastifyInstance) {
   app.put('/:id/preparation-decret', {
     onRequest: [app.authenticate],
     preHandler: [ensureSubmissionAccess],
+    config: { access: 'authenticated' },
     schema: { tags: ['Submissions'], description: 'Sauvegarder préparation au décret', security: [{ bearerAuth: [] }] },
     handler: async (request: any, reply: any) => {
       const { id } = request.params;

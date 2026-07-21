@@ -23,7 +23,7 @@ export async function buildApp(): Promise<FastifyInstance> {
   });
 
   // Health check endpoint
-  app.get('/health', async () => ({
+  app.get('/health', { config: { access: 'public' } }, async () => ({
     status: 'ok',
     timestamp: new Date().toISOString(),
     uptime: process.uptime(),

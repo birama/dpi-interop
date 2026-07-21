@@ -16,7 +16,7 @@ export async function useCasesMeRoutes(app: FastifyInstance) {
   // =========================================================================
   // GET /incoming — Sollicitations en attente d'avis de mon institution
   // =========================================================================
-  app.get('/incoming', { onRequest: [app.authenticate] }, async (req: any, reply: any) => {
+  app.get('/incoming', { onRequest: [app.authenticate], config: { access: 'authenticated' } }, async (req: any, reply: any) => {
     const institutionId = req.user.institutionId;
     if (!institutionId) return reply.status(401).send({ error: 'Institution requise' });
 
@@ -64,7 +64,7 @@ export async function useCasesMeRoutes(app: FastifyInstance) {
   // =========================================================================
   // GET /outgoing — Cas d'usage initiés par mon institution
   // =========================================================================
-  app.get('/outgoing', { onRequest: [app.authenticate] }, async (req: any, reply: any) => {
+  app.get('/outgoing', { onRequest: [app.authenticate], config: { access: 'authenticated' } }, async (req: any, reply: any) => {
     const institutionId = req.user.institutionId;
     if (!institutionId) return reply.status(401).send({ error: 'Institution requise' });
 
@@ -121,7 +121,7 @@ export async function useCasesMeRoutes(app: FastifyInstance) {
   // =========================================================================
   // GET /involved — Tous les cas d'usage qui me concernent (vue 360°)
   // =========================================================================
-  app.get('/involved', { onRequest: [app.authenticate] }, async (req: any, reply: any) => {
+  app.get('/involved', { onRequest: [app.authenticate], config: { access: 'authenticated' } }, async (req: any, reply: any) => {
     const institutionId = req.user.institutionId;
     if (!institutionId) return reply.status(401).send({ error: 'Institution requise' });
 
@@ -200,7 +200,7 @@ export async function useCasesMeRoutes(app: FastifyInstance) {
   // =========================================================================
   // GET /radar — Radar sectoriel (cas qui matchent mon périmètre)
   // =========================================================================
-  app.get('/radar', { onRequest: [app.authenticate] }, async (req: any, reply: any) => {
+  app.get('/radar', { onRequest: [app.authenticate], config: { access: 'authenticated' } }, async (req: any, reply: any) => {
     const institutionId = req.user.institutionId;
     if (!institutionId) return reply.status(401).send({ error: 'Institution requise' });
 

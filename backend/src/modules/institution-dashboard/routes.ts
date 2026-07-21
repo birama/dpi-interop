@@ -2,7 +2,7 @@
 import { FastifyInstance } from 'fastify';
 
 export async function institutionDashboardRoutes(app: FastifyInstance) {
-  app.get('/dashboard', { onRequest: [app.authenticate] }, async (req: any, reply: any) => {
+  app.get('/dashboard', { onRequest: [app.authenticate], config: { access: 'authenticated' } }, async (req: any, reply: any) => {
     const instId = req.user.institutionId;
     if (!instId) return reply.status(400).send({ error: 'Pas d\'institution liée' });
 
@@ -92,7 +92,7 @@ export async function institutionDashboardRoutes(app: FastifyInstance) {
     });
   });
 
-  app.get('/flux', { onRequest: [app.authenticate] }, async (req: any, reply: any) => {
+  app.get('/flux', { onRequest: [app.authenticate], config: { access: 'authenticated' } }, async (req: any, reply: any) => {
     const instId = req.user.institutionId;
     if (!instId) return reply.status(400).send({ error: 'Pas d\'institution liée' });
     const inst = await app.prisma.institution.findUnique({ where: { id: instId } });
@@ -100,14 +100,14 @@ export async function institutionDashboardRoutes(app: FastifyInstance) {
     return reply.send({ institution: inst, submission: sub });
   });
 
-  app.get('/conventions', { onRequest: [app.authenticate] }, async (req: any, reply: any) => {
+  app.get('/conventions', { onRequest: [app.authenticate], config: { access: 'authenticated' } }, async (req: any, reply: any) => {
     const instId = req.user.institutionId;
     if (!instId) return reply.status(400).send({ error: 'Pas d\'institution liée' });
     const conventions = await app.prisma.convention.findMany({ where: { OR: [{ institutionAId: instId }, { institutionBId: instId }] }, include: { institutionA: { select: { code: true, nom: true } }, institutionB: { select: { code: true, nom: true } } } });
     return reply.send(conventions);
   });
 
-  app.get('/readiness', { onRequest: [app.authenticate] }, async (req: any, reply: any) => {
+  app.get('/readiness', { onRequest: [app.authenticate], config: { access: 'authenticated' } }, async (req: any, reply: any) => {
     const instId = req.user.institutionId;
     if (!instId) return reply.status(400).send({ error: 'Pas d\'institution liée' });
     const readiness = await app.prisma.xRoadReadiness.findFirst({ where: { institutionId: instId } });
@@ -116,21 +116,21 @@ export async function institutionDashboardRoutes(app: FastifyInstance) {
 }
 
 export async function demandesRoutes(app: FastifyInstance) {
-  app.post('/', { onRequest: [app.authenticate] }, async (req: any, reply: any) => {
+  app.post('/', { onRequest: [app.authenticate], config: { access: 'authenticated' } }, async (req: any, reply: any) => {
     const instId = req.user.institutionId;
     if (!instId) return reply.status(400).send({ error: 'Pas d\'institution liée' });
     const demande = await app.prisma.demandeInterop.create({ data: { ...req.body, institutionId: instId } });
     return reply.status(201).send(demande);
   });
 
-  app.get('/mine', { onRequest: [app.authenticate] }, async (req: any, reply: any) => {
+  app.get('/mine', { onRequest: [app.authenticate], config: { access: 'authenticated' } }, async (req: any, reply: any) => {
     const instId = req.user.institutionId;
     if (!instId) return reply.status(400).send({ error: 'Pas d\'institution liée' });
     const demandes = await app.prisma.demandeInterop.findMany({ where: { institutionId: instId }, orderBy: { createdAt: 'desc' } });
     return reply.send(demandes);
   });
 
-  app.get('/', { onRequest: [app.authenticateAdmin] }, async (req: any, reply: any) => {
+  app.get('/', { onRequest: [app.authenticateAdmin], config: { access: ['ADMIN'] } }, async (req: any, reply: any) => {
     const { statut, type, institutionId } = req.query as any;
     const where: any = {};
     if (statut) where.statut = statut;
@@ -143,14 +143,14 @@ export async function demandesRoutes(app: FastifyInstance) {
     return reply.send(demandes.map((d: any) => ({ ...d, institution: instMap[d.institutionId] || null })));
   });
 
-  app.patch('/:id', { onRequest: [app.authenticateAdmin] }, async (req: any, reply: any) => {
+  app.patch('/:id', { onRequest: [app.authenticateAdmin], config: { access: ['ADMIN'] } }, async (req: any, reply: any) => {
     const data: any = { ...req.body };
     if (data.statut === 'RESOLUE' || data.statut === 'REJETEE') data.traiteeAt = new Date();
     const demande = await app.prisma.demandeInterop.update({ where: { id: req.params.id }, data });
     return reply.send(demande);
   });
 
-  app.get('/stats', { onRequest: [app.authenticateAdmin] }, async (_req: any, reply: any) => {
+  app.get('/stats', { onRequest: [app.authenticateAdmin], config: { access: ['ADMIN'] } }, async (_req: any, reply: any) => {
     const all = await app.prisma.demandeInterop.findMany();
     const byStatut: Record<string, number> = {};
     const byType: Record<string, number> = {};

@@ -23,6 +23,7 @@ export async function recensementRoutes(app: FastifyInstance) {
         max: 10,
         timeWindow: 60 * 60 * 1000, // 10 soumissions par heure
       },
+      access: 'public',
     },
     handler: controller.submit.bind(controller),
   });

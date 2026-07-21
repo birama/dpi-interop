@@ -13,7 +13,7 @@ export async function importRoutes(app: FastifyInstance) {
   await app.register(multipart, { limits: { fileSize: 10 * 1024 * 1024 } });
 
   // Preview — parse sans insérer, sauvegarder le fichier temporairement
-  app.post('/questionnaire', { onRequest: [app.authenticateAdmin] }, async (req: any, reply: any) => {
+  app.post('/questionnaire', { onRequest: [app.authenticateAdmin], config: { access: ['ADMIN'] } }, async (req: any, reply: any) => {
     try {
       const data = await req.file();
       if (!data) return reply.status(400).send({ error: 'Fichier .docx requis' });
@@ -70,7 +70,7 @@ export async function importRoutes(app: FastifyInstance) {
   });
 
   // Confirm — insérer en base
-  app.post('/questionnaire/confirm', { onRequest: [app.authenticateAdmin] }, async (req: any, reply: any) => {
+  app.post('/questionnaire/confirm', { onRequest: [app.authenticateAdmin], config: { access: ['ADMIN'] } }, async (req: any, reply: any) => {
     try {
       const body = req.body;
       if (!body.institutionId) return reply.status(400).send({ error: 'institutionId requis' });
@@ -83,7 +83,7 @@ export async function importRoutes(app: FastifyInstance) {
   });
 
   // Liste des fichiers importés
-  app.get('/files', { onRequest: [app.authenticate] }, async (req: any, reply: any) => {
+  app.get('/files', { onRequest: [app.authenticate], config: { access: 'authenticated' } }, async (req: any, reply: any) => {
     const where: any = {};
     // Institution users can only see their own
     if (req.user.role !== 'ADMIN' && req.user.institutionId) {
@@ -104,7 +104,7 @@ export async function importRoutes(app: FastifyInstance) {
   });
 
   // Télécharger un fichier importé
-  app.get('/files/:submissionId/download', { onRequest: [app.authenticate] }, async (req: any, reply: any) => {
+  app.get('/files/:submissionId/download', { onRequest: [app.authenticate], config: { access: 'authenticated' } }, async (req: any, reply: any) => {
     const sub = await app.prisma.submission.findUnique({
       where: { id: req.params.submissionId },
       select: { importFilename: true, importHash: true, institutionId: true },

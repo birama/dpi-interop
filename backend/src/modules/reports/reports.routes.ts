@@ -26,6 +26,7 @@ export async function reportsRoutes(app: FastifyInstance) {
         },
       },
     },
+    config: { access: ['ADMIN'] },
     handler: reportsController.findAll.bind(reportsController),
   });
 
@@ -43,6 +44,7 @@ export async function reportsRoutes(app: FastifyInstance) {
         },
       },
     },
+    config: { access: ['ADMIN'] },
     handler: reportsController.findOne.bind(reportsController),
   });
 
@@ -81,6 +83,7 @@ export async function reportsRoutes(app: FastifyInstance) {
         },
       },
     },
+    config: { access: ['ADMIN'] },
     handler: reportsController.generate.bind(reportsController),
   });
 
@@ -97,6 +100,7 @@ export async function reportsRoutes(app: FastifyInstance) {
       description: 'Exporter une soumission en Word (.docx)',
       security: [{ bearerAuth: [] }],
     },
+    config: { access: 'authenticated' },
     handler: async (request: any, reply: any) => {
       const { submissionId } = request.params;
       const buffer = await wordExportService.generateInstitutionReport(submissionId);
@@ -117,6 +121,7 @@ export async function reportsRoutes(app: FastifyInstance) {
       description: 'Générer une note de financement pour un PTF (.docx)',
       security: [{ bearerAuth: [] }],
     },
+    config: { access: ['ADMIN'] },
     handler: async (request: any, reply: any) => {
       const { ptfCode } = request.params;
       const buffer = await wordExportService.generateNoteFinancement(ptfCode);
@@ -137,6 +142,7 @@ export async function reportsRoutes(app: FastifyInstance) {
       description: 'Exporter la compilation de toutes les soumissions en Word (.docx)',
       security: [{ bearerAuth: [] }],
     },
+    config: { access: ['ADMIN'] },
     handler: async (_request: any, reply: any) => {
       const buffer = await wordExportService.generateCompilation();
       const date = new Date().toISOString().split('T')[0];

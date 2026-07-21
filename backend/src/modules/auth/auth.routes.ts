@@ -14,6 +14,7 @@ export async function authRoutes(app: FastifyInstance) {
       description: 'Créer un nouveau compte utilisateur',
       ...authSchemas.register,
     },
+    config: { access: ['ADMIN'] },
     handler: authController.register.bind(authController),
   });
 
@@ -28,6 +29,7 @@ export async function authRoutes(app: FastifyInstance) {
         max: 5,
         timeWindow: 15 * 60 * 1000, // 15 minutes
       },
+      access: 'public',
     },
     handler: authController.login.bind(authController),
   });
@@ -40,6 +42,7 @@ export async function authRoutes(app: FastifyInstance) {
       description: 'Obtenir le profil de l\'utilisateur connecté',
       security: [{ bearerAuth: [] }],
     },
+    config: { access: 'authenticated' },
     handler: authController.getProfile.bind(authController),
   });
 
@@ -48,6 +51,7 @@ export async function authRoutes(app: FastifyInstance) {
   // doit être tracée par une session).
   app.post('/refresh', {
     schema: { tags: ['Auth'], description: 'Renouveler le token JWT' },
+    config: { access: 'public' },
     handler: async (request: any, reply: any) => {
       try {
         const { refreshToken } = request.body;
@@ -105,6 +109,7 @@ export async function authRoutes(app: FastifyInstance) {
         },
       },
     },
+    config: { access: 'authenticated' },
     handler: authController.changePassword.bind(authController),
   });
 }

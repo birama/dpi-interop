@@ -2,7 +2,7 @@ import { FastifyInstance } from 'fastify';
 
 export async function partenaireTechAccompagnementRoutes(app: FastifyInstance) {
   // GET / — Liste des accompagnements de l'org du partenaire connecté
-  app.get('/', { onRequest: [app.authenticatePartenaireTechnique] }, async (req: any, _reply: any) => {
+  app.get('/', { onRequest: [app.authenticatePartenaireTechnique], config: { access: ['PARTENAIRE_TECHNIQUE'] } }, async (req: any, _reply: any) => {
     const { statut, type, page = '1', pageSize = '20', q } = req.query as any;
     const p = Math.max(parseInt(page) || 1, 1);
     const ps = Math.min(parseInt(pageSize) || 20, 100);
@@ -36,7 +36,7 @@ export async function partenaireTechAccompagnementRoutes(app: FastifyInstance) {
   });
 
   // GET /:id — Détail (vérifie proprio)
-  app.get('/:id', { onRequest: [app.authenticatePartenaireTechnique] }, async (req: any, reply: any) => {
+  app.get('/:id', { onRequest: [app.authenticatePartenaireTechnique], config: { access: ['PARTENAIRE_TECHNIQUE'] } }, async (req: any, reply: any) => {
     const acc = await app.prisma.accompagnementAMO.findUnique({
       where: { id: req.params.id },
       include: {
@@ -59,7 +59,7 @@ export async function partenaireTechAccompagnementRoutes(app: FastifyInstance) {
   });
 
   // POST /:id/commentaires — Ajouter un commentaire
-  app.post('/:id/commentaires', { onRequest: [app.authenticatePartenaireTechnique] }, async (req: any, reply: any) => {
+  app.post('/:id/commentaires', { onRequest: [app.authenticatePartenaireTechnique], config: { access: ['PARTENAIRE_TECHNIQUE'] } }, async (req: any, reply: any) => {
     const acc = await app.prisma.accompagnementAMO.findUnique({ where: { id: req.params.id } });
     if (!acc) return reply.status(404).send({ error: 'Accompagnement introuvable' });
 
@@ -87,7 +87,7 @@ export async function partenaireTechAccompagnementRoutes(app: FastifyInstance) {
   });
 
   // PATCH /commentaires/:id — Modifier son propre commentaire
-  app.patch('/commentaires/:id', { onRequest: [app.authenticatePartenaireTechnique] }, async (req: any, reply: any) => {
+  app.patch('/commentaires/:id', { onRequest: [app.authenticatePartenaireTechnique], config: { access: ['PARTENAIRE_TECHNIQUE'] } }, async (req: any, reply: any) => {
     const commentaire = await app.prisma.commentaireAMO.findUnique({
       where: { id: req.params.id },
       include: { accompagnement: { select: { organisationId: true } } },
@@ -115,7 +115,7 @@ export async function partenaireTechAccompagnementRoutes(app: FastifyInstance) {
   });
 
   // DELETE /commentaires/:id — Supprimer son propre commentaire
-  app.delete('/commentaires/:id', { onRequest: [app.authenticatePartenaireTechnique] }, async (req: any, reply: any) => {
+  app.delete('/commentaires/:id', { onRequest: [app.authenticatePartenaireTechnique], config: { access: ['PARTENAIRE_TECHNIQUE'] } }, async (req: any, reply: any) => {
     const commentaire = await app.prisma.commentaireAMO.findUnique({
       where: { id: req.params.id },
       include: { accompagnement: { select: { organisationId: true } } },

@@ -28,7 +28,7 @@ export async function liaisonsGuichetRoutes(app: FastifyInstance) {
   // GET /services-guichet/:id — Détail d'un ServiceGuichet
   //   Inclut les liaisons et leur CasUsageMVP
   // ===========================================================================
-  app.get('/services-guichet/:id', { onRequest: [app.authenticate] }, async (req: any, reply: any) => {
+  app.get('/services-guichet/:id', { onRequest: [app.authenticate], config: { access: 'authenticated' } }, async (req: any, reply: any) => {
     const svc = await app.prisma.serviceGuichet.findUnique({
       where: { id: req.params.id },
       include: {
@@ -49,7 +49,7 @@ export async function liaisonsGuichetRoutes(app: FastifyInstance) {
   // GET /services-guichet — Liste des ServiceGuichet (filtres optionnels)
   //   ?avecLiaisons=true : inclut les liaisons existantes et leur CasUsageMVP
   // ===========================================================================
-  app.get('/services-guichet', { onRequest: [app.authenticate] }, async (req: any, reply: any) => {
+  app.get('/services-guichet', { onRequest: [app.authenticate], config: { access: 'authenticated' } }, async (req: any, reply: any) => {
     const { q, secteur, publicCible, avecBesoinSiTiers, avecLiaisons } = req.query as any;
 
     const where: any = {};
@@ -96,7 +96,7 @@ export async function liaisonsGuichetRoutes(app: FastifyInstance) {
   //            statutEsenegal?, besoinSiTiers? }
   //   Code PINS-GUICHET-NNN auto-généré. Idempotent sur (intitule, secteur).
   // ===========================================================================
-  app.post('/services-guichet', { onRequest: [app.authenticateAdmin] }, async (req: any, reply: any) => {
+  app.post('/services-guichet', { onRequest: [app.authenticateAdmin], config: { access: ['ADMIN'] } }, async (req: any, reply: any) => {
     const { intitule, secteur, evenementDeVie, publicCible, statutEsenegal, besoinSiTiers } = (req.body || {}) as any;
     const user = req.user;
 
@@ -162,7 +162,7 @@ export async function liaisonsGuichetRoutes(app: FastifyInstance) {
   // POST /cas-usage/:id/liaisons-guichet — Upsert idempotent
   //   body : { serviceGuichetId: string, note?: string, mode?: string }
   // ===========================================================================
-  app.post('/cas-usage/:id/liaisons-guichet', { onRequest: [app.authenticateAdmin] }, async (req: any, reply: any) => {
+  app.post('/cas-usage/:id/liaisons-guichet', { onRequest: [app.authenticateAdmin], config: { access: ['ADMIN'] } }, async (req: any, reply: any) => {
     const { id: casUsageId } = req.params;
     const { serviceGuichetId, note, mode } = (req.body || {}) as any;
     const user = req.user;
@@ -230,7 +230,7 @@ export async function liaisonsGuichetRoutes(app: FastifyInstance) {
   // ===========================================================================
   // GET /cas-usage/:id/liaisons-guichet — Liste des liaisons d'un cas
   // ===========================================================================
-  app.get('/cas-usage/:id/liaisons-guichet', { onRequest: [app.authenticate] }, async (req: any, reply: any) => {
+  app.get('/cas-usage/:id/liaisons-guichet', { onRequest: [app.authenticate], config: { access: 'authenticated' } }, async (req: any, reply: any) => {
     const { id: casUsageId } = req.params;
     const cu = await app.prisma.casUsageMVP.findUnique({
       where: { id: casUsageId },
@@ -257,7 +257,7 @@ export async function liaisonsGuichetRoutes(app: FastifyInstance) {
   // ===========================================================================
   // DELETE /liaisons-guichet/:liaisonId — Supprimer (DU only)
   // ===========================================================================
-  app.delete('/liaisons-guichet/:liaisonId', { onRequest: [app.authenticateAdmin] }, async (req: any, reply: any) => {
+  app.delete('/liaisons-guichet/:liaisonId', { onRequest: [app.authenticateAdmin], config: { access: ['ADMIN'] } }, async (req: any, reply: any) => {
     const { liaisonId } = req.params;
     const user = req.user;
 
@@ -301,7 +301,7 @@ export async function liaisonsGuichetRoutes(app: FastifyInstance) {
   //     ?secteurGuichet=<secteur>
   //     ?publicCible=CITOYEN|ENTREPRISE|MIXTE
   // ===========================================================================
-  app.get('/correspondance-esenegal', { onRequest: [app.authenticate] }, async (req: any, reply: any) => {
+  app.get('/correspondance-esenegal', { onRequest: [app.authenticate], config: { access: 'authenticated' } }, async (req: any, reply: any) => {
     const {
       seulementAvecLiaisons, typologie, domaine,
       secteurGuichet, publicCible,

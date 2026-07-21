@@ -13,6 +13,7 @@ export async function recensementAdminRoutes(app: FastifyInstance) {
   // Indicateurs
   app.get('/stats', {
     onRequest: [app.authenticate],
+    config: { access: ['ADMIN', 'INSTITUTION'] },
     schema: { tags: ['Admin - Recensement'], description: 'Indicateurs du recensement' },
     handler: async (req: any, reply: any) => {
       const { userRole, userInstitutionId } = authInfo(req);
@@ -24,6 +25,7 @@ export async function recensementAdminRoutes(app: FastifyInstance) {
   // Liste paginée avec filtres
   app.get('/', {
     onRequest: [app.authenticate],
+    config: { access: ['ADMIN', 'INSTITUTION'] },
     schema: { tags: ['Admin - Recensement'], description: 'Liste des soumissions' },
     handler: async (req: any, reply: any) => {
       const {
@@ -49,6 +51,7 @@ export async function recensementAdminRoutes(app: FastifyInstance) {
   // Fiche détaillée
   app.get('/:id', {
     onRequest: [app.authenticate],
+    config: { access: ['ADMIN', 'INSTITUTION'] },
     schema: { tags: ['Admin - Recensement'], description: 'Détail d\'une soumission' },
     handler: async (req: any, reply: any) => {
       const { userRole, userInstitutionId } = authInfo(req);
@@ -61,6 +64,7 @@ export async function recensementAdminRoutes(app: FastifyInstance) {
   // Qualification interne (ADMIN uniquement)
   app.patch('/:id/qualification', {
     onRequest: [app.authenticateAdmin],
+    config: { access: ['ADMIN'] },
     schema: {
       tags: ['Admin - Recensement'],
       description: 'Mettre à jour la qualification interne',
@@ -82,6 +86,7 @@ export async function recensementAdminRoutes(app: FastifyInstance) {
   // Export
   app.get('/export/csv', {
     onRequest: [app.authenticate],
+    config: { access: ['ADMIN', 'INSTITUTION'] },
     schema: { tags: ['Admin - Recensement'], description: 'Export CSV des soumissions' },
     handler: async (req: any, reply: any) => {
       const { ministere, statutAvancement, statutTraitement, souhaitAccompagnement } = req.query;

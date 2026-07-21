@@ -63,7 +63,7 @@ export async function useCasesRoutes(app: FastifyInstance) {
   // =========================================================================
   // GET /catalog — Liste paginée de tous les cas d'usage
   // =========================================================================
-  app.get('/catalog', { onRequest: [app.authenticate] }, async (req: any, reply: any) => {
+  app.get('/catalog', { onRequest: [app.authenticate], config: { access: 'authenticated' } }, async (req: any, reply: any) => {
     const { limit = '20', cursor, status, search, typologie, includePropose, aFinancer, domaine } = req.query as any;
     const take = Math.min(parseInt(limit) || 20, 100);
 
@@ -161,7 +161,7 @@ export async function useCasesRoutes(app: FastifyInstance) {
   // =========================================================================
   // GET /:id — Détail d'un cas d'usage avec visibilité conditionnelle
   // =========================================================================
-  app.get('/:id', { onRequest: [app.authenticate] }, async (req: any, reply: any) => {
+  app.get('/:id', { onRequest: [app.authenticate], config: { access: 'authenticated' } }, async (req: any, reply: any) => {
     const { id } = req.params;
 
     // Resoudre le code institution de l'utilisateur (pour reconnaissance initiateur robuste)
@@ -269,7 +269,7 @@ export async function useCasesRoutes(app: FastifyInstance) {
   // =========================================================================
   // GET /:id/relations — Relations de service metier <-> technique (P9)
   // =========================================================================
-  app.get('/:id/relations', { onRequest: [app.authenticate] }, async (req: any, reply: any) => {
+  app.get('/:id/relations', { onRequest: [app.authenticate], config: { access: 'authenticated' } }, async (req: any, reply: any) => {
     const { id } = req.params;
     const cu = await app.prisma.casUsageMVP.findUnique({
       where: { id },
@@ -315,7 +315,7 @@ export async function useCasesRoutes(app: FastifyInstance) {
   // =========================================================================
   // POST /:id/relations — Ajout d'une relation metier -> technique (P9)
   // =========================================================================
-  app.post('/:id/relations', { onRequest: [app.authenticate] }, async (req: any, reply: any) => {
+  app.post('/:id/relations', { onRequest: [app.authenticate], config: { access: 'authenticated' } }, async (req: any, reply: any) => {
     const { id } = req.params;
     const { casUsageTechniqueId, ordre, obligatoire, commentaire } = req.body as any;
     const user = req.user;
@@ -367,7 +367,7 @@ export async function useCasesRoutes(app: FastifyInstance) {
   // =========================================================================
   // DELETE /:id/relations/:relationId (P9)
   // =========================================================================
-  app.delete('/:id/relations/:relationId', { onRequest: [app.authenticate] }, async (req: any, reply: any) => {
+  app.delete('/:id/relations/:relationId', { onRequest: [app.authenticate], config: { access: 'authenticated' } }, async (req: any, reply: any) => {
     const { id, relationId } = req.params;
     const user = req.user;
 
@@ -394,7 +394,7 @@ export async function useCasesRoutes(app: FastifyInstance) {
   // =========================================================================
   // PATCH /:id/typologie (DU only) — Reclassement typologique motive (P9)
   // =========================================================================
-  app.patch('/:id/typologie', { onRequest: [app.authenticateAdmin] }, async (req: any, reply: any) => {
+  app.patch('/:id/typologie', { onRequest: [app.authenticateAdmin], config: { access: ['ADMIN'] } }, async (req: any, reply: any) => {
     const { id } = req.params;
     const { typologie, motif } = req.body as any;
     const user = req.user;

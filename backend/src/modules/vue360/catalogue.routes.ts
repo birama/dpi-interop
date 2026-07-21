@@ -31,7 +31,7 @@ export async function catalogueRoutes(app: FastifyInstance) {
   // =========================================================================
   // GET /propositions — Liste paginee des propositions
   // =========================================================================
-  app.get('/propositions', { onRequest: [app.authenticate] }, async (req: any, reply: any) => {
+  app.get('/propositions', { onRequest: [app.authenticate], config: { access: 'authenticated' } }, async (req: any, reply: any) => {
     const {
       q, registres, institutionsPressenties,
       typologie, niveauMaturite, page = '1', pageSize = '12',
@@ -100,7 +100,7 @@ export async function catalogueRoutes(app: FastifyInstance) {
   // =========================================================================
   // GET /propositions/:id — Detail d'une proposition
   // =========================================================================
-  app.get('/propositions/:id', { onRequest: [app.authenticate] }, async (req: any, reply: any) => {
+  app.get('/propositions/:id', { onRequest: [app.authenticate], config: { access: 'authenticated' } }, async (req: any, reply: any) => {
     const { id } = req.params;
     const cu = await app.prisma.casUsageMVP.findUnique({
       where: { id },
@@ -139,7 +139,7 @@ export async function catalogueRoutes(app: FastifyInstance) {
   // =========================================================================
   // POST /propositions — Creation (DU only)
   // =========================================================================
-  app.post('/propositions', { onRequest: [app.authenticateAdmin] }, async (req: any, reply: any) => {
+  app.post('/propositions', { onRequest: [app.authenticateAdmin], config: { access: ['ADMIN'] } }, async (req: any, reply: any) => {
     const {
       titre, resumeMetier, baseLegale, description,
       typologie, sourceProposition, sourceDetail, niveauMaturite,
@@ -253,7 +253,7 @@ export async function catalogueRoutes(app: FastifyInstance) {
   // =========================================================================
   // PATCH /propositions/:id — Modification (DU only)
   // =========================================================================
-  app.patch('/propositions/:id', { onRequest: [app.authenticateAdmin] }, async (req: any, reply: any) => {
+  app.patch('/propositions/:id', { onRequest: [app.authenticateAdmin], config: { access: ['ADMIN'] } }, async (req: any, reply: any) => {
     const { id } = req.params;
     const body = req.body as any;
 
@@ -277,7 +277,7 @@ export async function catalogueRoutes(app: FastifyInstance) {
   // =========================================================================
   // POST /propositions/:id/archive (DU only)
   // =========================================================================
-  app.post('/propositions/:id/archive', { onRequest: [app.authenticateAdmin] }, async (req: any, reply: any) => {
+  app.post('/propositions/:id/archive', { onRequest: [app.authenticateAdmin], config: { access: ['ADMIN'] } }, async (req: any, reply: any) => {
     const { id } = req.params;
     const { motif } = req.body as any;
     const user = req.user;
@@ -337,7 +337,7 @@ export async function catalogueRoutes(app: FastifyInstance) {
   // =========================================================================
   // POST /propositions/:id/fusionner (DU only)
   // =========================================================================
-  app.post('/propositions/:id/fusionner', { onRequest: [app.authenticateAdmin] }, async (req: any, reply: any) => {
+  app.post('/propositions/:id/fusionner', { onRequest: [app.authenticateAdmin], config: { access: ['ADMIN'] } }, async (req: any, reply: any) => {
     const { id } = req.params;
     const { cibleId, motif } = req.body as any;
     const user = req.user;
@@ -381,7 +381,7 @@ export async function catalogueRoutes(app: FastifyInstance) {
   // =========================================================================
   // POST /propositions/:id/adopter — Adoption par institution (pressentie ou non)
   // =========================================================================
-  app.post('/propositions/:id/adopter', { onRequest: [app.authenticate] }, async (req: any, reply: any) => {
+  app.post('/propositions/:id/adopter', { onRequest: [app.authenticate], config: { access: 'authenticated' } }, async (req: any, reply: any) => {
     const { id } = req.params;
     const { institutionInitiatriceId, confirmationEngagement, ajustements, motif } = req.body as any;
     const user = req.user;
@@ -481,7 +481,7 @@ export async function catalogueRoutes(app: FastifyInstance) {
   // =========================================================================
   // GET /adoption-requests — File DU des demandes d'adoption (DU only)
   // =========================================================================
-  app.get('/adoption-requests', { onRequest: [app.authenticateAdmin] }, async (req: any, reply: any) => {
+  app.get('/adoption-requests', { onRequest: [app.authenticateAdmin], config: { access: ['ADMIN'] } }, async (req: any, reply: any) => {
     const { status } = req.query as any;
     const where: any = {};
     if (status && ['EN_ATTENTE', 'VALIDEE', 'REFUSEE'].includes(status)) where.status = status;
@@ -501,7 +501,7 @@ export async function catalogueRoutes(app: FastifyInstance) {
   // =========================================================================
   // POST /adoption-requests/:id/valider (DU only) — Declenche adoption effective
   // =========================================================================
-  app.post('/adoption-requests/:id/valider', { onRequest: [app.authenticateAdmin] }, async (req: any, reply: any) => {
+  app.post('/adoption-requests/:id/valider', { onRequest: [app.authenticateAdmin], config: { access: ['ADMIN'] } }, async (req: any, reply: any) => {
     const { id } = req.params;
     const user = req.user;
 
@@ -537,7 +537,7 @@ export async function catalogueRoutes(app: FastifyInstance) {
   // =========================================================================
   // POST /adoption-requests/:id/refuser (DU only)
   // =========================================================================
-  app.post('/adoption-requests/:id/refuser', { onRequest: [app.authenticateAdmin] }, async (req: any, reply: any) => {
+  app.post('/adoption-requests/:id/refuser', { onRequest: [app.authenticateAdmin], config: { access: ['ADMIN'] } }, async (req: any, reply: any) => {
     const { id } = req.params;
     const { motif } = req.body as any;
     const user = req.user;
@@ -590,7 +590,7 @@ export async function catalogueRoutes(app: FastifyInstance) {
   // PATCH /propositions/:id/demander-complement (DU only)
   // Le statut reste PROPOSE — l'admin demande un complement d'info au proposeur
   // =========================================================================
-  app.patch('/propositions/:id/demander-complement', { onRequest: [app.authenticateAdmin] }, async (req: any, reply: any) => {
+  app.patch('/propositions/:id/demander-complement', { onRequest: [app.authenticateAdmin], config: { access: ['ADMIN'] } }, async (req: any, reply: any) => {
     const { id } = req.params;
     const { commentaire } = req.body as any;
     const user = req.user;
@@ -657,7 +657,7 @@ export async function catalogueRoutes(app: FastifyInstance) {
   // Atomique : adopter + transition jusqu'a QUALIFIE
   // Reserve aux cas de demonstration et arbitrages DU rapides
   // =========================================================================
-  app.post('/propositions/:id/qualifier-rapide', { onRequest: [app.authenticateAdmin] }, async (req: any, reply: any) => {
+  app.post('/propositions/:id/qualifier-rapide', { onRequest: [app.authenticateAdmin], config: { access: ['ADMIN'] } }, async (req: any, reply: any) => {
     const { id } = req.params;
     const { institutionChefId, motif } = req.body as any;
     const user = req.user;
@@ -727,7 +727,7 @@ export async function catalogueRoutes(app: FastifyInstance) {
   // Atomique : adopter + transition jusqu'a PRIORISE
   // Action exceptionnelle, reservee aux cas de demonstration ou raccourcis DU
   // =========================================================================
-  app.post('/propositions/:id/prioriser-rapide', { onRequest: [app.authenticateAdmin] }, async (req: any, reply: any) => {
+  app.post('/propositions/:id/prioriser-rapide', { onRequest: [app.authenticateAdmin], config: { access: ['ADMIN'] } }, async (req: any, reply: any) => {
     const { id } = req.params;
     const { institutionChefId, motif } = req.body as any;
     const user = req.user;
@@ -1003,7 +1003,7 @@ function rolePressentiToRole(rp: string): string | null {
 // ===========================================================================
 
 export async function suggestionsRoutes(app: FastifyInstance) {
-  app.post('/', { onRequest: [app.authenticate] }, async (req: any, reply: any) => {
+  app.post('/', { onRequest: [app.authenticate], config: { access: 'authenticated' } }, async (req: any, reply: any) => {
     const { titre, resumeMetier, typologie } = req.body as any;
     if (!titre || titre.trim().length < 5) return reply.send([]);
 

@@ -44,7 +44,7 @@ async function resolveContext(app: any, req: any, casUsageId: string) {
 export async function avisFormelRoutes(app: FastifyInstance) {
 
   // GET /:id/avis-formel — Liste tous les avis (chronologique ascendant)
-  app.get('/:id/avis-formel', { onRequest: [app.authenticate] }, async (req: any, reply: any) => {
+  app.get('/:id/avis-formel', { onRequest: [app.authenticate], config: { access: 'authenticated' } }, async (req: any, reply: any) => {
     const { id } = req.params;
     const { level, cu } = await resolveContext(app, req, id);
     if (level === 'NONE' || !cu) return reply.status(404).send({ error: 'Cas d\'usage non trouvé' });
@@ -64,7 +64,7 @@ export async function avisFormelRoutes(app: FastifyInstance) {
   });
 
   // POST /:id/avis-formel — Déposer un avis (append-only)
-  app.post('/:id/avis-formel', { onRequest: [app.authenticate] }, async (req: any, reply: any) => {
+  app.post('/:id/avis-formel', { onRequest: [app.authenticate], config: { access: 'authenticated' } }, async (req: any, reply: any) => {
     const { id } = req.params;
     const { sens, commentaire, institutionId: targetInstitutionId } = req.body as any;
 

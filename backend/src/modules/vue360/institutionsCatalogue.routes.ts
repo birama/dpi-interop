@@ -12,7 +12,7 @@ export async function institutionsCatalogueRoutes(app: FastifyInstance) {
   // ===========================================================================
   // GET /institutions — Liste agrégée
   // ===========================================================================
-  app.get('/institutions', { onRequest: [app.authenticate] }, async (_req: any, reply: any) => {
+  app.get('/institutions', { onRequest: [app.authenticate], config: { access: 'authenticated' } }, async (_req: any, reply: any) => {
     const institutions = await app.prisma.institution.findMany({
       select: { id: true, code: true, nom: true, ministere: true },
       orderBy: { code: 'asc' },
@@ -70,7 +70,7 @@ export async function institutionsCatalogueRoutes(app: FastifyInstance) {
   // ===========================================================================
   // GET /institutions/:id — Détail
   // ===========================================================================
-  app.get('/institutions/:id', { onRequest: [app.authenticate] }, async (req: any, reply: any) => {
+  app.get('/institutions/:id', { onRequest: [app.authenticate], config: { access: 'authenticated' } }, async (req: any, reply: any) => {
     const inst = await app.prisma.institution.findUnique({
       where: { id: req.params.id },
       select: { id: true, code: true, nom: true, ministere: true,

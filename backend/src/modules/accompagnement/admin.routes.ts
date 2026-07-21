@@ -2,7 +2,7 @@ import { FastifyInstance } from 'fastify';
 
 export async function adminAccompagnementRoutes(app: FastifyInstance) {
   // GET / — Liste paginée avec filtres
-  app.get('/', { onRequest: [app.authenticateAdmin] }, async (req: any, _reply: any) => {
+  app.get('/', { onRequest: [app.authenticateAdmin], config: { access: ['ADMIN'] } }, async (req: any, _reply: any) => {
     const { organisationId, casUsageMVPId, statut, type, page = '1', pageSize = '20', q } = req.query as any;
     const p = Math.max(parseInt(page) || 1, 1);
     const ps = Math.min(parseInt(pageSize) || 20, 100);
@@ -38,7 +38,7 @@ export async function adminAccompagnementRoutes(app: FastifyInstance) {
   });
 
   // POST / — Créer un accompagnement
-  app.post('/', { onRequest: [app.authenticateAdmin] }, async (req: any, reply: any) => {
+  app.post('/', { onRequest: [app.authenticateAdmin], config: { access: ['ADMIN'] } }, async (req: any, reply: any) => {
     const { organisationId, casUsageMVPId, type, statut, scoreMaturite, description, dateDebut, dateFinPrevue } = req.body || {};
     if (!organisationId || !casUsageMVPId || !type) {
       return reply.status(400).send({ error: 'organisationId, casUsageMVPId, et type requis' });
@@ -84,7 +84,7 @@ export async function adminAccompagnementRoutes(app: FastifyInstance) {
   });
 
   // GET /:id — Détail
-  app.get('/:id', { onRequest: [app.authenticateAdmin] }, async (req: any, reply: any) => {
+  app.get('/:id', { onRequest: [app.authenticateAdmin], config: { access: ['ADMIN'] } }, async (req: any, reply: any) => {
     const acc = await app.prisma.accompagnementAMO.findUnique({
       where: { id: req.params.id },
       include: {
@@ -99,7 +99,7 @@ export async function adminAccompagnementRoutes(app: FastifyInstance) {
   });
 
   // PATCH /:id — Modifier un accompagnement
-  app.patch('/:id', { onRequest: [app.authenticateAdmin] }, async (req: any, reply: any) => {
+  app.patch('/:id', { onRequest: [app.authenticateAdmin], config: { access: ['ADMIN'] } }, async (req: any, reply: any) => {
     const acc = await app.prisma.accompagnementAMO.findUnique({ where: { id: req.params.id } });
     if (!acc) return reply.status(404).send({ error: 'Accompagnement introuvable' });
 
@@ -133,7 +133,7 @@ export async function adminAccompagnementRoutes(app: FastifyInstance) {
   });
 
   // DELETE /:id — Soft delete
-  app.delete('/:id', { onRequest: [app.authenticateAdmin] }, async (req: any, reply: any) => {
+  app.delete('/:id', { onRequest: [app.authenticateAdmin], config: { access: ['ADMIN'] } }, async (req: any, reply: any) => {
     const acc = await app.prisma.accompagnementAMO.findUnique({ where: { id: req.params.id } });
     if (!acc) return reply.status(404).send({ error: 'Accompagnement introuvable' });
 
@@ -152,7 +152,7 @@ export async function adminAccompagnementRoutes(app: FastifyInstance) {
   });
 
   // POST /:id/jalons — Ajouter un jalon
-  app.post('/:id/jalons', { onRequest: [app.authenticateAdmin] }, async (req: any, reply: any) => {
+  app.post('/:id/jalons', { onRequest: [app.authenticateAdmin], config: { access: ['ADMIN'] } }, async (req: any, reply: any) => {
     const acc = await app.prisma.accompagnementAMO.findUnique({ where: { id: req.params.id } });
     if (!acc) return reply.status(404).send({ error: 'Accompagnement introuvable' });
 
@@ -181,7 +181,7 @@ export async function adminAccompagnementRoutes(app: FastifyInstance) {
   });
 
   // PATCH /:accompagnementId/jalons/:jalonId
-  app.patch('/:accompagnementId/jalons/:jalonId', { onRequest: [app.authenticateAdmin] }, async (req: any, reply: any) => {
+  app.patch('/:accompagnementId/jalons/:jalonId', { onRequest: [app.authenticateAdmin], config: { access: ['ADMIN'] } }, async (req: any, reply: any) => {
     const jalon = await app.prisma.jalonAccompagnement.findFirst({
       where: { id: req.params.jalonId, accompagnementId: req.params.accompagnementId },
     });
@@ -203,7 +203,7 @@ export async function adminAccompagnementRoutes(app: FastifyInstance) {
   });
 
   // DELETE /:accompagnementId/jalons/:jalonId
-  app.delete('/:accompagnementId/jalons/:jalonId', { onRequest: [app.authenticateAdmin] }, async (req: any, reply: any) => {
+  app.delete('/:accompagnementId/jalons/:jalonId', { onRequest: [app.authenticateAdmin], config: { access: ['ADMIN'] } }, async (req: any, reply: any) => {
     const jalon = await app.prisma.jalonAccompagnement.findFirst({
       where: { id: req.params.jalonId, accompagnementId: req.params.accompagnementId },
     });

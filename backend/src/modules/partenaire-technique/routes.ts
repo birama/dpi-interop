@@ -22,7 +22,7 @@ import { FastifyInstance } from 'fastify';
 export async function partenaireTechniqueRoutes(app: FastifyInstance) {
 
   // GET /dashboard — KPIs catalogue
-  app.get('/dashboard', { onRequest: [app.authenticatePartenaireTechnique] }, async (_req: any, _reply: any) => {
+  app.get('/dashboard', { onRequest: [app.authenticatePartenaireTechnique], config: { access: ['PARTENAIRE_TECHNIQUE'] } }, async (_req: any, _reply: any) => {
     const totalCas = await app.prisma.casUsageMVP.count();
     const parDomaine = await app.prisma.casUsageMVP.groupBy({
       by: ['domaine'],
@@ -49,7 +49,7 @@ export async function partenaireTechniqueRoutes(app: FastifyInstance) {
   });
 
   // GET /catalogue — Tous les cas (pas de filtre aFinancer)
-  app.get('/catalogue', { onRequest: [app.authenticatePartenaireTechnique] }, async (req: any, _reply: any) => {
+  app.get('/catalogue', { onRequest: [app.authenticatePartenaireTechnique], config: { access: ['PARTENAIRE_TECHNIQUE'] } }, async (req: any, _reply: any) => {
     const { q, domaine, typologie, statut, page = '1', pageSize = '20' } = req.query as any;
     const p = Math.max(parseInt(page) || 1, 1);
     const ps = Math.min(parseInt(pageSize) || 20, 100);
@@ -85,7 +85,7 @@ export async function partenaireTechniqueRoutes(app: FastifyInstance) {
   });
 
   // GET /cas/:id — Fiche détail (lecture seule, sans notes/observations/statusHistory)
-  app.get('/cas/:id', { onRequest: [app.authenticatePartenaireTechnique] }, async (req: any, reply: any) => {
+  app.get('/cas/:id', { onRequest: [app.authenticatePartenaireTechnique], config: { access: ['PARTENAIRE_TECHNIQUE'] } }, async (req: any, reply: any) => {
     const cu = await app.prisma.casUsageMVP.findUnique({
       where: { id: req.params.id },
       include: {
@@ -105,7 +105,7 @@ export async function partenaireTechniqueRoutes(app: FastifyInstance) {
   });
 
   // GET /profil — Infos de l'organisation connectée
-  app.get('/profil', { onRequest: [app.authenticatePartenaireTechnique] }, async (req: any, reply: any) => {
+  app.get('/profil', { onRequest: [app.authenticatePartenaireTechnique], config: { access: ['PARTENAIRE_TECHNIQUE'] } }, async (req: any, reply: any) => {
     const org = await app.prisma.organisation.findUnique({
       where: { id: req.user.organisationId },
       include: { _count: { select: { users: true } } },
@@ -121,7 +121,7 @@ export async function partenaireTechniqueRoutes(app: FastifyInstance) {
 export async function adminOrganisationRoutes(app: FastifyInstance) {
 
   // GET / — Liste
-  app.get('/', { onRequest: [app.authenticateAdmin] }, async (req: any, _reply: any) => {
+  app.get('/', { onRequest: [app.authenticateAdmin], config: { access: ['ADMIN'] } }, async (req: any, _reply: any) => {
     const { type, statut, q } = req.query as any;
     const where: any = {};
     if (type) where.type = type;
@@ -143,7 +143,7 @@ export async function adminOrganisationRoutes(app: FastifyInstance) {
   });
 
   // GET /:id — Détail
-  app.get('/:id', { onRequest: [app.authenticateAdmin] }, async (req: any, reply: any) => {
+  app.get('/:id', { onRequest: [app.authenticateAdmin], config: { access: ['ADMIN'] } }, async (req: any, reply: any) => {
     const org = await app.prisma.organisation.findUnique({
       where: { id: req.params.id },
       include: { users: { select: { id: true, email: true, lastLoginAt: true } } },
@@ -153,7 +153,7 @@ export async function adminOrganisationRoutes(app: FastifyInstance) {
   });
 
   // POST / — Création
-  app.post('/', { onRequest: [app.authenticateAdmin] }, async (req: any, reply: any) => {
+  app.post('/', { onRequest: [app.authenticateAdmin], config: { access: ['ADMIN'] } }, async (req: any, reply: any) => {
     const { id, nom, type, secteurAccompagnement, dateRattachement, dateFinPrevue } = req.body as any;
     if (!id || !nom || !type) {
       return reply.status(400).send({ error: 'id (code), nom, et type requis' });
@@ -183,7 +183,7 @@ export async function adminOrganisationRoutes(app: FastifyInstance) {
   });
 
   // PATCH /:id — Modification
-  app.patch('/:id', { onRequest: [app.authenticateAdmin] }, async (req: any, reply: any) => {
+  app.patch('/:id', { onRequest: [app.authenticateAdmin], config: { access: ['ADMIN'] } }, async (req: any, reply: any) => {
     const { nom, type, secteurAccompagnement, dateRattachement, dateFinPrevue, statut } = req.body as any;
 
     const existing = await app.prisma.organisation.findUnique({ where: { id: req.params.id } });

@@ -5,6 +5,7 @@ import corsPlugin from './cors.js';
 import helmetPlugin from './helmet.js';
 import rateLimitPlugin from './rateLimit.js';
 import swaggerPlugin from './swagger.js';
+import denyByDefaultPlugin from './denyByDefault.js';
 
 export async function registerPlugins(app: FastifyInstance) {
   // Security plugins first
@@ -17,6 +18,9 @@ export async function registerPlugins(app: FastifyInstance) {
 
   // Auth
   await app.register(jwtPlugin);
+
+  // Deny-by-default — après JWT, avant les routes
+  await app.register(denyByDefaultPlugin);
 
   // Documentation
   await app.register(swaggerPlugin);

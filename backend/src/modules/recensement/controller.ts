@@ -1,6 +1,7 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
 import { RecensementService } from './service.js';
 import { recensementSchema, recensementMultiSchema } from './schema.js';
+import { sanitizeRecensementInput } from '../../utils/sanitize.js';
 
 export class RecensementController {
   constructor(private service: RecensementService) {}
@@ -34,7 +35,7 @@ export class RecensementController {
           });
         }
 
-        const data = parsed.data;
+        const data = sanitizeRecensementInput(parsed.data) as typeof parsed.data;
         let currentSessionRef = data.sessionRef || undefined;
         const ids: string[] = [];
 
@@ -76,7 +77,7 @@ export class RecensementController {
         });
       }
 
-      const data = parsed.data;
+      const data = sanitizeRecensementInput(parsed.data) as typeof parsed.data;
       const existingSessionRef = data.sessionRef || undefined;
       const result = await this.service.create(data, ipTronquee, existingSessionRef, origine, institutionId);
 
