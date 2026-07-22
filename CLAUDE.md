@@ -1,9 +1,9 @@
 # PINS — Plateforme de pilotage de l'interopérabilité nationale du Sénégal
 
 ## Contexte
-Application de pilotage DPI développée pour le MCTN / SENUM SA (Delivery Unit).
+Application de pilotage DPI développée pour le MTN / SENUM SA (Delivery Unit).
 Opérateur : Birama Diop — Point Focal National Interopérabilité / DPI Architect.
-Production : https://dpi-interop.senum.sn (VM 178.16.129.222)
+Production : https://dpi-interop.senum.sn (VM 10.122.0.8)
 Repo : github.com/birama/dpi-interop
 
 ## Stack technique
@@ -156,15 +156,15 @@ cd frontend && npm run dev  # port 5173
 
 # Production (procédure manuelle utilisée pendant les sessions)
 # Backup obligatoire avant toute migration :
-plink -pw <pwd> deploy@178.16.129.222 "docker exec pins-db pg_dump -U dpiuser -d dpidb > /home/deploy/backups/prod_avant_X_$(date +%Y%m%d_%H%M).sql"
+plink -pw <pwd> deploy@10.122.0.8 "docker exec pins-db pg_dump -U dpiuser -d dpidb > /home/deploy/backups/prod_avant_X_$(date +%Y%m%d_%H%M).sql"
 # Frontend (rebuild + docker cp dans pins-frontend) :
 cd frontend && npm run build
-pscp -pw <pwd> -r dist/* deploy@178.16.129.222:/tmp/pins-dist/
-plink -pw <pwd> deploy@178.16.129.222 "docker cp /tmp/pins-dist/. pins-frontend:/usr/share/nginx/html/"
+pscp -pw <pwd> -r dist/* deploy@10.122.0.8:/tmp/pins-dist/
+plink -pw <pwd> deploy@10.122.0.8 "docker cp /tmp/pins-dist/. pins-frontend:/usr/share/nginx/html/"
 # Backend (rebuild + docker cp + restart) :
 cd backend && npm run build
-pscp -pw <pwd> dist/modules/<changed>.js deploy@178.16.129.222:/tmp/
-plink -pw <pwd> deploy@178.16.129.222 "docker cp /tmp/<changed>.js pins-api:/app/dist/modules/<changed>.js && docker restart pins-api"
+pscp -pw <pwd> dist/modules/<changed>.js deploy@10.122.0.8:/tmp/
+plink -pw <pwd> deploy@10.122.0.8 "docker cp /tmp/<changed>.js pins-api:/app/dist/modules/<changed>.js && docker restart pins-api"
 ```
 
 ## État du repo (branches)
