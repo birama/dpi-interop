@@ -20,8 +20,8 @@ export async function recensementRoutes(app: FastifyInstance) {
     }],
     config: {
       rateLimit: {
-        max: 10,
-        timeWindow: 60 * 60 * 1000, // 10 soumissions par heure
+        max: 60,
+        timeWindow: 60 * 60 * 1000, // 60 soumissions par heure (NAT gouvernemental)
       },
       access: 'public',
     },
