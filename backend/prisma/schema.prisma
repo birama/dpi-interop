@@ -377,6 +377,73 @@ enum PublicCible {
 }
 
 // ============================================================================
+// RÉFÉRENTIEL NATIONAL DES ENTITÉS DE TUTELLE
+// ============================================================================
+
+enum TypeEntiteTutelle {
+  MINISTERE
+  PRESIDENCE
+  PRIMATURE
+  AUTORITE_ADMINISTRATIVE_INDEPENDANTE
+  INSTITUTION_CONSTITUTIONNELLE
+  ORGANISATION_INTERNATIONALE
+  AUTRE
+}
+
+enum TypeSuccession {
+  RENOMMAGE
+  SCISSION
+  FUSION
+  TRANSFERT_ATTRIBUTIONS
+}
+
+enum StatutEntiteTutelle {
+  EN_VIGUEUR
+  CLOTUREE
+}
+
+model EntiteTutelle {
+  statut             StatutEntiteTutelle @default(EN_VIGUEUR)
+  id                 String             @id @default(uuid())
+  code               String             @unique // ex. MTN-2026-1130 ou MCTDAT-HIST
+  libelleOfficiel    String
+  sigle              String?            // NON unique : un même sigle a désigné des périmètres différents
+  type               TypeEntiteTutelle
+  referenceJuridique String?            // ex. "Décret n°2026-1130 du 1er juin 2026"
+  ordreProtocolaire  Int?
+  dateDebut          DateTime?          // null = non documentée
+  dateFin            DateTime?          // null = en vigueur (source unique, pas de flag isCurrent)
+  notes              String?
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+
+  institutions       Institution[]
+  successions        SuccessionTutelle[] @relation("Predecesseur")
+  provenances        SuccessionTutelle[] @relation("Successeur")
+
+  @@index([type, dateFin])
+  @@index([dateFin])
+  @@map("entites_tutelle")
+}
+
+model SuccessionTutelle {
+  id                 String         @id @default(uuid())
+  predecesseurId     String
+  successeurId       String
+  type               TypeSuccession
+  referenceJuridique String?
+  dateEffet          DateTime
+  notes              String?
+
+  predecesseur       EntiteTutelle  @relation("Predecesseur", fields: [predecesseurId], references: [id])
+  successeur         EntiteTutelle  @relation("Successeur",   fields: [successeurId],  references: [id])
+
+  @@index([predecesseurId])
+  @@index([successeurId])
+  @@map("successions_tutelle")
+}
+
+// ============================================================================
 // INSTITUTIONS
 // ============================================================================
 
@@ -384,7 +451,11 @@ model Institution {
   id        String @id @default(uuid())
   code      String @unique // Ex: DGID, DGD, ANSD
   nom       String
-  ministere String
+  ministere String // CONSERVÉ tel quel, valeur d'origine — déprécié en lecture
+
+  // Rattachement au référentiel des tutelles (nullable : null = à qualifier)
+  entiteTutelleId String?
+  entiteTutelle   EntiteTutelle? @relation(fields: [entiteTutelleId], references: [id])
 
   // Contact principal
   responsableNom      String
