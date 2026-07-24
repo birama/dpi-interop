@@ -31,8 +31,8 @@
 | # | valeur_origine | nb | poids (C/S/R) | proposition | décision | exceptions | commentaire |
 |---|---|---|---|---|---|---|---|
 | 1 | Finances | 12 | 76/4/0 | | | ARCOP (régulation) | **Périmètre pilote (76 cas).** DGCPT, DGID, DGD, DTAI, etc. |
-| 2 | Économie | 7 | 25/6/0 | | | | **Périmètre pilote (25 cas).** ANSD, APIX, DCEF, etc. |
-
+| 2 | Économie | 7 | 25/6/0 | | MIN-ECONOMIE-FINANCES-PLAN-2026-1130 | | Convergence Finances+Économie. ARCOP (régulation) à part. |
+|||||| MIN-ECONOMIE-FINANCES-PLAN-2026-1130 || Convergence Finances+Économie. 
 ## Tableau principal
 
 | # | valeur_origine | nb | poids (C/S/R) | proposition | décision | exceptions | commentaire |
@@ -42,8 +42,8 @@
 | 3 | Autre | 16 | 0/0/0 | | | | Catégorie fourre-tout. Contient administrations sectorielles, agences, banques, autorités contractantes. 16 institutions à ventiler individuellement |
 | 4 | Culture | 7 | 0/1/0 | | | | Libellé court. Décret 2026 : Culture, Artisanat et Tourisme |
 | 5 | Emploi | 7 | 0/1/0 | | | | Libellé court. Décret 2026 : Emploi et Formation Professionnelle et Technique |
-| 6 | Enseignement Superieur | 1 | 0/1/0 | `MIN-ENSEIGNEMENT-SUPERIEUR-RECHERCHE-INNOVATION-2026-1130` | | | Mécanique : accent |
-| 7 | Enseignement Supérieur | 7 | 0/0/0 | `MIN-ENSEIGNEMENT-SUPERIEUR-RECHERCHE-INNOVATION-2026-1130` | | | Mécanique : accent |
+| 6 | Enseignement Superieur | 1 | 0/1/0 | `MIN-ENSEIGNEMENT-SUPERIEUR-RECHERCHE-INNOVATION-2026-1130` | NULL_A_QUALIFIER | | 16 institutions à ventiler. |
+| 7 | Enseignement Supérieur | 7 | 0/0/0 | `MIN-ENSEIGNEMENT-SUPERIEUR-RECHERCHE-INNOVATION-2026-1130` | `MIN-ENSEIGNEMENT-SUPERIEUR-RECHERCHE-INNOVATION-2026-1130` | | Mécanique : accent |
 | 8 | Environnement | 4 | 0/0/0 | | | | Libellé court. Décret 2026 : Environnement et Transition Ecologique |
 | 9 | Famille | 5 | 3/1/0 | | | | Libellé court. Décret 2026 : Famille, Action sociale et Solidarités |
 | 10 | Finances | 12 | 76/4/0 | | | | **Périmètre pilote (76 cas, 4 soumissions).** Libellé court. Décret 2026 : Economie, Finances et Plan (scission Budget séparé) |
@@ -55,34 +55,34 @@
 | 16 | Institution régionale (UEMOA) | 1 | 1/0/0 | | | NULL_A_QUALIFIER | BCEAO. Le libellé exact de la tutelle (UEMOA vs UMOA) est à confirmer. Entité supranationale |
 | 17 | Intérieur | 8 | 4/0/0 | | | | Libellé court. Décret 2026 : Intérieur et Sécurité publique |
 | 18 | Jeunesse | 3 | 0/0/0 | | | | Libellé court. Décret 2026 : Jeunesse et Sports |
-| 19 | Justice | 8 | 2/1/0 | | | | Libellé court. Décret 2026 : Justice, Garde des Sceaux |
+| 19 | Justice | 8 | 2/1/0 | | NULL_A_QUALIFIER | | Libellé exact à confirmer (UEMOA vs UMOA). |
 | 20 | **MAER** | 1 | 0/0/0 | | | | **Historique.** MAER : sigle antérieur non documenté |
 | 21 | **MCTDAT** | 1 | 0/0/0 | | | | **Historique.** MCTDAT : sigle antérieur non documenté |
 | 22 | **MFPTCT** | 1 | 0/0/0 | | | | **Historique.** MFPTCT : sigle antérieur non documenté |
-| 23 | **MITTD — Infrastructures, Transports Terrestres et Désenclavement** | 1 | 0/0/0 | | | | **Historique.** MITTD : sigle antérieur. Libellé partiel présent |
-| 24 | **MUCTAT** | 1 | 0/0/0 | | | | **Historique.** MUCTAT : sigle antérieur non documenté |
-| 25 | Microfinance | 6 | 0/2/0 | | | | Libellé court. Décret 2026 : Microfinance et Economie Sociale et Solidaire |
-| 26 | Ministère de l'Eau et de l'Assainissement | 1 | 0/0/0 | | | | **Nom complet.** Confronter au décret : Hydraulique et Assainissement |
-| 27 | **Ministère de l'Éducation Nationale** | 1 | 0/0/0 | | | | **Nom complet à confronter.** Décret 2026 : `Education Nationale` (sans accent circonflexe). Écart : `l'` + accent. Entité antérieure ou variante ? |
+| 23 | **MITTD — Infrastructures, Transports Terrestres et Désenclavement** | 1 | 0/0/0 | | ENTITE_HIST_A_CREER | | Historique. Sigle antérieur. |
+| 24 | **MUCTAT** | 1 | 0/0/0 | | ENTITE_HIST_A_CREER | | Historique. Sigle antérieur. |
+| 25 | Microfinance | 6 | 0/2/0 | | ENTITE_HIST_A_CREER | | Historique. Sigle antérieur. |
+| 26 | Ministère de l'Eau et de l'Assainissement | 1 | 0/0/0 | | ENTITE_HIST_A_CREER | | Historique. Libellé partiel. |
+| 27 | **Ministère de l'Éducation Nationale** | 1 | 0/0/0 | | ENTITE_HIST_A_CREER | | Historique. Sigle antérieur. |
 | 28 | **Ministère de la Santé et de l'Action Sociale** | 1 | 0/0/0 | | | | **Nom complet à confronter.** Décret 2026 : `Santé et Hygiène Publique`. Action Sociale → Famille. Périmètre différent = entité antérieure probable |
 | 29 | **Ministère des Finances et du Budget** | 3 | 1/0/0 | | | | **Nom complet à confronter.** Décret 2026 : `Economie, Finances et Plan` + `chargé du Budget`. Scission → entité antérieure |
 | 30 | Ministère des Infrastructures | 1 | 0/2/0 | | | | **Nom complet.** Confronter au décret : Infrastructures. Écart : `Ministère des` |
 | 31 | Ministère du Travail | 1 | 0/0/0 | | | | **Nom complet.** Confronter au décret : Fonction Publique, Travail et Réforme |
 | 32 | Numérique | 9 | 2/2/0 | | | CNRA, APS → Communication (post-MCTN) | **Scission MCTN à rejouer structure par structure.** CNRA et APS relèvent de la Communication, pas du Numérique. 9 institutions à ventiler entre MTN et Communication selon attributions. |
 | 33 | PAENS — composante 3, développé par Eyone | 1 | 0/0/0 | | | NON_PERTINENT | Projet, pas une tutelle |
-| 34 | Presidence | 1 | 0/1/0 | `PRESIDENCE-REPUBLIQUE` | | | Mécanique : accent |
-| 35 | Primature | 7 | 0/0/0 | `PRIMATURE` | | | Mécanique : correspondance exacte |
-| 36 | Présidence | 11 | 0/1/0 | `PRESIDENCE-REPUBLIQUE` | | | Mécanique : correspondance exacte |
+| 34 | Presidence | 1 | 0/1/0 | `PRESIDENCE-REPUBLIQUE` | `PRESIDENCE-REPUBLIQUE` | | Mécanique : accent |
+| 35 | Primature | 7 | 0/0/0 | `PRIMATURE` | `PRIMATURE` | | Mécanique : correspondance exacte |
+| 36 | Présidence | 11 | 0/1/0 | `PRESIDENCE-REPUBLIQUE` | NON_PERTINENT | | Projet, pas une tutelle. |
 | 37 | PTF | 1 | 0/1/0 | | | NON_PERTINENT | Catégorie partenaire, pas une tutelle |
 | 38 | Pêches | 5 | 0/0/0 | | | | Libellé court. Décret 2026 : Pêches et Economie maritime |
-| 39 | Sante | 2 | 0/0/0 | `MIN-SANTE-HYGIENE-PUBLIQUE-2026-1130` | | | Mécanique : accent |
-| 40 | Santé | 8 | 1/1/0 | `MIN-SANTE-HYGIENE-PUBLIQUE-2026-1130` | | | Mécanique : correspondance exacte |
+| 39 | Sante | 2 | 0/0/0 | `MIN-SANTE-HYGIENE-PUBLIQUE-2026-1130` | `MIN-SANTE-HYGIENE-PUBLIQUE-2026-1130` | | Mécanique : accent |
+| 40 | Santé | 8 | 1/1/0 | `MIN-SANTE-HYGIENE-PUBLIQUE-2026-1130` | NON_PERTINENT | | Catégorie partenaire, pas une tutelle. |
 | 41 | Transports | 8 | 0/2/0 | | | | Libellé court. Décret 2026 : Transports terrestres et aériens |
 | 42 | Urbanisme | 9 | 0/2/0 | | | | Libellé court. Décret 2026 : Urbanisme, Collectivités Territoriales et Aménagement des Territoires |
 | 43 | À compléter (seed e-senegal) | 25 | 0/0/0 | | | | **25 institutions sans tutelle renseignée.** Rattachement à déterminer individuellement |
 | 44 | Économie | 7 | 25/6/0 | | | | **Périmètre pilote (25 cas, 6 soumissions).** Libellé court. Décret 2026 : Economie, Finances et Plan + chargé Economie, Plan, Coopération |
 | 45 | Éducation | 4 | 0/2/0 | | | | Libellé court. Décret 2026 : Education Nationale |
-| 46 | Énergie | 10 | 0/1/0 | | | | Libellé court. Décret 2026 : Energie et Pétrole + Mines et Géologie (scission) |
+| 46 | Énergie | 10 | 0/1/0 | | NULL_A_QUALIFIER | | 25 institutions. Rattachement individuel. |
 
 ---
 
