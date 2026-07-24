@@ -26,7 +26,7 @@
 ---
 
 ## ⚠ URGENT — À traiter en premier
-
+**Décision actée** : les deux convergent vers MIN-ECONOMIE-FINANCES-PLAN-2026-1130 (26 ministères de plein exercice, délégations retirées du référentiel).
 **Décision actée** : les deux convergent vers  (26 ministères de plein exercice, délégations retirées du référentiel).
 | # | valeur_origine | nb | poids (C/S/R) | proposition | décision | exceptions | commentaire |
 |---|---|---|---|---|---|---|---|
