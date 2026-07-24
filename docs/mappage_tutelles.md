@@ -27,8 +27,7 @@
 
 ## ⚠ URGENT — À traiter en premier
 
-⚠ **Finances et Économie pointent vers la même cible** (`Economie, Finances et Plan`). 19 institutions. Le décret a-t-il réuni les périmètres ou faut-il deux rattachements distincts ?
-
+**Décision actée** : les deux convergent vers  (26 ministères de plein exercice, délégations retirées du référentiel).
 | # | valeur_origine | nb | poids (C/S/R) | proposition | décision | exceptions | commentaire |
 |---|---|---|---|---|---|---|---|
 | 1 | Finances | 12 | 76/4/0 | | | ARCOP (régulation) | **Périmètre pilote (76 cas).** DGCPT, DGID, DGD, DTAI, etc. |
