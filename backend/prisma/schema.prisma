@@ -480,6 +480,9 @@ model Institution {
   pressentieSur    InstitutionPressentie[]
   adoptionRequests AdoptionRequest[]
 
+  // Systemes sources
+  systemesSource   SystemeSource[]
+
   // Recensement GouvNum
   projetsRecenses ProjetRecense[]
 
@@ -1041,12 +1044,44 @@ model RegistreNational {
 
   // Vue 360° — relation inverse
   casUsagesAssocies CasUsageRegistre[]
+  systemes         RegistreSysteme[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([domaine])
   @@map("registres_nationaux")
+}
+
+// ============================================================================
+// SYSTÈMES SOURCES (exposent les registres nationaux)
+// ============================================================================
+
+model SystemeSource {
+  id            String            @id @default(uuid())
+  code          String            @unique
+  libelle       String
+  editeur       String?           // dette de conception : texte libre, à structurer ultérieurement
+  institutionId String?
+  institution   Institution?      @relation(fields: [institutionId], references: [id])
+  notes         String?           @db.Text
+  registres     RegistreSysteme[]
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+
+  @@map("systemes_source")
+}
+
+model RegistreSysteme {
+  id          String          @id @default(uuid())
+  systemeId   String
+  registreId  String
+  systeme     SystemeSource   @relation(fields: [systemeId], references: [id], onDelete: Cascade)
+  registre    RegistreNational @relation(fields: [registreId], references: [id], onDelete: Cascade)
+  notes       String?
+
+  @@unique([systemeId, registreId])
+  @@map("registre_systeme")
 }
 
 enum ReportType {
