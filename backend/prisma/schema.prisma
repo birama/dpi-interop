@@ -482,6 +482,7 @@ model Institution {
 
   // Systemes sources
   systemesSource   SystemeSource[]
+  adhesion         AdhesionInstitution?
 
   // Recensement GouvNum
   projetsRecenses ProjetRecense[]
@@ -1594,6 +1595,53 @@ enum NatureAppui {
   FINANCIER
   ASSISTANCE_TECHNIQUE
   MIXTE
+}
+
+// ============================================================================
+// ADHÉSION DES INSTITUTIONS À PINS
+// ============================================================================
+
+enum StatutAdhesion {
+  NON_ENGAGEE
+  CONVENTION_EN_COURS
+  CONVENTION_SIGNEE
+  RACCORDEE
+  EN_SERVICE
+}
+
+enum TypeRaccordement {
+  NOEUD_PROPRE
+  SOUS_SYSTEME_SENUM
+  AUCUN
+}
+
+enum DetenteurCles {
+  INSTITUTION
+  SENUM
+  NON_ETABLI
+}
+
+model AdhesionInstitution {
+  id                    String            @id @default(uuid())
+  institutionId         String            @unique
+  institution           Institution       @relation(fields: [institutionId], references: [id])
+
+  statut                StatutAdhesion    @default(NON_ENGAGEE)
+  referenceConvention   String?
+  dateConvention        DateTime?
+
+  typeRaccordement      TypeRaccordement  @default(AUCUN)
+  dateMiseEnService     DateTime?
+
+  detenteurCles         DetenteurCles     @default(NON_ETABLI)
+
+  dateDernierChangement DateTime          @default(now())
+  notes                 String?           @db.Text
+
+  createdAt             DateTime          @default(now())
+  updatedAt             DateTime          @updatedAt
+
+  @@map("adhesion_institution")
 }
 
 // ============================================================================
