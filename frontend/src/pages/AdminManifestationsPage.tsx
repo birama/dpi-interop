@@ -1,21 +1,23 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useQuery, keepPreviousData } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import {
   Select, SelectTrigger, SelectValue, SelectContent, SelectItem,
 } from '@/components/ui/select';
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription,
 } from '@/components/ui/dialog';
 import { api } from '@/services/api';
+import { useToast } from '@/components/ui/use-toast';
 import {
   Loader2, Calendar, Coins, Mail, Inbox, Eye, ChevronLeft, ChevronRight,
-  Building2, FileText, ExternalLink, History,
+  Building2, FileText, ExternalLink, History, CheckCircle, XCircle,
 } from 'lucide-react';
 
 const STATUTS = ['DRAFT', 'EN_VALIDATION', 'PUBLIE', 'REJETE', 'RETIRE'] as const;
@@ -46,6 +48,8 @@ const ACTION_LABELS: Record<string, string> = {
 };
 
 export function AdminManifestationsPage() {
+  const { toast } = useToast();
+  const qc = useQueryClient();
   const [statut, setStatut] = useState<Statut | 'ALL'>('EN_VALIDATION');
   const [ptfId, setPtfId] = useState<string>('');
   const [domaine, setDomaine] = useState<string>('');
@@ -54,6 +58,8 @@ export function AdminManifestationsPage() {
   const [page, setPage] = useState(1);
   const pageSize = 20;
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [rejectOpen, setRejectOpen] = useState(false);
+  const [motifRejet, setMotifRejet] = useState('');
 
   // Liste des PTF pour le filtre (réutilise /admin/ptf)
   const { data: ptfList } = useQuery({
@@ -92,6 +98,18 @@ export function AdminManifestationsPage() {
     setStatut('EN_VALIDATION'); setPtfId(''); setDomaine('');
     setDateDebut(''); setDateFin(''); setPage(1);
   };
+
+  const validateMutation = useMutation({
+    mutationFn: (id: string) => api.post(`/admin/manifestations/${id}/validate`),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['admin-manifestations'] }); qc.invalidateQueries({ queryKey: ['admin-manifestation'] }); toast({ title: 'Manifestation validée' }); },
+    onError: (e: any) => toast({ variant: 'destructive', title: 'Erreur', description: e?.response?.data?.error || '' }),
+  });
+
+  const rejectMutation = useMutation({
+    mutationFn: ({ id, motifRejet }: { id: string; motifRejet: string }) => api.post(`/admin/manifestations/${id}/reject`, { motifRejet }),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['admin-manifestations'] }); qc.invalidateQueries({ queryKey: ['admin-manifestation'] }); setRejectOpen(false); setMotifRejet(''); toast({ title: 'Manifestation rejetée' }); },
+    onError: (e: any) => toast({ variant: 'destructive', title: 'Erreur', description: e?.response?.data?.error || '' }),
+  });
 
   const ptfOptions = useMemo(() => (ptfList?.data || []) as any[], [ptfList]);
 
@@ -283,6 +301,31 @@ export function AdminManifestationsPage() {
         </Card>
       )}
 
+      {/* Modal rejet avec motif */}
+      <Dialog open={rejectOpen} onOpenChange={(v) => { if (!v) { setRejectOpen(false); setMotifRejet(''); } }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Rejeter la manifestation</DialogTitle>
+            <DialogDescription>Un motif de rejet est obligatoire. Il sera visible par le PTF.</DialogDescription>
+          </DialogHeader>
+          <Textarea
+            placeholder="Motif du rejet…"
+            value={motifRejet}
+            onChange={(e) => setMotifRejet(e.target.value)}
+            rows={4}
+            className="mt-2"
+          />
+          <DialogFooter>
+            <Button variant="outline" onClick={() => { setRejectOpen(false); setMotifRejet(''); }}>Annuler</Button>
+            <Button variant="destructive" disabled={!motifRejet.trim() || rejectMutation.isPending}
+              onClick={() => detail && rejectMutation.mutate({ id: detail.id, motifRejet })}>
+              {rejectMutation.isPending && <Loader2 className="w-4 h-4 mr-1 animate-spin" />}
+              Confirmer le rejet
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Modal détail enrichi */}
       <Dialog open={!!selectedId} onOpenChange={(v) => !v && setSelectedId(null)}>
         <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
@@ -296,7 +339,13 @@ export function AdminManifestationsPage() {
               <Loader2 className="w-6 h-6 animate-spin text-teal-700" />
             </div>
           ) : (
-            <ManifestationDetail manif={detail} />
+            <ManifestationDetail
+              manif={detail}
+              onValidate={(id) => validateMutation.mutate(id)}
+              onReject={(id) => { setRejectOpen(true); }}
+              isValidating={validateMutation.isPending}
+              isRejecting={rejectMutation.isPending}
+            />
           )}
           <DialogFooter>
             <Button variant="outline" onClick={() => setSelectedId(null)}>Fermer</Button>
@@ -307,8 +356,15 @@ export function AdminManifestationsPage() {
   );
 }
 
-function ManifestationDetail({ manif }: { manif: any }) {
+function ManifestationDetail({ manif, onValidate, onReject, isValidating, isRejecting }: {
+  manif: any;
+  onValidate: (id: string) => void;
+  onReject: (id: string) => void;
+  isValidating: boolean;
+  isRejecting: boolean;
+}) {
   const meta = STATUT_META[manif.statut as Statut] || { label: manif.statut, cls: '' };
+  const canAct = manif.statut === 'EN_VALIDATION';
   return (
     <div className="text-sm space-y-4">
       <div className="flex flex-wrap items-center gap-2">
@@ -417,11 +473,23 @@ function ManifestationDetail({ manif }: { manif: any }) {
         )}
       </div>
 
-      <div className="rounded-md border border-amber-300 bg-amber-50 p-3 text-xs text-amber-900">
-        <b>Workflow d'arbitrage</b> — Valider / Rejeter / Demander complément sera disponible
-        avec la <b>Phase 5 du module PTF (cible juin 2026)</b>. Pour le MVP actuel, la prise
-        de contact avec le PTF se fait par voie directe via le point focal renseigné ci-dessus.
-      </div>
+      {canAct && (
+        <div className="flex items-center gap-3 p-4 border-2 border-amber-300 bg-amber-50 rounded-lg">
+          <div className="flex-1 text-xs text-amber-800">
+            <b>Décision DU</b> — Cette manifestation est en attente de validation.
+          </div>
+          <Button size="sm" variant="outline" className="border-red-300 text-red-700 hover:bg-red-50"
+            disabled={isRejecting || isValidating}
+            onClick={() => onReject(manif.id)}>
+            <XCircle className="w-4 h-4 mr-1" /> Rejeter
+          </Button>
+          <Button size="sm" className="bg-teal hover:bg-teal-dark text-white"
+            disabled={isValidating || isRejecting}
+            onClick={() => onValidate(manif.id)}>
+            <CheckCircle className="w-4 h-4 mr-1" /> Valider
+          </Button>
+        </div>
+      )}
     </div>
   );
 }

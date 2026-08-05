@@ -657,6 +657,10 @@ export async function partenaireRoutes(app: FastifyInstance) {
 // ===========================================================================
 // Helpers communs admin (parseur fenêtre temporelle + KPI manifestations)
 // ===========================================================================
+function clientIpShared(req: any): string | undefined {
+  return req.headers['x-forwarded-for']?.toString() || req.ip;
+}
+
 function parseFenetreCommentaire(stored: string | null | undefined) {
   const s = stored || '';
   const match = s.match(/^Fenêtre temporelle:\s*([^\n]+)\n\n([\s\S]*)$/);
@@ -793,6 +797,71 @@ export async function adminManifestationsRoutes(app: FastifyInstance) {
         details: a.details,
       })),
     });
+  });
+
+  // POST /api/admin/manifestations/:id/validate — valider une manifestation
+  app.post('/:id/validate', { onRequest: [app.authenticateAdmin], config: { access: ['ADMIN'] } }, async (req: any, reply: any) => {
+    const m: any = await app.prisma.manifestationInteret.findUnique({
+      where: { id: req.params.id },
+      include: { casUsage: { select: { id: true, code: true, titre: true } }, ptf: { select: { id: true, code: true } } },
+    });
+    if (!m) return reply.status(404).send({ error: 'Manifestation introuvable' });
+    if (m.statut !== 'EN_VALIDATION') {
+      return reply.status(409).send({ error: 'Seules les manifestations en validation peuvent être validées' });
+    }
+
+    const updated = await app.prisma.manifestationInteret.update({
+      where: { id: m.id },
+      data: { statut: 'PUBLIE', dateValidation: new Date(), valideParUserId: req.user.id },
+    });
+
+    try {
+      await app.prisma.journalAuditPtf.create({
+        data: {
+          userId: req.user.id, action: 'VALIDATION_MANIFESTATION' as any,
+          objetType: 'manifestation', objetId: updated.id,
+          details: { casUsageId: m.casUsageId, casCode: m.casUsage.code, ptfCode: m.ptf.code },
+          ipAddress: clientIpShared(req), userAgent: req.headers['user-agent'],
+        },
+      });
+    } catch {}
+
+    return reply.send({ id: updated.id, statut: updated.statut });
+  });
+
+  // POST /api/admin/manifestations/:id/reject — rejeter une manifestation
+  app.post('/:id/reject', { onRequest: [app.authenticateAdmin], config: { access: ['ADMIN'] } }, async (req: any, reply: any) => {
+    const m: any = await app.prisma.manifestationInteret.findUnique({
+      where: { id: req.params.id },
+      include: { casUsage: { select: { id: true, code: true, titre: true } }, ptf: { select: { id: true, code: true } } },
+    });
+    if (!m) return reply.status(404).send({ error: 'Manifestation introuvable' });
+    if (m.statut !== 'EN_VALIDATION') {
+      return reply.status(409).send({ error: 'Seules les manifestations en validation peuvent être rejetées' });
+    }
+
+    const { motifRejet } = req.body as { motifRejet?: string };
+    if (!motifRejet || !motifRejet.trim()) {
+      return reply.status(400).send({ error: 'Un motif de rejet est requis' });
+    }
+
+    const updated = await app.prisma.manifestationInteret.update({
+      where: { id: m.id },
+      data: { statut: 'REJETE', motifRejet: motifRejet.trim(), valideParUserId: req.user.id },
+    });
+
+    try {
+      await app.prisma.journalAuditPtf.create({
+        data: {
+          userId: req.user.id, action: 'REJET_MANIFESTATION' as any,
+          objetType: 'manifestation', objetId: updated.id,
+          details: { casUsageId: m.casUsageId, casCode: m.casUsage.code, ptfCode: m.ptf.code, motifRejet: motifRejet.trim() },
+          ipAddress: clientIpShared(req), userAgent: req.headers['user-agent'],
+        },
+      });
+    } catch {}
+
+    return reply.send({ id: updated.id, statut: updated.statut });
   });
 }
 
