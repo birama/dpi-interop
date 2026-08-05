@@ -1555,6 +1555,7 @@ model Financement {
   programme       Programme         @relation(fields: [programmeId], references: [id])
   montantAlloue   Float?
   typeFinancement String?
+  natureAppui     NatureAppui        @default(FINANCIER)
   statut          FinancementStatus @default(DEMANDE)
   dateDemande     DateTime?
   dateAccord      DateTime?
@@ -1586,6 +1587,13 @@ enum FinancementStatus {
   EN_COURS
   CLOTURE
   REFUSE
+  HORS_MANDAT
+}
+
+enum NatureAppui {
+  FINANCIER
+  ASSISTANCE_TECHNIQUE
+  MIXTE
 }
 
 // ============================================================================
