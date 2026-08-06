@@ -1112,6 +1112,8 @@ model PTF {
   // PTF Phase 2
   domainesInteret BailleurDomaineInteret[]
   manifestations  ManifestationInteret[]
+  sollicitations  Sollicitation[]
+  lots            Lot[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1371,6 +1373,7 @@ model CasUsageMVP {
 
   // New Deal Technologique — Projets nationaux associés
   casUsageProjets CasUsageProjet[]
+  lots            LotCasUsage[] // Lots PTF auxquels ce cas appartient
 
   // Liaison vers les services guichet e-sénégal (frontière backbone/front)
   liaisonsGuichet LiaisonGuichet[]
@@ -1594,6 +1597,122 @@ enum NatureAppui {
   FINANCIER
   ASSISTANCE_TECHNIQUE
   MIXTE
+}
+
+// ============================================================================
+// LOTS PTF — Unité de dialogue avec un bailleur
+// ============================================================================
+
+enum StatutLot {
+  BROUILLON
+  ACTIF
+  CLOS
+}
+
+enum StatutSollicitation {
+  BROUILLON
+  TRANSMISE
+  EN_ATTENTE
+  ACCEPTEE
+  REFUSEE
+  HORS_MANDAT
+  CLOTUREE
+}
+
+model Lot {
+  id                  String         @id @default(uuid())
+  code                String         @unique
+  intitule            String
+  objet               String?        @db.Text
+
+  ptfId               String?
+  ptf                 PTF?           @relation(fields: [ptfId], references: [id])
+
+  natureAppuiAttendue NatureAppui?
+  statut              StatutLot      @default(BROUILLON)
+
+  estimationJH        Int?
+  profilsExperts      String?        @db.Text
+
+  casUsage            LotCasUsage[]
+  livrables           LotLivrable[]
+  jalons              LotJalon[]
+  sollicitations      Sollicitation[]
+
+  createdAt           DateTime       @default(now())
+  updatedAt           DateTime       @updatedAt
+
+  @@map("lots")
+}
+
+model Sollicitation {
+  id                 String               @id @default(uuid())
+  lotId              String
+  lot                Lot                  @relation(fields: [lotId], references: [id], onDelete: Cascade)
+
+  ptfId              String
+  ptf                PTF                  @relation(fields: [ptfId], references: [id])
+
+  referenceDocument  String?
+  dateEnvoi          DateTime?
+
+  statut             StatutSollicitation  @default(BROUILLON)
+  motifIssue         String?              @db.Text
+  dateReponse        DateTime?
+
+  notes              String?              @db.Text
+
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+
+  @@index([lotId])
+  @@index([ptfId])
+  @@index([statut])
+  @@map("sollicitations")
+}
+
+model LotCasUsage {
+  id          String       @id @default(uuid())
+  lotId       String
+  casUsageId  String
+  lot         Lot          @relation(fields: [lotId], references: [id], onDelete: Cascade)
+  casUsage    CasUsageMVP  @relation(fields: [casUsageId], references: [id], onDelete: Cascade)
+
+  reserve     Boolean      @default(false)
+
+  @@unique([lotId, casUsageId])
+  @@map("lot_cas_usage")
+}
+
+model LotLivrable {
+  id          String   @id @default(uuid())
+  lotId       String
+  lot         Lot      @relation(fields: [lotId], references: [id], onDelete: Cascade)
+  libelle     String
+  description String?  @db.Text
+  ordre       Int      @default(0)
+
+  createdAt   DateTime @default(now())
+
+  @@index([lotId])
+  @@map("lot_livrable")
+}
+
+model LotJalon {
+  id          String      @id @default(uuid())
+  lotId       String
+  lot         Lot         @relation(fields: [lotId], references: [id], onDelete: Cascade)
+  libelle     String
+  datePrevue  DateTime?
+  dateReelle  DateTime?
+  statut      StatutJalon @default(PLANIFIE)
+  ordre       Int         @default(0)
+
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  @@index([lotId])
+  @@map("lot_jalon")
 }
 
 // ============================================================================
