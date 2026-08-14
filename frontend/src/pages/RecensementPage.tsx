@@ -133,8 +133,7 @@ function ProjetBlock({
 
   const toggleNature = (nature: string) => {
     const natures = p.natures.includes(nature) ? p.natures.filter(n => n !== nature) : [...p.natures, nature];
-    update('natures', natures);
-    if (nature !== 'Autre') update('natureAutre', '');
+    onChange({ ...p, natures, natureAutre: nature !== 'Autre' ? '' : p.natureAutre });
   };
 
   const toggleRegistre = (reg: string) => {
