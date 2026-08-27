@@ -483,6 +483,9 @@ model Institution {
   // Systemes sources
   systemesSource   SystemeSource[]
 
+  // Engagements d'intégration
+  engagementsIntegration EngagementIntegration[]
+
   // Recensement GouvNum
   projetsRecenses ProjetRecense[]
 
@@ -1066,6 +1069,7 @@ model SystemeSource {
   institution   Institution?      @relation(fields: [institutionId], references: [id])
   notes         String?           @db.Text
   registres     RegistreSysteme[]
+  engagementsIntegration EngagementIntegration[]
   createdAt     DateTime          @default(now())
   updatedAt     DateTime          @updatedAt
 
@@ -1384,6 +1388,16 @@ model CasUsageMVP {
   // Faisabilité (atelier use cases potentiels)
   faisabilite FaisabiliteCas?
 
+  // Engagements d'intégration (registre des prérequis techniques par système)
+  engagementsIntegration EngagementIntegration[]
+
+  // Module Pilotage — qualification du portefeuille suivi
+  pilote           Boolean  @default(false)
+  identifiantPivot String?
+  serviceXroad     String?
+  dateStatutImpl   DateTime? // Dernier changement réel de statutImpl (jours dans l'état courant)
+  blocages         Blocage[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -1395,6 +1409,7 @@ model CasUsageMVP {
   @@index([adopteParInstitutionId])
   @@index([aFinancer])
   @@index([domaine])
+  @@index([pilote])
   @@map("cas_usage_mvp")
 }
 
@@ -2145,4 +2160,188 @@ model ProjetRecense {
   @@index([sessionRef])
   @@index([contactEmail])
   @@map("projets_recenses")
+}
+
+// ============================================================================
+// ENGAGEMENTS D'INTÉGRATION — registre des prérequis techniques par système
+// ============================================================================
+// Le registre qualifie l'engagement de l'agence (côté institutionnel) sur
+// l'exposition d'un système : date annoncée, responsable, source, statut
+// institutionnel (EXISTANT / A_CREER / A_CONFIRMER), jamais technique
+// (EN_DEV / EN_RECETTE).
+//
+// dernierMouvementAt est maintenu explicitement par le service, sur les seuls
+// changements substantiels. Pas de @updatedAt : une correction d'observation
+// ne doit pas rafraîchir l'ancienneté, sinon le registre mentirait au comité.
+
+model EngagementIntegration {
+  id String @id @default(uuid())
+
+  // Identité — clé fonctionnelle (cas × institution × système)
+  casUsageMVPId   String
+  casUsageMVP     CasUsageMVP   @relation(fields: [casUsageMVPId], references: [id])
+  institutionId   String
+  institution     Institution   @relation(fields: [institutionId], references: [id])
+  systemeSourceId String
+  systemeSource   SystemeSource @relation(fields: [systemeSourceId], references: [id])
+
+  // Serveur de sécurité X-Road (côté agence)
+  serveurSecurite EtatServeurSecurite @default(AUCUN)
+  sousSystemeCode String? // code X-Road du sous-système une fois créé
+
+  // API exposée par le système
+  etatApi          EtatApi @default(A_CONFIRMER)
+  protocole        String? // REST / SOAP / MQ / autre
+  authentification String? // OAuth2 / mTLS / apiKey / X-Road only / autre
+
+  // Documentation fournie par l'agence
+  docType            TypeDocumentation @default(AUCUNE)
+  docReference       String? // URL, chemin GED, référence de dépôt
+  docDatePublication DateTime?
+
+  // Engagement de l'agence — le cœur métier
+  responsableNom            String?
+  responsableFonction       String?
+  responsableEmail          String?
+  dateAnnonceeDisponibilite DateTime?
+  sourceEngagement          SourceEngagement?
+  sourceReference           String? // OBLIGATOIRE côté service dès que sourceEngagement != DECLARATION_ORALE
+
+  // Statut synthétique
+  statut       StatutEngagement @default(A_QUALIFIER)
+  motifBlocage String?          @db.Text // obligatoire côté service si statut = BLOQUE
+
+  // Vieillissement — maintenu par le service, PAS via @updatedAt
+  dernierMouvementAt   DateTime                @default(now())
+  dernierMouvementPar  String? // userId du dernier changement substantiel
+  dernierMouvementType TypeMouvementEngagement @default(CREATION)
+
+  // Historique complet des mouvements substantiels
+  history EngagementIntegrationHistory[]
+
+  // Traçabilité technique
+  createdAt DateTime @default(now())
+  createdBy String?
+  updatedAt DateTime @updatedAt // technique : reflet Prisma, ne PAS utiliser pour aging
+
+  @@unique([casUsageMVPId, institutionId, systemeSourceId])
+  @@index([statut])
+  @@index([institutionId])
+  @@index([casUsageMVPId])
+  @@index([systemeSourceId])
+  @@index([dernierMouvementAt])
+  @@index([dateAnnonceeDisponibilite])
+  @@map("engagement_integration")
+}
+
+/// Historique inaltérable des mouvements substantiels d'un EngagementIntegration.
+/// Une ligne par changement (statut, dateAnnoncee, responsable, doc, api, serveur, blocage).
+/// Les corrections d'observation ne créent PAS de ligne d'historique.
+model EngagementIntegrationHistory {
+  id                      String                @id @default(cuid())
+  engagementIntegrationId String
+  engagementIntegration   EngagementIntegration @relation(fields: [engagementIntegrationId], references: [id], onDelete: Cascade)
+
+  champ         String // "statut", "dateAnnonceeDisponibilite", "responsableNom", "docReference", ...
+  valeurAvant   String? @db.Text
+  valeurApres   String? @db.Text
+  typeMouvement TypeMouvementEngagement
+
+  // Auteur capturé au moment du changement (l'utilisateur peut disparaître par la suite)
+  auteurUserId String?
+  auteurNom    String
+  auteurEmail  String?
+  motif        String? @db.Text
+
+  dateChangement DateTime @default(now())
+
+  @@index([engagementIntegrationId])
+  @@index([dateChangement])
+  @@index([typeMouvement])
+  @@map("engagement_integration_history")
+}
+
+enum EtatServeurSecurite {
+  EXISTANT
+  SOUS_SYSTEME_A_CREER
+  AUCUN
+}
+
+enum EtatApi {
+  EXISTANTE
+  A_CREER
+  A_CONFIRMER
+}
+
+enum TypeDocumentation {
+  SWAGGER_OPENAPI
+  WSDL
+  AUTRE
+  AUCUNE
+}
+
+enum StatutEngagement {
+  A_QUALIFIER
+  EN_ATTENTE_AGENCE
+  EN_PREPARATION_AGENCE
+  PRET_A_INTEGRER
+  INTEGRE
+  BLOQUE
+}
+
+enum SourceEngagement {
+  COURRIER_OFFICIEL
+  PROCES_VERBAL_COMITE
+  PROCES_VERBAL_ATELIER
+  EMAIL_NOMINATIF
+  DECLARATION_ORALE
+  AUTRE
+}
+
+enum TypeMouvementEngagement {
+  CREATION
+  STATUT
+  DATE_ANNONCEE
+  RESPONSABLE
+  DOC
+  API
+  SERVEUR
+  BLOCAGE
+}
+
+// ============================================================================
+// MODULE PILOTAGE — portefeuille suivi, blocages et qualification
+// ============================================================================
+
+/// Nature du blocage d'un cas d'usage (un seul blocage ouvert par cas).
+enum NatureBlocage {
+  JURIDIQUE
+  TECHNIQUE
+  ORGANISATIONNEL
+  DONNEES
+  CONTRACTUEL
+  ARBITRAGE
+}
+
+/// Blocage ouvert sur un cas d'usage du portefeuille pilote.
+/// Résolu = dateResolution renseignée. La contrainte partielle garantit
+/// un seul blocage ouvert par cas au niveau DB.
+model Blocage {
+  id         String       @id @default(uuid())
+  casUsageId String
+  casUsage   CasUsageMVP  @relation(fields: [casUsageId], references: [id], onDelete: Cascade)
+  nature     NatureBlocage
+  libelle    String
+  entiteAttendue   String?
+  personneAttendue String?
+  dateOuverture    DateTime @default(now())
+  echeance         DateTime?
+  dateResolution   DateTime?
+  commentaire      String?  @db.Text
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([casUsageId])
+  @@index([echeance])
+  @@map("blocages")
 }
