@@ -3,197 +3,286 @@
 ## Contexte
 Application de pilotage DPI développée pour le MTN / SENUM SA (Delivery Unit).
 Opérateur : Birama Diop — Point Focal National Interopérabilité / DPI Architect.
-Production : https://dpi-interop.senum.sn (VM 10.122.0.8)
 Repo : github.com/birama/dpi-interop
 
 ## Stack technique
 - Backend : Fastify 4 + TypeScript + Prisma ORM (backend/)
 - Frontend : React 18 + Vite + TailwindCSS + shadcn/ui (frontend/)
 - Base de données : PostgreSQL 15
-- Auth : JWT 24h + refresh token 7j
-- Déploiement : Docker (pins-db, pins-api, pins-frontend) + deploy-prod.sh
+- Auth : JWT 24h + refresh token 7j ; login rate-limité 5 tentatives / 15 min
+- Déploiement : Docker (pins-db, pins-api, pins-frontend) + deploy-prod.sh (modes `full` et `migrate`)
+
+## Environnement production (état 27/08/2026)
+- Domaine : **dpi-interop.sec.gouv.sn** — résout 10.42.70.19 en DNS interne gouv uniquement
+  (absent du DNS public ; dpi-interop.senum.sn ne résout plus)
+- 10.42.70.19 est un relais (VIP/reverse proxy) devant la VM applicative 10.122.0.8 —
+  l'équipement intermédiaire n'est pas encore documenté, à identifier
+- VM applicative = `srv-pins-dpi` (10.122.0.8) : porte à la fois les conteneurs
+  et le rebond SSH. Accès : `ssh senumsauser@10.122.0.8 -p 3333` (clé, pas de password)
+- Base : conteneur `pins-db`, user **pins**, base **questionnaire_interop**
+  (dpiuser/dpidb = valeurs de template, ne plus utiliser)
+- WAF en frontal : bloque les navigateurs headless (Attack ID 20000051) — tests
+  automatisés depuis le poste via curl ou vrai navigateur uniquement
+- Fail2ban sur le rebond : ban après ~4 échecs de clés
 
 ## Structure
 ```
 questionnaire-interop/
 ├── backend/
-│   ├── prisma/schema.prisma      ← SCHÉMA DE DONNÉES (30 modèles, 15 enums)
-│   ├── prisma/seed.ts            ← Seed principal
-│   ├── prisma/seed_*.ts          ← Seeds spécifiques (11 fichiers)
+│   ├── prisma/schema.prisma      ← SCHÉMA DE DONNÉES (~45 modèles, ~30 enums)
+│   ├── prisma/migrations/        ← LF obligatoire (.gitattributes) — checksums Prisma
 │   ├── src/modules/index.ts      ← TOUTES LES ROUTES API (point d'entrée unique)
+│   ├── src/modules/pilotage/     ← Module Pilotage (portefeuille suivi + blocages)
 │   ├── src/modules/auth/         ← Authentification
 │   ├── src/modules/submissions/  ← Questionnaire 8 étapes
-│   ├── src/modules/reports/      ← Exports Word + stats
-│   ├── src/modules/import/       ← Import questionnaires Word
-│   ├── src/middleware/audit.middleware.ts ← Audit automatique
-│   └── src/app.ts                ← App Fastify
+│   ├── src/modules/vue360/       ← Cas d'usage 360°, catalogue propositions, New Deal
+│   ├── src/modules/partenaire/   ← Espace bailleur (PTF) + manifestations
+│   ├── src/modules/partenaire-technique/ ← Espace AMO/prestataires
+│   ├── src/modules/accompagnement/       ← Accompagnements AMO (jalons, commentaires)
+│   ├── src/modules/recensement/  ← Recensement GouvNum (formulaire public + admin)
+│   └── src/modules/reports|import|institutions|... 
 ├── frontend/
-│   ├── src/App.tsx               ← ROUTES (27 routes)
-│   ├── src/components/layout/DashboardLayout.tsx ← MENU SIDEBAR (21 entrées)
-│   ├── src/pages/                ← 26 pages
-│   └── src/services/api.ts       ← Client API Axios
-├── docker-compose.prod.yml
-├── deploy-prod.sh
+│   ├── src/App.tsx               ← ROUTES (~69 routes)
+│   ├── src/config/menuConfig.ts  ← MENU SIDEBAR (rubriques/items/roles, compteurs)
+│   ├── src/pages/                ← Pages (40 + sous-dossiers partenaire/, partenaire-tech/)
+│   ├── src/components/layout/    ← DashboardLayout, AuthLayout (redirections par rôle)
+│   └── src/services/api.ts       ← Client API Axios (intercepteurs 401/refresh)
+├── deploy-prod.sh                ← SEULE méthode de déploiement (full | migrate)
 └── CLAUDE.md                     ← CE FICHIER
 ```
 
+## Fonctionnalités existantes — espaces frontend (routes App.tsx)
+
+### Public (sans connexion)
+- `/` et `/about` — Landing institutionnelle PINS
+- `/login` — Connexion
+- `/recensement` — Recensement GouvNum : formulaire public multi-projets (circulaire
+  ministérielle n° 03081 du 05/08/2026, sessionRef multi-projets, QR code d'accès)
+- `/partenaire/cgu` — Acceptation CGU bailleur
+
+### Commun connecté (tous rôles selon RBAC)
+- `/dashboard` — Tableau de bord (contenu selon rôle)
+- `/change-password` — Changement de mot de passe forcé
+- `/institutions`, `/institutions/:id`, `/catalogue/institutions` — Annuaire des institutions
+- `/documents` et `/admin/documents` — Documents de référence (CRUD + upload)
+- `/submissions`, `/questionnaire`, `/questionnaire/:id` — Questionnaire d'interopérabilité
+  8 étapes (INSTITUTION) + liste des soumissions + validation (ADMIN)
+- `/mes-cas-usage` — Cas d'usage où mon institution est impliquée (stakeholders)
+- `/institution/demandes` — Mes demandes d'interopérabilité ; `/admin/demandes` côté DU
+- `/catalogue` — Catalogue DPI (building blocks, 4 couches)
+- `/admin/registres-nationaux` — Registres nationaux de base ; `/registres/couverture` —
+  couverture référentiels par cas d'usage
+
+### DU / Admin (SENUM) — rubrique Pilotage du menu
+- `/pilotage` — **Portefeuille suivi** (module Pilotage, accueil post-login ADMIN) :
+  cartes par cas pilote, statuts côte à côte, jours dans le statut, qualification en
+  édition directe, blocages (création en modale), alertes échéance/>30 j
+- `/admin/cockpit` — Cockpit DPI (KPI stratégiques)
+- `/admin/roadmap` — Roadmap MVP (Kanban drag & drop)
+- `/admin/qualification` — Pipeline qualification cas d'usage
+- `/admin/graphe` — Graphe des flux (D3.js interactif) ; `/matrice` — Matrice flux
+- `/maturite` — Radar de maturité des institutions
+- `/admin/xroad-pipeline` — Pipeline déploiement X-Road (6 jalons par institution)
+- `/admin/conventions` — Conventions d'échange (CRUD)
+- `/admin/financements` — PTF + Programmes + Orphelins + Experts (onglets)
+- `/admin/ptf`, `/admin/ptf/:id`, `/admin/ptf-domaines`, `/admin/ptf-dashboard` —
+  Annuaire PTF, domaines d'intérêt, tableau de bord PTF
+- `/admin/manifestations` — Manifestations d'intérêt PTF (lecture v1)
+- `/admin/organisations` — Organisations AMO/prestataires (CABINET_CONSEIL, INTEGRATEUR,
+  EDITEUR, EXPERT_INDEPENDANT)
+- `/admin/utilisateurs` + `/admin/utilisateurs/bailleur/creer` — CRUD utilisateurs
+  (rôles, reset password, bulk-create atelier)
+- `/admin/import` — Import questionnaires Word (mammoth + cheerio)
+- `/admin/audit` — Audit & Sessions (logs, sessions actives, stats, export CSV)
+- `/reports` — Rapports (génération Word/PDF/CSV/XLSX, téléchargement)
+- `/admin/cas-usage/:id` — Vue 360° d'un cas d'usage (fiche détaillée, conventions,
+  X-Road readiness, audit timeline)
+- `/catalogue/propositions`, `/catalogue/propositions/:id` — Catalogue des propositions
+  (P8) : adoption, ajustements stakeholders, priorisation rapide, fusion, archivage
+- `/catalogue/parcours-metier` — Cas d'usage METIER ; `/catalogue/services-techniques` —
+  cas TECHNIQUE (vues typologiques)
+- `/catalogue/correspondance-esenegal`, `/catalogue/services-guichet`, `/catalogue/guichet` —
+  Guichet e-sénégal ↔ PINS (services guichet, liaisons backbone/front)
+- `/du/adoptions` — File des demandes d'adoption ; `/du/arbitrage` — Arbitrage DU
+  (désaccords, avis formels)
+- `/admin/recensement`, `/gouvnum/declarer`, `/admin/gouvnum/qr-code` — GouvNum :
+  projets recensés (back-office), déclaration en ligne, QR code du formulaire
+
+### Espace Bailleur / PTF (cloisonné sur /partenaire/*)
+- `/partenaire` et `/partenaire/dashboard` — Tableau de bord PTF
+- `/partenaire/catalogue` — Portefeuille partenaire (cas PRIORISE + aFinancer,
+  filtre par domaines d'intérêt)
+- `/partenaire/cas/:id` — Vue 360° partenaire d'un cas
+- `/partenaire/manifestations` — Mes manifestations d'intérêt (brouillon → soumission,
+  une seule active par cas×PTF)
+- `/partenaire/profil` — Profil PTF + domaines d'intérêt
+
+### Espace Partenaire technique / AMO (cloisonné sur /partenaire-tech/*)
+- `/partenaire-tech/dashboard`, `/partenaire-tech/catalogue`, `/partenaire-tech/cas/:id` —
+  dashboard, catalogue, vue d'un cas accompagné
+- `/partenaire-tech/mes-cas`, `/partenaire-tech/mes-cas/:accompagnementId` — Mes
+  accompagnements (jalons, commentaires, visibilité)
+- `/partenaire-tech/profil` — Profil organisation
+
+## Modules backend — routes API (préfixes sous /api, modules/index.ts)
+- `/auth` — login (rate-limit 5/15 min), refresh, register, me, change-password
+- `/users` (+ `/admin/users/bailleur`) — CRUD utilisateurs, bulk-create, reset-password
+- `/institutions` — CRUD + stats ; `/submissions` — questionnaire + sous-entités
+  (applications, registres, données, flux, cas d'usage, niveaux interop, conformité,
+  dictionnaire, préparation décret)
+- `/institution` — dashboard institution ; `/demandes` — demandes d'interop
+- `/reports`, `/import`, `/documents` (upload multipart), `/search` (recherche globale)
+- `/conventions`, `/xroad-readiness`, `/graphe` (agrégat + PATCH flux), `/matrice`
+- `/ptf`, `/programmes`, `/phases-mvp`, `/financements`, `/expertises`, `/cas-usage-mvp`
+- `/building-blocks`, `/registres-nationaux`, `/registres` (couverture)
+- `/qualification` — pipeline (fusion registre + flux questionnaires, scores)
+- `/audit` — logs paginés, sessions actives, stats, export CSV, logout forcé
+- `/notifications` — invitations, relances (SMTP), invite-all
+- `/use-cases` (lecture/écriture/me/détail/notes), `/consultations`, `/feedback`,
+  `/du/arbitrage` — Vue 360° : stakeholders, consultations, feedbacks, arbitrage,
+  contrat de données (versions), avis formels
+- `/catalogue` — propositions (adoption, prioriser-rapide, qualifier, fusion), adoption
+  requests, liaisons guichet, suggestions, institutions
+- `/new-deal` — programmes prioritaires, projets nationaux, liaisons cas↔projets
+- `/partenaire` — espace bailleur (portefeuille, manifestations, profil) ;
+  `/admin/manifestations` (lecture) ; `/admin/ptf` (annuaire)
+- `/partenaire-tech` + `/admin/organisations` + `/admin/accompagnements` +
+  `/partenaire-tech/accompagnements` — AMO : organisations, accompagnements, jalons,
+  commentaires
+- `/public` (recensement public) + `/admin/recensement` (back-office GouvNum, RBAC ADMIN)
+- `/pilotage` — module Pilotage (voir section dédiée)
+
 ## Modèles Prisma principaux
-- User (email, role ADMIN/INSTITUTION/BAILLEUR, institutionId, ptfId, cguAccepteesAt)
-- Institution (code, nom, ministereTutelle — 213 seedées en prod)
-- Submission (questionnaire 8 étapes, status DRAFT/SUBMITTED/VALIDATED)
-- Application, Registre, InfrastructureItem (liés à Submission)
-- DonneeConsommer, DonneeFournir, FluxExistant (liés à Submission)
-- NiveauInterop, ConformitePrincipe (liés à Submission)
-- CasUsageMVP (code PINS-TECH/PINS-METIER, statutVueSection, statutImpl, axePrioritaire, codeHistorique, domaine enum, aFinancer bool)
-- PhaseMVP (MVP-1.0, MVP-2.0, MVP-3.0)
-- PTF, Programme, Financement (chaîne de financement, statuts IDENTIFIE→DEMANDE→ACCORDE→EN_COURS→CLOTURE ; Financement.manifestationOrigineId → ManifestationInteret)
-- BailleurDomaineInteret, ManifestationInteret, JournalAuditPtf (module PTF Phase 2)
-- Organisation (AMO/prestataires, type CABINET_CONSEIL/INTEGRATEUR/EDITEUR/EXPERT_INDEPENDANT) — P13-CONC
-- ProgrammePrioritaire, ProjetNational, CasUsageProjet (New Deal Technologique, 12 PRPs + 48 projets)
-- Convention (institutionA ↔ institutionB, statut, dates)
-- XRoadReadiness (6 jalons par institution, modeConnexion)
-- RegistreNational (10 registres de base, 5 domaines)
-- BuildingBlock (18 BB, 4 couches DPI)
-- Expertise (experts mobilisés rattachés à un Programme)
-- DemandeInterop (demandes des institutions)
-- AuditLog, UserSession (traçabilité)
-- DocumentReference (documents téléchargeables)
-- Enums clés : Role (ADMIN/INSTITUTION/BAILLEUR/PARTENAIRE_TECHNIQUE), Domaine (14 valeurs), ManifestationType, ManifestationStatus, AuditAction, SourceProposition (...+BAILLEUR), OrganisationType, OrganisationStatus
+- User (email, role ADMIN/INSTITUTION/BAILLEUR/PARTENAIRE_TECHNIQUE/PENDING, institutionId,
+  ptfId, organisationId, mustChangePassword, cguAccepteesAt)
+- Institution (code, nom, ministere, entiteTutelle, responsables — 213+ seedées)
+- Submission (questionnaire 8 étapes, status DRAFT/SUBMITTED/VALIDATED) + sous-tables
+  (Application, Registre, InfrastructureItem, DonneeConsommer/Fournir, FluxExistant,
+  CasUsage, NiveauInterop, ConformitePrincipe, DictionnaireDonnee, PreparationDecret)
+- CasUsageMVP (code PINS-TECH/PINS-METIER, **double statut** : statutVueSection
+  UseCaseStatus gouvernance DU / statutImpl StatutImplementation technique ;
+  typologie METIER/TECHNIQUE, sourceProposition, domaine (enum 14 valeurs), aFinancer,
+  phaseMVP, conventionLiee, faisabilite ; champs Module Pilotage : pilote,
+  identifiantPivot, serviceXroad, dateStatutImpl ; relations : stakeholders360,
+  registresAssocies, relationsMetier/Technique, casUsageProjets, liaisonsGuichet,
+  contratDonneesVersions, avisFormels, engagementsIntegration, blocages)
+- Blocage (casUsageId, nature NatureBlocage, libelle, entiteAttendue,
+  personneAttendue NOT NULL, dateOuverture, échéance, dateResolution, commentaire —
+  un seul ouvert par cas, index unique partiel en DB)
+- SystemeSource (7 systèmes MVP 2.0 : GAINDE-INTEGRAL, GUICHET-UNIQUE-APIX, NDAMLI,
+  NINEA-WEB, ORBUS, SIGNAS, SIGTAS) + RegistreSysteme (liens registres)
+- EngagementIntegration (cas × institution × système, FK systemeSourceId NOT NULL —
+  prérequis : les 7 SystemeSource DOIVENT exister avant toute saisie) + History
+- PTF, BailleurDomaineInteret, ManifestationInteret, JournalAuditPtf, Programme,
+  Financement (manifestationOrigineId), Expertise
+- Lot, Sollicitation, LotCasUsage, LotLivrable, LotJalon (EXISTENT sur main
+  local/origin mais NON validés pour la prod)
+- Organisation (AMO/prestataires) + AccompagnementAMO + JalonAccompagnement +
+  CommentaireAMO
+- UseCaseStakeholder (role INITIATEUR/FOURNISSEUR/CONSOMMATEUR/PARTIE_PRENANTE),
+  UseCaseConsultation, UseCaseFeedback, AvisFormel, UseCaseStatusHistory,
+  InstitutionPressentie, AdoptionRequest, RelationCasUsage, ContratDonneesVersion,
+  FaisabiliteCas
+- ServiceGuichet, LiaisonGuichet (frontière backbone e-sénégal / front)
+- ProgrammePrioritaire (12 PRP), ProjetNational (48), CasUsageProjet (N-N, New Deal)
+- RegistreNational (10 canoniques + e-sénégal), BuildingBlock (18, 4 couches DPI),
+  XRoadReadiness (6 jalons/institution), Convention, DemandeInterop
+- ProjetRecense (recensement GouvNum, multi-projets par sessionRef), EntiteTutelle,
+  SuccessionTutelle (référentiel tutelles)
+- AuditLog, UserSession (traçabilité, sessions), Notification, DocumentReference, Report
+
+## Module Pilotage (déployé le 27/08/2026)
+- Écran `/pilotage` : accueil post-login ADMIN. Cartes (une par cas pilote), pas de
+  tableau : code + intitulé, statuts Implémentation/Gouvernance côte à côte avec
+  jours dans le statut, administrations (composées depuis stakeholders si les codes
+  source/cible sont vides), qualification (pivot, base légale, service X-Road) en
+  édition directe, bloc blocage (création en modale, jamais en cellule)
+- Alertes : bordure gauche rouge = échéance dépassée ; ambre = statut inchangé > 30 j.
+  Cartes en alerte en haut. Tirets honnêtes : pas de valeurs par défaut.
+- API : GET /api/pilotage (lecture ADMIN+BAILLEUR), PATCH /pilotage/cas-usage/:id,
+  POST/PATCH/resoudre /pilotage/blocage. Garde-fous serveur : 422 statut avancé
+  (EN_DEVELOPPEMENT/EN_TEST/EN_PRODUCTION) sans identifiantPivot ; 400 blocage sans
+  personneAttendue ; 409 blocage déjà ouvert/résolu.
+- dateStatutImpl n'est JAMAIS backfillée : NULL = jamais changé depuis le déploiement
+  du suivi (tiret à l'écran) ; mise à jour uniquement sur changement réel de statutImpl.
+- Portefeuille amorcé : PINS-METIER-001/550/611 (pilote=true, statuts PRIORISE/PRIORISE
+  — la prod fait foi, ne pas aligner sur le local qui dit EN_DEVELOPPEMENT).
 
 ## Dualité des statuts CasUsageMVP
 Deux enums parallèles, sémantiques distinctes :
 - `statutVueSection` (UseCaseStatus) — gouvernance DU : PROPOSE → DECLARE → EN_CONSULTATION → VALIDATION_CONJOINTE → QUALIFIE → PRIORISE → FINANCEMENT_OK → CONVENTIONNE → EN_PRODUCTION_360
-- `statutImpl` (StatutImplementation) — implémentation technique : IDENTIFIE → PRIORISE → EN_PREPARATION → EN_DEVELOPPEMENT → EN_TEST → EN_PRODUCTION
+- `statutImpl` (StatutImplementation) — implémentation technique : IDENTIFIE → PRIORISE → EN_PREPARATION → EN_DEVELOPPEMENT → EN_TEST → EN_PRODUCTION (SUSPENDU dans les deux)
 - ⚠️ `PRIORISE` existe dans les deux. Ne pas confondre.
-
-## Pages frontend (26)
-### Admin
-- /admin/cockpit — Cockpit DPI (KPI stratégiques)
-- /admin/dashboard — Tableau de bord
-- /admin/qualification — Pipeline qualification cas d'usage
-- /admin/roadmap — Roadmap MVP (Kanban drag & drop)
-- /admin/financements — PTF + Programmes + Orphelins + Experts (3 onglets)
-- /admin/graphe — Graphe flux D3.js interactif
-- /admin/matrice — Matrice flux institutions
-- /admin/xroad-pipeline — Pipeline déploiement X-Road (6 jalons)
-- /admin/conventions — CRUD conventions d'échange
-- /admin/registres-nationaux — 10 registres de base
-- /admin/catalogue — Catalogue DPI (18 building blocks)
-- /admin/institutions — 201 institutions
-- /admin/utilisateurs — CRUD + bulk-create atelier
-- /admin/import — Import questionnaires Word (mammoth + cheerio)
-- /admin/audit — Audit & Sessions (3 onglets)
-- /admin/demandes — Gestion demandes interop
-- /admin/documents — Documents téléchargeables (CRUD)
-- /admin/radar — Radar maturité
-- /admin/soumissions — Validation soumissions
-
-### Institution
-- /dashboard — Dashboard enrichi (flux, conventions, cas d'usage, readiness)
-- /questionnaire — Questionnaire 8 étapes
-- /soumissions — Mes soumissions
-- /catalogue — Catalogue DPI
-- /institution/demandes — Mes demandes d'interopérabilité
-- /documents — Documents de référence
-
-### Public
-- / — Landing page institutionnelle (AboutPage, depuis 13/05/2026)
-- /login — Connexion
-- /about — Landing alias (retrocompatible)
 
 ## Comptes
 - Admin : admin@senum.sn — credentials dans le gestionnaire sécurisé Birama
-- Demo : demo@senum.sn — credentials dans le gestionnaire sécurisé Birama (compte usage atelier, expiration 31/07/2026)
-- Institutions (DGID, DGD, ANSD, APIX, etc.) : credentials transmis individuellement par canal sécurisé (mustChangePassword=true à la création)
-
-## Données seedées (état prod 14/05/2026 — post DEPLOY-02)
-- 238 institutions (213 N2 + 25 nouvelles via seed v4 e-senegal, avec placeholders responsable* à compléter)
-- 18 building blocks DPI (4 couches)
-- 34 registres nationaux (10 canoniques + 24 e-senegal en `domaine=TRANSVERSAL` par défaut)
-- **537 cas d'usage MVP** (76 historiques + 408 métier + 53 techniques injectés DEPLOY-02)
-  - 503 PROPOSE, 7 DECLARE, 8 EN_CONSULTATION, **18 PRIORISE**, 1 EN_PRODUCTION_360
-  - **18 cas avec `aFinancer=true`** (panel démo atelier 19/05) — 11 domaines couverts :
-    - METIER : PINS-METIER-001/008/009/010/011/012/013 (Création entreprise, B3, CMU, CAMPUSEN, ANPEJ, titre foncier, SénégalConnect)
-    - TECH : PINS-TECH-0001/0002/0004/0014/0015/0021/0022/0029/0055/0056/0057
-  - Répartition par domaine (528/537 renseignés) : FINANCES_PUBLIQUES=113, SERVICES_CITOYENS=102, JUSTICE_ETAT_CIVIL=67, IDENTITE_NUMERIQUE=53, PROTECTION_SOCIALE=47, CLIMAT_AFFAIRES=39, TRANSVERSAL=36, FONCIER_CADASTRE=30, EDUCATION=20, SANTE_NUMERIQUE=10, EMPLOI_FORMATION=6, CYBERSECURITE=5 (GOUVERNANCE_DONNEES et AGRICULTURE_NUMERIQUE absents du seed v4)
-  - Répartition par source : PROPOSITION_INSTITUTIONNELLE=464, ETUDE_SENUM=49, autres=24
-- 137 relations métier↔technique (5 historiques + 132 mapping seed v4)
-- 46+ flux d'interopérabilité
-- 5 PTF (JICA, GIZ, BM, ETAT-SN, GATES) — 17 financements
-- 5 agences pilotes X-Road (DGPSN, SEN-CSU, DGD, DGID, APIX)
-- 8+ conventions (ANEC-DAF, APIX-ANSD, APIX-DGD...)
-- 86 users (3 ADMIN dont admin@senum.sn + demo@senum.sn, 83 INSTITUTION, 0 BAILLEUR)
-- Backups encadrant DEPLOY-02 : `prod_avant_seed_v4_20260514_1643.sql` (880K) / `prod_apres_seed_v4_20260514_1650.sql` (1.1M)
-- 12 cas legacy `PINS-CU-001/007/008/019/026/027/002/009/011/012/014/015` renommés en `PINS-TECH-0043` à `0054` (14/05 17:20). Backups : `prod_avant_rename_20260514_1718.sql` / `prod_apres_rename_20260514_1720.sql`. Plus aucun `PINS-CU-*` adopté en DB.
+- Institutions (DGID, DGD, ANSD, APIX, etc.) : credentials transmis individuellement
+  par canal sécurisé (mustChangePassword=true à la création)
 
 ## Conventions de nommage
-- Ministère : MCTN (jamais MCTEN)
-- Plateforme : PINS (jamais e-jokkoo ni e-jokko)
+- Ministère : **MTN** (Ministère des Télécommunications et du Numérique) — jamais
+  MCTN ni MCTEN (renommage f51369d ; des docs anciennes disent encore MCTN)
+- Plateforme : PINS (jamais e-jokkoo)
 - Couleurs charte : Navy #0C1F3A, Teal #0A6B68, Gold #D4A820, Amber #C55A18
-- Police : Tahoma (titres), Times New Roman (corps)
-- Codes cas d'usage (depuis N2 — 28/04/2026) :
-  - `PINS-TECH-XXXX` : services techniques d'échange (capacité 9 999)
-  - `PINS-METIER-XXX` : parcours métier multi-administrations (capacité 999)
-  - Champ `codeHistorique` (texte) sur `CasUsageMVP` conserve les anciens codes
-  - Lexique titres `PINS-TECH-XXXX` : Consultation, Vérification, Notification,
-    Transmission, Réconciliation, Alimentation
-  - Anciens préfixes (MVP1-CU, MVP2-CU, HIST, XRN-CU, UC-GIZ-FIN, PINS-CU,
-    PINS-PROP-DEMO) abandonnés en local le 28/04/2026 — déploiement prod différé.
-    Référence : `docs/vue-360/n2-migration-nomenclature.md` et note N1
-    (`MCTN/DU/APP-DPI-INTEROP/CONC-2026-06`).
-- ASTER et SIGIF coexistent à la DGCPT (ne pas remplacer l'un par l'autre)
-- SENTAX remplace SIGTAS à la DGID (en conception)
-- MSHP (Ministère de la Santé et de l'Hygiène Publique) — ex-MSAS depuis 13/05/2026
+- Codes cas d'usage : `PINS-TECH-XXXX` (services techniques) / `PINS-METIER-XXX`
+  (parcours métier) ; `codeHistorique` conserve les anciens codes. Un code déjà en
+  PINS-TECH-/PINS-METIER- n'est JAMAIS réassigné (fix prioriser-rapide, en prod).
 - Pas de mots de passe en clair dans le repo, docs, ou commits Git
-  - Les credentials se transmettent via canal sécurisé (Signal, SMS, oral)
-  - mustChangePassword=true à la création de tout compte
+- ASTER et SIGIF coexistent à la DGCPT ; SENTAX remplace SIGTAS à la DGID (en conception)
 
 ## Déploiement
 ```bash
-# Local
-cd backend && npm run dev  # port 3000
-cd frontend && npm run dev  # port 5173
+# SEULE méthode autorisée (sur le serveur, depuis /opt/dpi-interop/questionnaire-interop) :
+./deploy-prod.sh migrate   # backup + prisma migrate deploy + restart API (pas de pull, pas de build)
+./deploy-prod.sh full      # backup + pull branche COURANTE + build docker + migrate + up + health
 
-# Production (procédure manuelle utilisée pendant les sessions)
-# Backup obligatoire avant toute migration :
-plink -pw <pwd> deploy@10.122.0.8 "docker exec pins-db pg_dump -U dpiuser -d dpidb > /home/deploy/backups/prod_avant_X_$(date +%Y%m%d_%H%M).sql"
-# Frontend (rebuild + docker cp dans pins-frontend) :
-cd frontend && npm run build
-pscp -pw <pwd> -r dist/* deploy@10.122.0.8:/tmp/pins-dist/
-plink -pw <pwd> deploy@10.122.0.8 "docker cp /tmp/pins-dist/. pins-frontend:/usr/share/nginx/html/"
-# Backend (rebuild + docker cp + restart) :
-cd backend && npm run build
-pscp -pw <pwd> dist/modules/<changed>.js deploy@10.122.0.8:/tmp/
-plink -pw <pwd> deploy@10.122.0.8 "docker cp /tmp/<changed>.js pins-api:/app/dist/modules/<changed>.js && docker restart pins-api"
+# Interdits en prod : migrate dev, migrate reset, db push, SQL ad hoc dans
+# _prisma_migrations, docker exec manuel pour migrer. Backup obligatoire avant tout.
+
+# Local
+cd backend && npm run dev    # port 3000
+cd frontend && npm run dev   # port 5173
+# Base de test jetable recommandée : restaurer un dump prod dans une base dédiée
+# et pointer DATABASE_URL dessus — c'est le seul test qui vaut pour la prod.
 ```
 
-## État du repo (branches)
-- `main` — état déployé en prod (commit `ea50b6f` du 14/05/2026 — DEPLOY-01 inclus PTF Phase 1+2 mergées)
-- `feature/vue-360` — branche historique conservée, hors scope atelier 19/05
-- Branches `ptf-phase1` et `ptf-phase2` supprimées local + remote après merge (DEPLOY-01).
+## État du repo (branches) — 27/08/2026
+- **Prod = branche `feat/module-pilotage`** (fd86282), basée sur
+  `fix/recensement-checkboxes` (3274e48), elle-même sur `c5a813f`.
+  Le commit courant du repo serveur `/opt/dpi-interop/questionnaire-interop` fait foi.
+- En cours (27/08 soir) : refonte de l'écran /pilotage en cartes + administrations
+  depuis stakeholders — codée et validée en local, à committer puis déployer.
+- `origin/main` = b40b332 : contient Lot/Sollicitation + seeds NON validés pour la prod.
+  NE PAS déployer main en l'état. main local est encore plus loin (ecc48dc etc.).
+- `fix/recensement-checkboxes` : fix cases à cocher + cache nginx, déployée 14/08.
+- Le serveur n'a PAS de credentials de push GitHub ; le poste perd parfois l'accès
+  à github.com — transfert de branche possible par `git bundle`.
+
+## Historique récent (condensé)
+- 14/05/2026 : DEPLOY-01/02 — PTF Phase 1+2 en prod, 620 cas seedés, panel atelier 19/05.
+- 02/06/2026 : mapping cas→projets New Deal (règles A/B/C/D, 32 liaisons).
+- 05-14/08/2026 : recensement GouvNum (circulaire 03081), fix cases à cocher (11e8153)
+  + cache nginx (3274e48) déployés.
+- 27/08/2026 : module Pilotage — prérequis (7 SystemeSource seedés, migration
+  EngagementIntegration appliquée, doublons _prisma_migrations nettoyés et vérifiés),
+  migration pilotage, API, écran cartes, amorçage 3 cas. Backups encadrants dans
+  /home/senumsauser/backups/.
 
 ## Dette technique connue
-- **Bug `POST /catalogue/propositions/:id/prioriser-rapide`** : la route écrase le code source (`PINS-TECH-XXXX` / `PINS-METIER-XXX`) par un format legacy `PINS-CU-XXX` au lieu de le préserver. Constaté le 14/05 sur 6 cas démo. Contournement : `UPDATE cas_usage_mvp SET code='<originel>' WHERE id='<uuid>'` après promotion (UUIDs stables). Fix à planifier post-atelier : ajouter `if (oldCode startsWith 'PINS-TECH-' || 'PINS-METIER-') keep oldCode`.
-- **Module PTF UI partiel** : RBAC + tables OK en prod, mais `/partenaire` et `/admin/utilisateurs/bailleur/creer` sont des stubs. PTF-03 à PTF-06 (catalogue partenaire, manifestation, propositions BAILLEUR, audit) à faire S2-S6 (juin 2026).
-- **9 cas démo `domaine=NULL`** : `axePrioritaire` était vide à la source. À compléter via UI admin.
-- **25 institutions seed v4 avec placeholders** : ministere/responsableNom/responsableFonction = "À compléter", responsableEmail = `seed-<code-slug>@placeholder.pins.sn`, responsableTel = "+221000000000". À compléter via UI admin.
-- **24 registres nationaux seed v4 en `domaine="TRANSVERSAL"`** par défaut (champ String, pas l'enum Domaine). À reclassifier manuellement.
-- **2 domaines absents du portefeuille** (côté CasUsageMVP.domaine) : GOUVERNANCE_DONNEES, AGRICULTURE_NUMERIQUE. À enrichir lors des prochains ateliers métier.
-
-## Atelier stratégique 19 mai 2026
-- Réf : MCTN/DU/PLAN-PINS-STAB-2026-01
-- Présidence + Primature + MCTN + PTF (BM, GIZ, JICA, Gates)
-- Code freeze prod : lundi 18 mai 17h00
-- Module PTF annoncé livraison fin juin 2026 (PTF-03 à PTF-06 à exécuter S2-S6)
-
-## Articulation Manifestation ↔ Financement (note technique 13/05)
-- Référence : `docs/Articulation_Manifestation_Financement.md`
-- Manifestation partenaire PUBLIE de type FINANCEMENT → option conversion en Financement IDENTIFIE
-- FK `Financement.manifestationOrigineId` (nullable, sens B) — branche ptf-phase2
-- Filtre cible portefeuille partenaire : `statutVueSection=PRIORISE` + `statutImpl in (IDENTIFIE, PRIORISE, EN_PREPARATION)` + `aFinancer=true` + `domaine in domainesPtf`
-
-## Partenaires techniques
-- JICA/Accenture : partenaire principal PINS/X-Road
-- PexOne : site web monitoring (auteur DAT v0.5)
-- Digiboost (Bamba) : JoinXroad — accélérateur no-code X-Road
-- Eyone : équipe dev e-senegal.sn
+- **Publication maîtrisée (chantier prioritaire)** : l'app n'est accessible que via
+  DNS interne + réseau gouv ; à ouvrir aux institutions multi-réseaux, sinon l'outil
+  ne sert que la DU. Relais 10.42.70.19 (VIP/proxy) à documenter.
+- Migration p7_stakeholder_fields : fichier rendu idempotent en local (shadow DB),
+  mais la prod garde la version ORIGINALE (checksum) — ne pas mélanger les deux.
+- 4 migrations appliquées en base LOCALE sans dossier dans le repo (merge_duplicates_mvp2,
+  add_adhesion_institution, seed_systemes_mvp2, qualify_mvp2_cases — branche
+  feat/referentiel-tutelles) : divergence locale assumée, ne pas recréer les dossiers.
+- Rotation de clé SSH du poste : pendante (passphrase exposée le 27/08, ancienne clé
+  à révoquer sur authorized_keys du serveur).
+- Serveur : reboot demandé (mise à jour sécurité + zombie), à planifier.
+- 2 domaines absents du portefeuille (CasUsageMVP.domaine) : GOUVERNANCE_DONNEES,
+  AGRICULTURE_NUMERIQUE.
+- Institutions seed v4 avec placeholders responsable* : à compléter via UI admin.
+- Les 3 cas pilotes n'ont pas de qualification (pivot, base légale, service X-Road
+  vides) ni de champs source/cible : les administrations s'affichent depuis les
+  stakeholders (001 et 550 OK, 611 sans aucun stakeholder — à qualifier).

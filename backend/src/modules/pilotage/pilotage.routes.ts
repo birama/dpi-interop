@@ -38,6 +38,9 @@ export async function pilotageRoutes(app: FastifyInstance) {
       include: {
         blocages: { orderBy: { dateOuverture: 'desc' } },
         phaseMVP: { select: { code: true } },
+        stakeholders360: {
+          include: { institution: { select: { code: true } } },
+        },
       },
       orderBy: { code: 'asc' },
     });
@@ -45,15 +48,28 @@ export async function pilotageRoutes(app: FastifyInstance) {
     const now = Date.now();
     const TRENTE_JOURS = 30 * 24 * 60 * 60 * 1000;
 
+    const codesPour = (st: any[], roles: string[]) =>
+      [...new Set(st.filter(s => roles.includes(s.role)).map(s => s.institution?.code).filter(Boolean))];
+
     const items = cas.map((cu: any) => {
       const blocageOuvert = cu.blocages.find((b: any) => !b.dateResolution) || null;
       const joursDansStatut = cu.dateStatutImpl
         ? Math.floor((now - new Date(cu.dateStatutImpl).getTime()) / (24 * 60 * 60 * 1000))
         : null;
+      // Administrations : les champs codes du catalogue priment ; sinon, on
+      // compose depuis les stakeholders (fournisseur/initiateur → consommateur/parties).
+      const st = cu.stakeholders360 || [];
+      const source = cu.institutionSourceCode
+        ? [cu.institutionSourceCode]
+        : (codesPour(st, ['FOURNISSEUR']).length ? codesPour(st, ['FOURNISSEUR']) : codesPour(st, ['INITIATEUR']));
+      const cible = cu.institutionCibleCode
+        ? [cu.institutionCibleCode]
+        : (codesPour(st, ['CONSOMMATEUR']).length ? codesPour(st, ['CONSOMMATEUR']) : codesPour(st, ['PARTIE_PRENANTE']));
       return {
         id: cu.id,
         code: cu.code,
         titre: cu.titre,
+        administrations: { source, cible },
         institutionSourceCode: cu.institutionSourceCode,
         institutionCibleCode: cu.institutionCibleCode,
         autresInstitutions: cu.autresInstitutions,
