@@ -71,7 +71,14 @@ if [ "$MODE" = "full" ]; then
   log "Étape 2/6 — Mise à jour du code"
   COMMIT_BEFORE=$(git log --oneline -1 2>/dev/null || echo "unknown")
 
-  git pull origin main || fail "git pull a échoué"
+  # Pull de la branche COURANTE — jamais origin main en dur : un checkout de
+  # branche feature sur le serveur ne doit pas absorber main par surprise.
+  BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "")
+  if [ -n "$BRANCH" ] && [ "$BRANCH" != "HEAD" ]; then
+    git pull origin "$BRANCH" || fail "git pull a échoué (branche $BRANCH)"
+  else
+    git pull origin main || fail "git pull a échoué"
+  fi
 
   COMMIT_AFTER=$(git log --oneline -1)
   log "Avant : $COMMIT_BEFORE"
