@@ -10,6 +10,7 @@ import { DashboardLayout } from '@/components/layout/DashboardLayout';
 // Pages
 import { LoginPage } from '@/pages/LoginPage';
 import { DashboardPage } from '@/pages/DashboardPage';
+import { PilotagePage } from '@/pages/PilotagePage';
 import { QuestionnairePage } from '@/pages/QuestionnairePage';
 import { SubmissionsPage } from '@/pages/SubmissionsPage';
 import { InstitutionsPage } from '@/pages/InstitutionsPage';
@@ -172,6 +173,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <DashboardPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/pilotage"
+            element={
+              <ProtectedRoute adminOnly>
+                <PilotagePage />
               </ProtectedRoute>
             }
           />

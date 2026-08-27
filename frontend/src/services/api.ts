@@ -350,6 +350,17 @@ export const documentsApi = {
 };
 
 // ============================================================================
+// MODULE PILOTAGE — portefeuille suivi
+// ============================================================================
+export const pilotageApi = {
+  getPortefeuille: () => api.get('/pilotage'),
+  updateCasUsage: (id: string, data: any) => api.patch(`/pilotage/cas-usage/${id}`, data),
+  creerBlocage: (casUsageId: string, data: any) => api.post(`/pilotage/cas-usage/${casUsageId}/blocage`, data),
+  updateBlocage: (id: string, data: any) => api.patch(`/pilotage/blocage/${id}`, data),
+  resoudreBlocage: (id: string, commentaire?: string) => api.post(`/pilotage/blocage/${id}/resoudre`, { commentaire }),
+};
+
+// ============================================================================
 // EXPORT ALL
 // ============================================================================
 export default api;

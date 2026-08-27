@@ -7,6 +7,7 @@ export function AuthLayout() {
   if (isAuthenticated) {
     if (user?.role === 'PARTENAIRE_TECHNIQUE') return <Navigate to="/partenaire-tech/dashboard" replace />;
     if (user?.role === 'BAILLEUR') return <Navigate to="/partenaire/dashboard" replace />;
+    if (user?.role === 'ADMIN') return <Navigate to="/pilotage" replace />;
     return <Navigate to="/dashboard" replace />;
   }
 

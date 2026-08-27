@@ -105,6 +105,7 @@ export const MENU_SECTIONS: MenuSection[] = [
     icon: Gauge,
     roles: ['ADMIN'],
     items: [
+      { name: 'Portefeuille suivi', href: '/pilotage', icon: Gauge },
       { name: 'Cockpit DPI', href: '/admin/cockpit', icon: Gauge },
       { name: 'Roadmap MVP', href: '/admin/roadmap', icon: MapIcon },
       { name: 'Arbitrage DU', href: '/du/arbitrage', icon: Scale, counter: 'desaccords' },

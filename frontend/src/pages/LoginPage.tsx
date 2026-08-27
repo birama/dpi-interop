@@ -85,6 +85,9 @@ export function LoginPage() {
         navigate('/partenaire');
       } else if (role === 'PARTENAIRE_TECHNIQUE') {
         navigate('/partenaire-tech/dashboard');
+      } else if (role === 'ADMIN') {
+        // Module Pilotage : l'écran du matin de la DU
+        navigate('/pilotage');
       } else {
         navigate('/dashboard');
       }
