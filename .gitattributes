@@ -1,0 +1,3 @@
+# Les migrations Prisma doivent rester en LF : les checksums enregistrés dans
+# _prisma_migrations (prod) dépendent du contenu exact des fichiers.
+backend/prisma/migrations/**/*.sql text eol=lf
