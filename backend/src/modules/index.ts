@@ -22,6 +22,7 @@ import { adminAccompagnementRoutes } from './accompagnement/admin.routes.js';
 import { partenaireTechAccompagnementRoutes } from './accompagnement/partenaire-tech.routes.js';
 import { recensementRoutes } from './recensement/routes.js';
 import { recensementAdminRoutes } from './recensement/admin.routes.js';
+import { pilotageRoutes } from './pilotage/pilotage.routes.js';
 
 // Inline routes for conventions and xroad
 async function conventionsRoutes(app: FastifyInstance) {
@@ -1201,6 +1202,9 @@ export async function registerRoutes(app: FastifyInstance) {
 
       // Admin — recensement GouvNum (RBAC ADMIN)
       api.register(recensementAdminRoutes, { prefix: '/admin/recensement' });
+
+      // Module Pilotage — portefeuille suivi (lecture ADMIN+BAILLEUR, écriture ADMIN)
+      api.register(pilotageRoutes, { prefix: '/pilotage' });
     },
     { prefix: '/api' }
   );
