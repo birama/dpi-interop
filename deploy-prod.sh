@@ -3,11 +3,24 @@
 # PINS — Script de déploiement production
 # À exécuter depuis /opt/dpi-interop/questionnaire-interop
 # Prérequis : backend/.env existant, pins-db accessible, Docker installé
+#
+# Modes :
+#   ./deploy-prod.sh            Déploiement complet (pull + build + migration + restart)
+#   ./deploy-prod.sh migrate    Migration seule (backup + prisma migrate deploy + restart API)
+#                               — pour les migrations hors déploiement : AUCUNE autre méthode
+#                               n'est autorisée (pas de docker exec manuel, pas de SQL ad hoc
+#                               dans _prisma_migrations).
 # ============================================================================
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 cd "$SCRIPT_DIR"
+
+MODE="${1:-full}"
+if [ "$MODE" != "full" ] && [ "$MODE" != "migrate" ]; then
+  echo "Usage: $0 [full|migrate]"
+  exit 1
+fi
 
 TIMESTAMP=$(date +%Y%m%d_%H%M)
 BACKUP_DIR="/opt/dpi-interop/backups"
@@ -19,7 +32,7 @@ fail() { log "FAIL: $1"; exit 1; }
 
 echo ""
 echo "╔══════════════════════════════════════════════════════════════╗"
-echo "║    PINS — Déploiement production                            ║"
+echo "║    PINS — Déploiement production (mode: $MODE)          ║"
 echo "║    $(date)                    ║"
 echo "╚══════════════════════════════════════════════════════════════╝"
 echo ""
@@ -36,7 +49,7 @@ echo ""
 log "Étape 1/6 — Backup base de données"
 mkdir -p "$BACKUP_DIR"
 
-BACKUP_FILE="$BACKUP_DIR/prod_avant_deploy_${TIMESTAMP}.sql"
+BACKUP_FILE="$BACKUP_DIR/prod_avant_${MODE}_${TIMESTAMP}.sql"
 if docker exec pins-db pg_dump -U pins -d questionnaire_interop --no-owner --no-acl > "$BACKUP_FILE" 2>/dev/null; then
   SIZE=$(stat -c%s "$BACKUP_FILE" 2>/dev/null || echo 0)
   if [ "$SIZE" -lt 1000000 ]; then
@@ -48,24 +61,37 @@ else
   fail "pg_dump a échoué — vérifier que pins-db est accessible"
 fi
 
-# ============================================================================
-# Étape 2 — Git pull
-# ============================================================================
-log "Étape 2/6 — Mise à jour du code"
-COMMIT_BEFORE=$(git log --oneline -1 2>/dev/null || echo "unknown")
-
-git pull origin main || fail "git pull a échoué"
-
-COMMIT_AFTER=$(git log --oneline -1)
-log "Avant : $COMMIT_BEFORE"
-log "Après : $COMMIT_AFTER"
+COMMIT_BEFORE="unknown"
+COMMIT_AFTER="unknown"
 
 # ============================================================================
-# Étape 3 — Build des images
+# Étape 2 — Git pull (full uniquement)
 # ============================================================================
-log "Étape 3/6 — Build des images Docker"
-docker compose -f "$COMPOSE_FILE" build backend frontend || fail "Build Docker échoué"
-log "Build OK"
+if [ "$MODE" = "full" ]; then
+  log "Étape 2/6 — Mise à jour du code"
+  COMMIT_BEFORE=$(git log --oneline -1 2>/dev/null || echo "unknown")
+
+  git pull origin main || fail "git pull a échoué"
+
+  COMMIT_AFTER=$(git log --oneline -1)
+  log "Avant : $COMMIT_BEFORE"
+  log "Après : $COMMIT_AFTER"
+else
+  log "Étape 2/6 — Git pull ignoré (mode migrate)"
+  COMMIT_BEFORE=$(git log --oneline -1 2>/dev/null || echo "unknown")
+  COMMIT_AFTER="$COMMIT_BEFORE"
+fi
+
+# ============================================================================
+# Étape 3 — Build des images (full uniquement)
+# ============================================================================
+if [ "$MODE" = "full" ]; then
+  log "Étape 3/6 — Build des images Docker"
+  docker compose -f "$COMPOSE_FILE" build backend frontend || fail "Build Docker échoué"
+  log "Build OK"
+else
+  log "Étape 3/6 — Build ignoré (mode migrate)"
+fi
 
 # ============================================================================
 # Étape 4 — Migration (AVANT démarrage du nouveau backend)
@@ -89,8 +115,14 @@ log "Migration OK"
 # Étape 5 — Démarrage des conteneurs
 # ============================================================================
 log "Étape 5/6 — Démarrage des conteneurs"
-docker compose -f "$COMPOSE_FILE" up -d backend frontend || fail "docker compose up échoué"
-log "Conteneurs démarrés"
+if [ "$MODE" = "full" ]; then
+  docker compose -f "$COMPOSE_FILE" up -d backend frontend || fail "docker compose up échoué"
+  log "Conteneurs démarrés"
+else
+  # Mode migrate : on redémarre uniquement l'API arrêtée à l'étape 4
+  docker start pins-api || fail "docker start pins-api échoué"
+  log "pins-api redémarré"
+fi
 
 # ============================================================================
 # Étape 6 — Health check
@@ -114,7 +146,7 @@ done
 # ============================================================================
 echo ""
 echo "╔══════════════════════════════════════════════════════════════╗"
-echo "║    DÉPLOIEMENT RÉUSSI                                       ║"
+echo "║    DÉPLOIEMENT RÉUSSI (mode: $MODE)                     ║"
 echo "╠══════════════════════════════════════════════════════════════╣"
 echo "║    Backup : $(basename "$BACKUP_FILE")"
 echo "║    Commit : $COMMIT_AFTER"

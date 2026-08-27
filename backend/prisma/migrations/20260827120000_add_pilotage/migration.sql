@@ -16,7 +16,7 @@ CREATE TABLE "blocages" (
     "nature" "NatureBlocage" NOT NULL,
     "libelle" TEXT NOT NULL,
     "entiteAttendue" TEXT,
-    "personneAttendue" TEXT,
+    "personneAttendue" TEXT NOT NULL,
     "dateOuverture" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "echeance" TIMESTAMP(3),
     "dateResolution" TIMESTAMP(3),
@@ -39,6 +39,6 @@ CREATE UNIQUE INDEX "blocages_unique_ouvert_par_cas" ON "blocages"("casUsageId")
 ALTER TABLE "blocages" ADD CONSTRAINT "blocages_casUsageId_fkey"
   FOREIGN KEY ("casUsageId") REFERENCES "cas_usage_mvp"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
--- Backfill : à défaut d'historique, l'ancienneté dans le statut courant démarre à la
--- dernière mise à jour connue du cas.
-UPDATE "cas_usage_mvp" SET "dateStatutImpl" = "updatedAt" WHERE "dateStatutImpl" IS NULL;
+-- Pas de backfill de dateStatutImpl : sans historique de transitions, tout backfill
+-- (updatedAt inclus) afficherait un faux âge de statut. NULL = « jamais changé depuis
+-- le déploiement du suivi » ; l'écran affiche un tiret jusqu'au premier vrai changement.

@@ -2333,7 +2333,7 @@ model Blocage {
   nature     NatureBlocage
   libelle    String
   entiteAttendue   String?
-  personneAttendue String?
+  personneAttendue String // NOT NULL : un blocage attribué à une direction ne se résout jamais
   dateOuverture    DateTime @default(now())
   echeance         DateTime?
   dateResolution   DateTime?
