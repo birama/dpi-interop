@@ -979,6 +979,7 @@ async function casUsageDetailRoutes(app: FastifyInstance) {
         financements: { include: { programme: { include: { ptf: true } } } },
         fluxInstitutions: { include: { submission: { include: { institution: { select: { id: true, code: true, nom: true } } } } } },
         declarationsInst: { include: { submission: { include: { institution: { select: { code: true, nom: true } } } } } },
+        blocages: { where: { dateResolution: null }, orderBy: { dateOuverture: 'desc' }, take: 1 },
       },
     });
     if (!cu) return reply.status(404).send({ error: 'Cas d\'usage non trouvé' });

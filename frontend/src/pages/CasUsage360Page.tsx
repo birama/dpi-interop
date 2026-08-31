@@ -1,11 +1,11 @@
 import { useParams, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { casUsageDetailApi, casUsageMvpApi } from '@/services/api';
+import { casUsageDetailApi, casUsageMvpApi, pilotageApi } from '@/services/api';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/components/ui/use-toast';
-import { Loader2, ArrowRight, CheckCircle, Circle, Clock, AlertTriangle, Save } from 'lucide-react';
+import { Loader2, ArrowRight, CheckCircle, Circle, Clock, AlertTriangle, Save, Star, StarOff } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
 
@@ -79,6 +79,16 @@ export function CasUsage360Page() {
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['cas-usage-360', id] }); toast({ title: 'Statut mis a jour' }); },
   });
 
+  const togglePiloteMut = useMutation({
+    mutationFn: (pilote: boolean) => pilotageApi.updateCasUsage(id!, { pilote }),
+    onSuccess: (_res, pilote) => {
+      qc.invalidateQueries({ queryKey: ['cas-usage-360', id] });
+      qc.invalidateQueries({ queryKey: ['pilotage'] });
+      toast({ title: pilote ? 'Ajouté au portefeuille suivi' : 'Retiré du portefeuille suivi' });
+    },
+    onError: (e: any) => toast({ variant: 'destructive', title: 'Erreur', description: e?.response?.data?.error || 'Impossible de modifier le portefeuille' }),
+  });
+
   if (isLoading) return <div className="flex items-center justify-center h-64"><Loader2 className="w-8 h-8 animate-spin text-teal" /></div>;
   if (!data) return <div className="text-center py-12 text-gray-400">Cas d'usage non trouve</div>;
 
@@ -122,7 +132,7 @@ export function CasUsage360Page() {
         </div>
 
         {/* Action buttons */}
-        <div className="flex flex-wrap gap-2 mt-4 pt-4 border-t">
+        <div className="flex flex-wrap items-center gap-2 mt-4 pt-4 border-t">
           <select
             value={newStatut || cu.statutImpl}
             onChange={e => { setNewStatut(e.target.value); updateStatutMut.mutate(e.target.value); }}
@@ -133,6 +143,32 @@ export function CasUsage360Page() {
           <Link to="/admin/roadmap">
             <Button variant="outline" size="sm" className="text-xs">Roadmap MVP</Button>
           </Link>
+          {cu.pilote ? (
+            <Button
+              variant="outline"
+              size="sm"
+              className="text-xs border-gold text-gold hover:bg-gold hover:text-white"
+              onClick={() => togglePiloteMut.mutate(false)}
+              disabled={togglePiloteMut.isPending}
+              title="Retirer ce cas du portefeuille suivi"
+            >
+              <StarOff className="w-3 h-3 mr-1" /> Retirer du portefeuille suivi
+            </Button>
+          ) : (
+            <Button
+              variant="outline"
+              size="sm"
+              className="text-xs border-teal text-teal hover:bg-teal hover:text-white"
+              onClick={() => togglePiloteMut.mutate(true)}
+              disabled={togglePiloteMut.isPending}
+              title="Ajouter ce cas au portefeuille suivi (/pilotage)"
+            >
+              <Star className="w-3 h-3 mr-1" /> Ajouter au portefeuille suivi
+            </Button>
+          )}
+          {cu.pilote && (
+            <Link to="/pilotage" className="text-xs text-teal hover:underline">Ouvrir /pilotage →</Link>
+          )}
         </div>
       </div>
 
@@ -228,6 +264,70 @@ export function CasUsage360Page() {
           </CardContent>
         </Card>
       </div>
+
+      {/* PILOTAGE — visible dès qu'il y a une info exploitable ou qu'on suit le cas */}
+      {(cu.pilote || cu.identifiantPivot || cu.baseLegale || cu.serviceXroad || (cu.blocages && cu.blocages.length > 0)) && (
+        <Card className={cn(cu.pilote && 'border-teal/40')}>
+          <CardHeader className="pb-2">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-sm text-navy flex items-center gap-2">
+                Pilotage
+                {cu.pilote && <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-teal/10 text-teal">DANS LE PORTEFEUILLE SUIVI</span>}
+              </CardTitle>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <p className="text-[10px] text-gray-500 font-medium uppercase tracking-wide">Statut implémentation</p>
+                <p className="text-sm font-semibold text-navy mt-0.5">
+                  {(STATUT_COLORS[cu.statutImpl]?.label || cu.statutImpl)}
+                </p>
+              </div>
+              <div>
+                <p className="text-[10px] text-gray-500 font-medium uppercase tracking-wide">Jours dans le statut</p>
+                <p className="text-sm text-gray-700 mt-0.5">
+                  {(() => {
+                    if (!cu.dateStatutImpl) return <span className="italic text-gray-400">aucun changement enregistré</span>;
+                    const j = Math.floor((Date.now() - new Date(cu.dateStatutImpl).getTime()) / 86400000);
+                    return j === 0 ? 'aujourd\'hui' : `${j} jour${j > 1 ? 's' : ''}`;
+                  })()}
+                </p>
+              </div>
+              <div>
+                <p className="text-[10px] text-gray-500 font-medium uppercase tracking-wide">Identifiant pivot</p>
+                <p className="text-sm text-gray-700 mt-0.5 break-words">{cu.identifiantPivot || <span className="italic text-gray-400">non renseigné</span>}</p>
+              </div>
+              <div>
+                <p className="text-[10px] text-gray-500 font-medium uppercase tracking-wide">Service X-Road</p>
+                <p className="text-sm text-gray-700 mt-0.5 break-words font-mono">{cu.serviceXroad || <span className="italic text-gray-400 font-sans">non renseigné</span>}</p>
+              </div>
+              <div className="col-span-2">
+                <p className="text-[10px] text-gray-500 font-medium uppercase tracking-wide">Base légale</p>
+                <p className="text-sm text-gray-700 mt-0.5 whitespace-pre-wrap">{cu.baseLegale || <span className="italic text-gray-400">non renseignée</span>}</p>
+              </div>
+            </div>
+            {cu.blocages && cu.blocages.length > 0 && (
+              <div className="rounded border border-red-200 bg-red-50/50 p-3">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide bg-red-100 text-red-700">Blocage · {cu.blocages[0].nature}</span>
+                  <span className="text-sm text-gray-900 font-medium">{cu.blocages[0].libelle}</span>
+                </div>
+                <div className="text-xs text-gray-600 mt-1">
+                  <span className="text-gray-500">Personne attendue :</span> {cu.blocages[0].personneAttendue}
+                  {cu.blocages[0].entiteAttendue && <span> · {cu.blocages[0].entiteAttendue}</span>}
+                  {cu.blocages[0].echeance && <span> · Échéance : {new Date(cu.blocages[0].echeance).toLocaleDateString('fr-FR')}</span>}
+                </div>
+              </div>
+            )}
+            <div className="pt-1">
+              <Link to="/pilotage" className="text-xs text-teal hover:underline">
+                Éditer ces champs sur /pilotage (portefeuille suivi) →
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* TIMELINE */}
       <Card>
