@@ -386,14 +386,6 @@ function App() {
             }
           />
           <Route
-            path="/admin/demandes"
-            element={
-              <ProtectedRoute adminOnly>
-                <DemandesPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
             path="/institution/demandes"
             element={
               <ProtectedRoute>
@@ -401,6 +393,8 @@ function App() {
               </ProtectedRoute>
             }
           />
+          {/* Ancienne URL admin — redirection de compatibilité vers l'écran unifié */}
+          <Route path="/admin/demandes" element={<Navigate to="/institution/demandes" replace />} />
           <Route
             path="/admin/cas-usage/:id"
             element={
@@ -510,14 +504,8 @@ function App() {
               </ProtectedRoute>
             }
           />
-          <Route
-            path="/admin/documents"
-            element={
-              <ProtectedRoute adminOnly>
-                <DocumentsPage />
-              </ProtectedRoute>
-            }
-          />
+          {/* Ancienne URL admin — redirection de compatibilité vers l'écran unifié */}
+          <Route path="/admin/documents" element={<Navigate to="/documents" replace />} />
 
           {/* PTF MVP — Espace partenaire BAILLEUR */}
           <Route

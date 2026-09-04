@@ -18,8 +18,6 @@ const ROUTE_LABELS: Record<string, string> = {
   '/admin/utilisateurs': 'Utilisateurs',
   '/admin/import': 'Import Word',
   '/admin/audit': 'Audit & Sessions',
-  '/admin/demandes': 'Demandes',
-  '/admin/documents': 'Documents',
   '/documents': 'Documents',
   '/questionnaire': 'Questionnaire',
   '/submissions': 'Soumissions',

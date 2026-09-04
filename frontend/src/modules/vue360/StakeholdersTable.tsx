@@ -1,14 +1,15 @@
-import { useState } from 'react';
+import { Fragment, useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/services/api';
 import { useAuthStore } from '@/store/auth';
 import { useToast } from '@/components/ui/use-toast';
 import { cn } from '@/lib/utils';
-import { Loader2, X, AlertTriangle, LogOut, Gavel } from 'lucide-react';
+import { Loader2, X, AlertTriangle, LogOut, Gavel, UserCheck } from 'lucide-react';
 import {
   ROLE_BADGE_STYLES, ROLE_LABELS, FEEDBACK_TYPE_STYLES, TYPE_CONCERNEMENT_LABELS,
 } from './constants';
 import { ChevronDown } from 'lucide-react';
+import { ChampInline } from '@/components/ChampInline';
 
 interface Props {
   casUsageId: string;
@@ -66,7 +67,8 @@ export function StakeholdersTable({ casUsageId, stakeholders, onChanged }: Props
                 const fbStyle = lastFb ? FEEDBACK_TYPE_STYLES[lastFb.type] : null;
 
                 return (
-                  <tr key={sh.id} className={cn(isWaiting && 'bg-amber-50/50')}>
+                <Fragment key={sh.id}>
+                  <tr className={cn(isWaiting && 'bg-amber-50/50')}>
                     <td className="px-4 py-2">
                       <div className="font-semibold text-navy">{sh.institution?.code}</div>
                       <div className="text-[10px] text-gray-400">{sh.institution?.nom}</div>
@@ -136,6 +138,14 @@ export function StakeholdersTable({ casUsageId, stakeholders, onChanged }: Props
                       </div>
                     </td>
                   </tr>
+                  {isAdmin && (
+                    <tr className="bg-gray-50/70 border-t border-dashed border-gray-200">
+                      <td colSpan={6} className="px-4 py-2">
+                        <CorrespondantEditor casUsageId={casUsageId} stakeholder={sh} />
+                      </td>
+                    </tr>
+                  )}
+                </Fragment>
                 );
               })}
             </tbody>
@@ -402,6 +412,72 @@ function EvictModal({ casUsageId, stakeholder, onClose, onDone }: {
             </button>
           </div>
         </div>
+      </div>
+    </div>
+  );
+}
+
+// ===========================================================================
+// Correspondant désigné (sous-ligne éditable — ADMIN only)
+// ===========================================================================
+function CorrespondantEditor({ casUsageId, stakeholder }: { casUsageId: string; stakeholder: any }) {
+  const qc = useQueryClient();
+  const patch = (data: Record<string, string | null>) =>
+    api.patch(`/use-cases/${casUsageId}/stakeholders/${stakeholder.id}`, data)
+      .then((r) => {
+        qc.invalidateQueries({ queryKey: ['vue360-use-case-detail', casUsageId] });
+        return r;
+      });
+
+  const dateVal = stakeholder.correspondantDateDesignation
+    ? String(stakeholder.correspondantDateDesignation).slice(0, 10)
+    : '';
+
+  return (
+    <div className="flex items-start gap-3">
+      <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-gray-500 font-semibold shrink-0 pt-5">
+        <UserCheck className="w-3.5 h-3.5" />
+        Correspondant
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-2 flex-1">
+        <ChampInline
+          label="Nom"
+          valeur={stakeholder.correspondantNom ?? ''}
+          onSave={(v) => patch({ correspondantNom: v })}
+          placeholder="Prénom Nom"
+          large
+        />
+        <ChampInline
+          label="Fonction"
+          valeur={stakeholder.correspondantFonction ?? ''}
+          onSave={(v) => patch({ correspondantFonction: v })}
+          placeholder="Directeur, chef de service…"
+          large
+        />
+        <ChampInline
+          label="Email"
+          type="email"
+          valeur={stakeholder.correspondantEmail ?? ''}
+          onSave={(v) => patch({ correspondantEmail: v })}
+          placeholder="prenom.nom@…"
+          large
+        />
+        <ChampInline
+          label="Téléphone"
+          type="tel"
+          valeur={stakeholder.correspondantTelephone ?? ''}
+          onSave={(v) => patch({ correspondantTelephone: v })}
+          placeholder="+221 …"
+          large
+        />
+        <ChampInline
+          label="Désigné le"
+          type="date"
+          valeur={dateVal}
+          onSave={(v) => patch({ correspondantDateDesignation: v || null })}
+          placeholder="—"
+          large
+        />
       </div>
     </div>
   );

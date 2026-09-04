@@ -606,6 +606,113 @@ export async function useCasesWriteRoutes(app: FastifyInstance) {
 
     return reply.send(updated);
   });
+
+  // =========================================================================
+  // PATCH /:id/stakeholders/:sid — Édition du correspondant désigné (ADMIN)
+  // =========================================================================
+  app.patch('/:id/stakeholders/:sid', { onRequest: [app.authenticateAdmin], config: { access: ['ADMIN'] } }, async (req: any, reply: any) => {
+    const { id, sid } = req.params;
+    const body = req.body as any;
+    const user = req.user;
+
+    const sh = await app.prisma.useCaseStakeholder.findUnique({
+      where: { id: sid },
+      include: { institution: { select: { code: true } } },
+    });
+    if (!sh || sh.casUsageId !== id) return reply.status(404).send({ error: 'Partie prenante non trouvée' });
+
+    const patch: any = {};
+    const champsPermis = [
+      'correspondantNom',
+      'correspondantFonction',
+      'correspondantEmail',
+      'correspondantTelephone',
+      'correspondantDateDesignation',
+    ];
+    for (const champ of champsPermis) {
+      if (body[champ] === undefined) continue;
+      const v = body[champ];
+      if (champ === 'correspondantDateDesignation') {
+        patch[champ] = v ? new Date(v) : null;
+      } else {
+        const trimmed = typeof v === 'string' ? v.trim() : v;
+        patch[champ] = trimmed === '' ? null : trimmed;
+      }
+    }
+
+    if (Object.keys(patch).length === 0) {
+      return reply.status(400).send({ error: 'Aucun champ correspondant à mettre à jour' });
+    }
+
+    const updated = await app.prisma.useCaseStakeholder.update({
+      where: { id: sid },
+      data: patch,
+    });
+
+    try { await app.prisma.auditLog.create({ data: { userId: user.id, userEmail: user.email, userRole: user.role, action: 'UPDATE', resource: 'stakeholder-correspondant', resourceId: sid, resourceLabel: `correspondant ${sh.institution.code}`, ipAddress: req.headers['x-forwarded-for']?.toString() || req.ip, userAgent: req.headers['user-agent'] } }); } catch {}
+
+    return reply.send(updated);
+  });
+
+  // =========================================================================
+  // PATCH /:id/note-partagee — Note factuelle AS-IS/TO-BE, visible aux parties
+  // prenantes en lecture seule. Édition ADMIN seule.
+  // =========================================================================
+  app.patch('/:id/note-partagee', { onRequest: [app.authenticateAdmin], config: { access: ['ADMIN'] } }, async (req: any, reply: any) => {
+    const { id } = req.params;
+    const { notePartagee } = req.body as any;
+    const user = req.user;
+
+    if (notePartagee !== null && typeof notePartagee !== 'string') {
+      return reply.status(400).send({ error: 'notePartagee doit être une chaîne ou null' });
+    }
+
+    const cu = await app.prisma.casUsageMVP.findUnique({ where: { id }, select: { id: true, code: true } });
+    if (!cu) return reply.status(404).send({ error: 'Cas d\'usage non trouvé' });
+
+    const trimmed = typeof notePartagee === 'string' ? notePartagee.trim() : null;
+    const value = trimmed ? trimmed : null;
+
+    const updated = await app.prisma.casUsageMVP.update({
+      where: { id },
+      data: { notePartagee: value, dateNotePartagee: value ? new Date() : null },
+      select: { id: true, notePartagee: true, dateNotePartagee: true },
+    });
+
+    try { await app.prisma.auditLog.create({ data: { userId: user.id, userEmail: user.email, userRole: user.role, action: 'UPDATE', resource: 'note-partagee', resourceId: id, resourceLabel: `note partagée ${cu.code}`, ipAddress: req.headers['x-forwarded-for']?.toString() || req.ip, userAgent: req.headers['user-agent'] } }); } catch {}
+
+    return reply.send(updated);
+  });
+
+  // =========================================================================
+  // PATCH /:id/note-interne — Appréciation DU (points durs, positions), ADMIN
+  // only. Filtrée serveur pour tous les non-ADMIN sur les six routes de lecture.
+  // =========================================================================
+  app.patch('/:id/note-interne', { onRequest: [app.authenticateAdmin], config: { access: ['ADMIN'] } }, async (req: any, reply: any) => {
+    const { id } = req.params;
+    const { noteInterne } = req.body as any;
+    const user = req.user;
+
+    if (noteInterne !== null && typeof noteInterne !== 'string') {
+      return reply.status(400).send({ error: 'noteInterne doit être une chaîne ou null' });
+    }
+
+    const cu = await app.prisma.casUsageMVP.findUnique({ where: { id }, select: { id: true, code: true } });
+    if (!cu) return reply.status(404).send({ error: 'Cas d\'usage non trouvé' });
+
+    const trimmed = typeof noteInterne === 'string' ? noteInterne.trim() : null;
+    const value = trimmed ? trimmed : null;
+
+    const updated = await app.prisma.casUsageMVP.update({
+      where: { id },
+      data: { noteInterne: value, dateNoteInterne: value ? new Date() : null },
+      select: { id: true, noteInterne: true, dateNoteInterne: true },
+    });
+
+    try { await app.prisma.auditLog.create({ data: { userId: user.id, userEmail: user.email, userRole: user.role, action: 'UPDATE', resource: 'note-interne', resourceId: id, resourceLabel: `note interne ${cu.code}`, ipAddress: req.headers['x-forwarded-for']?.toString() || req.ip, userAgent: req.headers['user-agent'] } }); } catch {}
+
+    return reply.send(updated);
+  });
 }
 
 // =========================================================================

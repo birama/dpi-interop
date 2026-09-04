@@ -74,3 +74,46 @@ export function projectUseCaseList(
     })
     .filter(Boolean);
 }
+
+// Coordonnées nominatives des correspondants désignés (atelier 01/09/2026) :
+// données personnelles au sens de la loi 2008-12, réservées à l'ADMIN DU.
+// À appeler sur tout payload renvoyé à un utilisateur non-ADMIN.
+export function stripStakeholderCorrespondants<T>(payload: T): T {
+  if (!payload || typeof payload !== 'object') return payload;
+  const stakeholders = (payload as any).stakeholders360;
+  if (Array.isArray(stakeholders)) {
+    (payload as any).stakeholders360 = stakeholders.map((sh: any) => {
+      if (!sh || typeof sh !== 'object') return sh;
+      const {
+        correspondantNom,
+        correspondantFonction,
+        correspondantEmail,
+        correspondantTelephone,
+        correspondantDateDesignation,
+        ...rest
+      } = sh;
+      return rest;
+    });
+  }
+  return payload;
+}
+
+// Blocages Pilotage : `personneAttendue` est nominative (loi 2008-12),
+// on retire tout le tableau pour les non-ADMIN.
+export function stripBlocages<T>(payload: T): T {
+  if (!payload || typeof payload !== 'object') return payload;
+  if ('blocages' in (payload as any)) {
+    delete (payload as any).blocages;
+  }
+  return payload;
+}
+
+// Note interne DU (appréciation, points durs, positions à tenir) :
+// jamais exposée hors ADMIN, même au niveau de visibilité FULL.
+export function stripNoteInterne<T>(payload: T): T {
+  if (!payload || typeof payload !== 'object') return payload;
+  const p = payload as any;
+  if ('noteInterne' in p) delete p.noteInterne;
+  if ('dateNoteInterne' in p) delete p.dateNoteInterne;
+  return payload;
+}

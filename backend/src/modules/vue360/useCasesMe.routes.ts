@@ -11,6 +11,7 @@
  */
 
 import { FastifyInstance } from 'fastify';
+import { stripStakeholderCorrespondants, stripBlocages, stripNoteInterne } from '../../services/useCaseProjection.js';
 
 export async function useCasesMeRoutes(app: FastifyInstance) {
   // =========================================================================
@@ -115,6 +116,7 @@ export async function useCasesMeRoutes(app: FastifyInstance) {
       return { casUsage: cu, consultationsStats: stats };
     });
 
+    for (const item of items) { stripStakeholderCorrespondants(item.casUsage); stripBlocages(item.casUsage); stripNoteInterne(item.casUsage); }
     return reply.send(items);
   });
 
@@ -194,6 +196,7 @@ export async function useCasesMeRoutes(app: FastifyInstance) {
 
     const total = await app.prisma.casUsageMVP.count({ where });
 
+    for (const cu of annotated) { stripStakeholderCorrespondants(cu); stripBlocages(cu); stripNoteInterne(cu); }
     return reply.send({ data: annotated, total, nextCursor, hasMore });
   });
 

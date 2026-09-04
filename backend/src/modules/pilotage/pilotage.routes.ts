@@ -51,6 +51,8 @@ export async function pilotageRoutes(app: FastifyInstance) {
     const codesPour = (st: any[], roles: string[]) =>
       [...new Set(st.filter(s => roles.includes(s.role)).map(s => s.institution?.code).filter(Boolean))];
 
+    const isAdmin = req.user?.role === 'ADMIN';
+
     const items = cas.map((cu: any) => {
       const blocageOuvert = cu.blocages.find((b: any) => !b.dateResolution) || null;
       const joursDansStatut = cu.dateStatutImpl
@@ -82,6 +84,12 @@ export async function pilotageRoutes(app: FastifyInstance) {
         dateStatutImpl: cu.dateStatutImpl,
         joursDansStatut,
         blocage: blocageOuvert,
+        // Notes d'instruction : présence + date pour chaque régime, pas le contenu.
+        // aNoteInterne / dateNoteInterne ne sortent qu'aux ADMIN, jamais aux BAILLEUR.
+        aNotePartagee: !!cu.notePartagee,
+        dateNotePartagee: cu.dateNotePartagee,
+        aNoteInterne: isAdmin ? !!cu.noteInterne : undefined,
+        dateNoteInterne: isAdmin ? cu.dateNoteInterne : undefined,
         // Drapeaux calculés serveur
         echeanceDepassee: blocageOuvert?.echeance ? new Date(blocageOuvert.echeance).getTime() < now : false,
         statutInchange30j: cu.dateStatutImpl ? now - new Date(cu.dateStatutImpl).getTime() > TRENTE_JOURS : false,

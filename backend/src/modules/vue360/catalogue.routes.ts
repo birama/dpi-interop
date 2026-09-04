@@ -21,6 +21,7 @@
  */
 
 import { FastifyInstance } from 'fastify';
+import { stripStakeholderCorrespondants, stripBlocages, stripNoteInterne } from '../../services/useCaseProjection.js';
 
 const MIN_MOTIF_ADOPTION = 50;
 const MIN_MOTIF_ARCHIVE = 50;
@@ -130,10 +131,12 @@ export async function catalogueRoutes(app: FastifyInstance) {
     const isPressentie = cu.institutionsPressenties?.some(
       (ip: any) => ip.institutionId === req.user.institutionId
     );
-    return reply.send({
+    const payload: any = {
       ...cu,
       sourceDetail: (isAdmin || isPressentie) ? cu.sourceDetail : null,
-    });
+    };
+    if (!isAdmin) { stripStakeholderCorrespondants(payload); stripBlocages(payload); stripNoteInterne(payload); }
+    return reply.send(payload);
   });
 
   // =========================================================================

@@ -14,3 +14,8 @@ backend/tests/_*.json
 # Deploy script — contient secrets JWT_SECRET et DB password, ne pas versioner
 deploy-prod.sh
 deploy-prod.sh.local
+
+# Backups locaux et scripts poste (ne partent jamais dans le repo)
+backups/
+backend/backups/
+smoke-admin.ps1

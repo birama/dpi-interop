@@ -15,6 +15,7 @@
  */
 
 import { FastifyInstance } from 'fastify';
+import { stripStakeholderCorrespondants, stripBlocages, stripNoteInterne } from '../../services/useCaseProjection.js';
 
 // ============================================================================
 // PARTENAIRE TECHNIQUE — Espace AMO
@@ -101,6 +102,9 @@ export async function partenaireTechniqueRoutes(app: FastifyInstance) {
 
     // Masquer les champs sensibles pour le partenaire technique
     const { notes, observations, timeline, statusHistory, ...safe } = cu as any;
+    stripStakeholderCorrespondants(safe);
+    stripBlocages(safe);
+    stripNoteInterne(safe);
     return safe;
   });
 

@@ -11,7 +11,7 @@
 
 import { FastifyInstance } from 'fastify';
 import { computeVisibility, UserContext } from '../../services/useCaseVisibility.js';
-import { projectUseCase } from '../../services/useCaseProjection.js';
+import { projectUseCase, stripStakeholderCorrespondants, stripBlocages, stripNoteInterne } from '../../services/useCaseProjection.js';
 
 // Include complet pour les requêtes détaillées
 const FULL_INCLUDE = {
@@ -41,6 +41,12 @@ const FULL_INCLUDE = {
     include: {
       registre: { select: { id: true, code: true, nom: true, domaine: true, institutionCode: true, institutionNom: true } },
     },
+  },
+  // Blocages ouverts (pilotage) : personneAttendue nominative, réservée à l'ADMIN via strip
+  blocages: {
+    where: { dateResolution: null },
+    orderBy: { dateOuverture: 'desc' as const },
+    take: 5,
   },
 };
 
@@ -147,7 +153,13 @@ export async function useCasesRoutes(app: FastifyInstance) {
     const projected = items.map((cu: any) => {
       const visibility = computeVisibility(user, cu.stakeholders360 || [], cu.institutionSourceCode);
       if (visibility.level === 'NONE') return null;
-      return projectUseCase(cu, visibility.level);
+      const p = projectUseCase(cu, visibility.level);
+      if (user.role !== 'ADMIN') {
+        stripStakeholderCorrespondants(p);
+        stripBlocages(p);
+        stripNoteInterne(p);
+      }
+      return p;
     }).filter(Boolean);
 
     return reply.send({
@@ -254,6 +266,11 @@ export async function useCasesRoutes(app: FastifyInstance) {
 
     // Projeter selon la visibilité
     const projected = projectUseCase(casUsage, visibility.level);
+    if (user.role !== 'ADMIN') {
+      stripStakeholderCorrespondants(projected);
+      stripBlocages(projected);
+      stripNoteInterne(projected);
+    }
 
     return reply.send({
       ...projected,

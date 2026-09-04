@@ -1330,6 +1330,15 @@ model CasUsageMVP {
   notes                 String?              @db.Text // Notes libres admin
   timeline              Json? // Historique événements [{date, event, auteur}]
   observations          String?              @db.Text
+  // Notes d'instruction DU (atelier 02-03/09/2026), en markdown, auto-datées à
+  // chaque écriture. DEUX régimes distincts, jamais fusionnés :
+  //   notePartagee : factuel (AS-IS/TO-BE), visible aux parties prenantes.
+  //   noteInterne  : appréciation DU (points durs, positions), ADMIN only,
+  //                  filtrée serveur sur les mêmes six routes que les correspondants.
+  notePartagee          String?              @db.Text
+  dateNotePartagee      DateTime?
+  noteInterne           String?              @db.Text
+  dateNoteInterne       DateTime?
 
   // Vue 360° — champs et relations
   statutVueSection  UseCaseStatus          @default(DECLARE)
@@ -1756,6 +1765,15 @@ model UseCaseStakeholder {
   retireParUserId  String?
   evictionParDU    Boolean           @default(false)
   evictionMotif    String?           @db.Text
+
+  // Correspondant désigné (atelier 01/09/2026) — un par institution × cas × rôle.
+  // Point focal de l'institution sur ce cas d'usage précis : la personne à qui l'on
+  // écrit. Les contacts de groupes de travail secondaires restent dans les CR.
+  correspondantNom             String?
+  correspondantFonction        String?
+  correspondantEmail           String?
+  correspondantTelephone       String?
+  correspondantDateDesignation DateTime?
 
   casUsage      CasUsageMVP           @relation(fields: [casUsageId], references: [id], onDelete: Cascade)
   institution   Institution           @relation(fields: [institutionId], references: [id])
